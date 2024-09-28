@@ -169,7 +169,7 @@ const Sidebar = () => {
               type="text"
               placeholder="Tên dự án"
               className={clsx(
-                "w-full p-2 border rounded mb-4",
+                "w-full p-2 border rounded mb-4 ",
                 error ? "border-red-500" : "border-gray-300"
               )}
               required
