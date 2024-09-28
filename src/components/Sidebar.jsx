@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   MdDashboard,
   MdOutlineAddTask,
@@ -6,101 +6,226 @@ import {
   MdSettings,
   MdTaskAlt,
 } from "react-icons/md";
-import { FaTasks, FaTrashAlt, FaUsers } from "react-icons/fa";
+import { FaTasks, FaTrashAlt, FaUsers, FaPlus } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 import { setOpenSidebar } from "../redux/slices/authSlice";
 import clsx from "clsx";
 
+// Dữ liệu cho submenu của tab "Công Việc"
+const taskSubMenu = [
+  { label: "J2EE", link: "/tasks/j2ee", color: "bg-blue-500" },
+  { label: "C#", link: "/tasks/csharp", color: "bg-purple-500" },
+  { label: "QLDA", link: "/tasks/qlda", color: "bg-yellow-500" },
+];
+
+// Dữ liệu cho các tab trong sidebar
 const linkData = [
   {
     label: "Bảng Điều Khiển",
-    link: "dashboard",
+    link: "/dashboard",
     icon: <MdDashboard />,
   },
   {
-    label: "Công Việc",
-    link: "tasks",
+    label: "Dự Án",
+    link: "/tasks",
     icon: <FaTasks />,
+    subMenu: taskSubMenu,
   },
   {
     label: "Đã Hoàn Thành",
-    link: "completed/completed",
+    link: "/completed/completed",
     icon: <MdTaskAlt />,
   },
   {
     label: "Đang Thực Hiện",
-    link: "in-progress/in progress",
+    link: "/in-progress/in-progress",
     icon: <MdOutlinePendingActions />,
   },
   {
     label: "Cần Làm",
-    link: "todo/todo",
+    link: "/todo/todo",
     icon: <MdOutlinePendingActions />,
   },
   {
     label: "Nhóm",
-    link: "team",
+    link: "/team",
     icon: <FaUsers />,
   },
   {
     label: "Thùng Rác",
-    link: "trashed",
+    link: "/trashed",
     icon: <FaTrashAlt />,
   },
 ];
 
-
 const Sidebar = () => {
   const { user } = useSelector((state) => state.auth);
-
   const dispatch = useDispatch();
   const location = useLocation();
-
-  const path = location.pathname.split("/")[1];
-
+  const currentPath = location.pathname;
   const sidebarLinks = user?.isAdmin ? linkData : linkData.slice(0, 5);
-
   const closeSidebar = () => {
     dispatch(setOpenSidebar(false));
   };
+  const [expandedSubMenu, setExpandedSubMenu] = useState(null);
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [projectName, setProjectName] = useState("");
+  const [error, setError] = useState(""); // State to track error
 
+  const handleProjectSubmit = (e) => {
+    e.preventDefault();
+
+    // Kiểm tra độ dài chuỗi
+    if (projectName.length < 3) {
+      setError("Tên dự án phải có ít nhất 3 ký tự!"); 
+      return;
+    }
+
+    if (projectName.length === 0) {
+      setError("Tên dự án không được để trống!"); 
+      return;
+    }
+
+    setError("");
+    console.log("Dự án được tạo:", projectName);
+    setProjectName(""); // Reset ô input
+    setModalOpen(false); // Đóng modal
+  };
+
+  // Component cho các đường dẫn trong Sidebar
   const NavLink = ({ el }) => {
+    const hasSubMenu = !!el.subMenu;
     return (
-      <Link
-        to={el.link}
-        onClick={closeSidebar}
-        className={clsx(
-          "w-full lg:w-3/4 flex gap-2 px-3 py-2 rounded-full items-center text-gray-800 text-base hover:bg-[#2564ed2d]",
-          path === el.link.split("/")[0] ? "bg-blue-700 text-neutral-100" : ""
+      <>
+        <Link
+          to={el.link}
+          onClick={() => {
+            closeSidebar();
+            if (hasSubMenu) {
+              setExpandedSubMenu(el.label === expandedSubMenu ? null : el.label);
+            } else {
+              setExpandedSubMenu(null);
+            }
+          }}
+          className={clsx(
+            "w-full flex gap-3 px-4 py-3 rounded-lg items-center text-gray-800 text-base cursor-pointer transition-all duration-200",
+            currentPath.startsWith(el.link) ? "bg-blue-600 text-white" : "hover:bg-gray-100"
+          )}
+        >
+          {el.icon}
+          <span className='font-medium'>{el.label}</span>
+          {hasSubMenu && (
+            <span
+              className={clsx("ml-auto transition-transform duration-200", {
+                "rotate-180": expandedSubMenu === el.label
+              })}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (expandedSubMenu === el.label) {
+                  setExpandedSubMenu(null);
+                } else {
+                  setExpandedSubMenu(el.label);
+                  setModalOpen(true);
+                }
+              }}
+            >
+              <FaPlus />
+            </span>
+          )}
+        </Link>
+        {hasSubMenu && expandedSubMenu === el.label && (
+          <div className="ml-8 flex flex-col space-y-2 mt-2">
+            {el.subMenu.map((subEl) => (
+              <Link
+                key={subEl.label}
+                to={subEl.link}
+                onClick={closeSidebar}
+                className={clsx(
+                  "flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors",
+                  currentPath === subEl.link ? "bg-blue-600 text-white" : ""
+                )}
+              >
+                <span className={`w-2 h-2 ${subEl.color} rounded-full`} />
+                <span className="font-medium">{subEl.label}</span>
+              </Link>
+            ))}
+          </div>
         )}
-      >
-        {el.icon}
-        <span className='hover:text-[#2564ed]'>{el.label}</span>
-      </Link>
+      </>
     );
   };
+
+  // Modal component để nhập tên dự án
+  const Modal = ({ isOpen, onClose }) => {
+    if (!isOpen) return null;
+    return (
+      <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
+        <div className="bg-white p-6 rounded-lg shadow-lg max-w-md w-full">
+          <h2 className="text-lg font-bold mb-4">Nhập Tên Dự Án</h2>
+          <form onSubmit={handleProjectSubmit}>
+            <input
+              type="text"
+              placeholder="Tên dự án"
+              className={clsx(
+                "w-full p-2 border rounded mb-4",
+                error ? "border-red-500" : "border-gray-300"
+              )}
+              required
+            />
+            {error && <p className="text-red-500 text-sm mb-4">{error}</p>}
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => {
+                  setProjectName(""); // Reset lại trường dữ liệu
+                  setError(""); // Xóa lỗi nếu có
+                  onClose(); // Đóng modal
+                }}
+                className="mr-2 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+              >
+                Lưu
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <div className='w-full  h-full flex flex-col gap-6 p-5'>
-      <h1 className='flex gap-1 items-center'>
-        <p className='bg-blue-600 p-2 rounded-full'>
-          <MdOutlineAddTask className='text-white text-2xl font-black' />
+    <div className='w-full h-full flex flex-col gap-6 p-5 bg-white shadow-lg rounded-xl'>
+      <h1 className='flex gap-2 items-center'>
+        <p className='bg-blue-600 p-3 rounded-full'>
+          <MdOutlineAddTask className='text-white text-2xl' />
         </p>
-        <span className='text-2xl font-bold text-black'>Quản lý công việc</span>
+        <span className='text-2xl font-bold text-gray-900'>Quản lý công việc</span>
       </h1>
 
-      <div className='flex-1 flex flex-col gap-y-5 py-8'>
+      <div className='flex-1 flex flex-col gap-y-5'>
         {sidebarLinks.map((link) => (
           <NavLink el={link} key={link.label} />
         ))}
       </div>
 
-      <div className=''>
-        <button className='w-full flex gap-2 p-2 items-center text-lg text-gray-800'>
+      <div className='pt-4'>
+        <button
+          className='w-full flex gap-2 p-3 items-center text-lg text-gray-800 hover:bg-gray-100 rounded-lg transition'
+          onClick={() => setModalOpen(true)}
+        >
           <MdSettings />
           <span>Chỉnh Sửa</span>
         </button>
       </div>
+
+      <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
     </div>
   );
 };
