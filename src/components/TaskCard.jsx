@@ -14,6 +14,7 @@ import { FaList } from "react-icons/fa";
 import UserInfo from "./UserInfo";
 import { IoMdAdd } from "react-icons/io";
 import AddSubTask from "./task/AddSubTask";
+import DetailTask from "./task/DetailTask";
 
 const ICONS = {
   high: <MdKeyboardDoubleArrowUp />,
@@ -24,35 +25,52 @@ const ICONS = {
 const TaskCard = ({ task }) => {
   const { user } = useSelector((state) => state.auth);
   const [open, setOpen] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+
+  const searchByTitle = (title, users) => {
+    return users.filter((user) => user.title === title);
+  };
+
 
   return (
     <>
       <div className='w-full h-fit bg-white shadow-md p-4 rounded'>
-        <div className='w-full flex justify-between'>
-          <div
-            className={clsx(
-              "flex flex-1 gap-1 items-center text-sm font-medium",
-              PRIOTITYSTYELS[task?.priority]
-            )}
+        <div style={{
+          cursor: 'pointer'
+        }}
+        >
+          <div 
+            className='w-full flex justify-between'
+            onClick={() => setExpanded(true)}
           >
-            <span className='text-lg'>{ICONS[task?.priority]}</span>
-            <span className='uppercase'>{task?.priority} Priority</span>
-          </div>
-
-          {user?.isAdmin && <TaskDialog task={task} />}
-        </div>
-
-        <>
-          <div className='flex items-center gap-2'>
             <div
-              className={clsx("w-4 h-4 rounded-full", TASK_TYPE[task.stage])}
-            />
-            <h4 className='line-clamp-1 text-black'>{task?.title}</h4>
+              className={clsx(
+                "flex flex-1 gap-1 items-center text-sm font-medium",
+                PRIOTITYSTYELS[task?.priority]
+              )}
+              
+            >
+              <span className='text-lg'>{ICONS[task?.priority]}</span>
+              <span className='uppercase'>{task?.priority} Priority</span>
+            </div>
+
+            {user?.isAdmin && <TaskDialog task={task} />}
           </div>
-          <span className='text-sm text-gray-600'>
-            {formatDate(new Date(task?.date))}
-          </span>
-        </>
+
+          <>
+            <div className='flex items-center gap-2'>
+              <div
+                className={clsx("w-4 h-4 rounded-full", TASK_TYPE[task.stage])}
+              />
+              <h4 
+                onClick={() => setExpanded(true)}
+                className='line-clamp-1 text-black'>{task?.title}</h4>
+            </div>
+            <span className='text-sm text-gray-600'>
+              {formatDate(new Date(task?.date))}
+            </span>
+          </>
+        </div>
 
         <div className='w-full border-t border-gray-200 my-2' />
         <div className='flex items-center justify-between mb-2'>
@@ -85,6 +103,7 @@ const TaskCard = ({ task }) => {
             ))}
           </div>
         </div>
+
 
         {/* sub tasks */}
         {task?.subTasks?.length > 0 ? (
@@ -123,6 +142,15 @@ const TaskCard = ({ task }) => {
       </div>
 
       <AddSubTask open={open} setOpen={setOpen} id={task._id} />
+      <DetailTask 
+        expanded={expanded} 
+        setExpanded={setExpanded} 
+        task={task._id} 
+        titleTask={task.title}
+        date={formatDate(new Date(task?.date))}
+        roleTeam={searchByTitle("Administrator", task.team)}
+        userTeam={task}
+      />
     </>
   );
 };
