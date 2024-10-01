@@ -12,6 +12,7 @@ import BoardView from "../components/BoardView";
 import { tasks } from "../assets/data";
 import Table from "../components/task/Table";
 import AddTask from "../components/task/AddTask";
+import ListView from "../components/task/ListView";
 
 const TABS = [
   { title: "Chế độ Bảng", icon: <MdGridView /> },
@@ -67,9 +68,10 @@ const Tasks = () => {
         {selected !== 1 ? (
           <BoardView tasks={tasks} />
         ) : (
-          <div className='w-full'>
-            <Table tasks={tasks} />
-          </div>
+          // <div className='w-full'>
+          //   <Table tasks={tasks} />
+          // </div>
+          <ListView/>
         )}
       </Tabs>
 
