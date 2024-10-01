@@ -25,6 +25,7 @@
     "react-router-dom": "^6.22.0",
     "recharts": "^2.12.0",
     "sonner": "^1.4.0",
+    "taskmanager": "file:",
     "translate": "^3.0.1"
   },
   "devDependencies": {
