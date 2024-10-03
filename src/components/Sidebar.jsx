@@ -53,6 +53,15 @@ const linkData = [
     icon: <FaUsers />,
   },
   {
+    label: "Phòng Ban",
+    link: "/department",
+    icon: <FaUsers />,
+  },{
+    label: "Nhân Viên",
+    link: "/employee",
+    icon: <FaUsers />,
+  },
+  {
     label: "Thùng Rác",
     link: "/trashed",
     icon: <FaTrashAlt />,
