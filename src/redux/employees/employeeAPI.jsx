@@ -9,3 +9,7 @@ export const addEmployee=async (employee)=>{
     const response=await axios.post(API_ENDPOINTS.NHAVIEN,employee)
     return response.data;
 }
+export const updateEmployee=async (id,employee)=>{
+    const response=await axios.put(API_ENDPOINTS.NHAVIEN+"/"+id,employee)
+    return response.data;
+}

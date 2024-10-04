@@ -10,7 +10,8 @@ import { useDispatch, useSelector } from "react-redux";
 import PageSizeSelect from "../components/PageSizeSelect";
 import { fetchEmployees } from "../redux/employees/employeeSlice";
 import AddEmployee from "../components/employee/AddEmployee";
-import { HubConnectionBuilder } from '@microsoft/signalr';
+import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
+import UpdateEmployee from "../components/employee/UpdateEmployee";
 const Employees = () => {
   const [pageSize, setPageSize] = useState(10);
   const employees = useSelector((state) => state.employees.list);
@@ -27,13 +28,14 @@ const Employees = () => {
   }, [dispatch, pageSize]);
   useEffect(()=>{
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub")
+      .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
+      .configureLogging(LogLevel.Information)
       .build();
 
     setConnection(newConnection);
   },[])
   useEffect(()=>{
-    if (connection) {
+    if (connection && connection.state === "Disconnected") {
         connection.start()
           .then(() => {
             console.log("Connected!");
@@ -120,7 +122,7 @@ const Employees = () => {
      <PageSizeSelect pageSize={pageSize} setPageSize={setPageSize} />
       <div className='w-full md:px-1 px-0 mb-6'>
         <div className='flex items-center justify-between mb-8'>
-          <Title title='Phòng Ban' />
+          <Title title='Nhân Viên' />
           <Button
             label='Thêm Nhân Viên Mới'
             icon={<IoMdAdd className='text-lg' />}
@@ -149,11 +151,11 @@ const Employees = () => {
         userData={selected}
         key={new Date().getTime().toString()}
       />
-      {/* <UpdateDepartment
+      <UpdateEmployee
          open={openUpdate}
          setOpen={setOpenUpdate}
-         departmentData={selectedEmployee} 
-      /> */}
+         employeeData={selectedEmployee} 
+      />
 
       <ConfirmatioDialog
         open={openDialog}

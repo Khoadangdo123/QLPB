@@ -62,6 +62,11 @@ const linkData = [
     icon: <FaUsers />,
   },
   {
+    label: "Tài Khoản",
+    link: "/account",
+    icon: <FaUsers />,
+  },
+  {
     label: "Thùng Rác",
     link: "/trashed",
     icon: <FaTrashAlt />,

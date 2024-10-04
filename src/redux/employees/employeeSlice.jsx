@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchEmployees as fetchAPI, addEmployee as addAPI } from './employeeAPI';
+import { fetchEmployees as fetchAPI, addEmployee as addAPI,updateEmployee as updateAPI } from './employeeAPI';
 
 export const fetchEmployees = createAsyncThunk('employees/fetchEmployees', async ({ search, page }) => {
   const response = await fetchAPI(search, page);
@@ -10,6 +10,10 @@ export const addEmployee = createAsyncThunk('employees/addEmployee', async (empl
   const response = await addAPI(employee);
   return response;
 });
+export const updateEmployee=createAsyncThunk('employees/updateEmployee',async({id,employee})=>{
+  const response=await updateAPI(id,employee);
+  return response;
+})
 
 const employeeSlice = createSlice({
   name: 'employees',

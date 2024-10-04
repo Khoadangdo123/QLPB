@@ -16,6 +16,7 @@ import Departments from "./pages/Department";
 import Dashboard from "./pages/dashboard";
 import { setOpenSidebar } from "./redux/slices/authSlice";
 import Employees from "./pages/Employee";
+import Accounts from "./pages/Account";
 
 function Layout() {
   const { user } = useSelector((state) => state.auth);
@@ -108,6 +109,7 @@ function App() {
           <Route path='/team' element={<Users />} />
           <Route path='/department' element={<Departments/>} />
           <Route path='/employee' element={<Employees/>} />
+          <Route path='/account' element={<Accounts/>} />
           <Route path='/trashed' element={<Trash />} />
           <Route path='/task/:id' element={<TaskDetails />} />
         </Route>

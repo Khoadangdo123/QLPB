@@ -50,13 +50,11 @@ const UpdateDepartment = ({ open, setOpen, departmentData }) => {
                 maTruongPhong: Number(data.maTruongPhong),
               },
             })
-          );
-      
-          // Kiểm tra và log dữ liệu trả về từ API
+          )
           if (updateDepartment.fulfilled.match(result)) {
-            console.log("Updated Department Data:", result.payload); // Dữ liệu trả về từ API
+            console.log("Updated Department Data:", result.payload);
           } else {
-            console.error("Update failed with reason:", result.error.message); // Xử lý lỗi nếu có
+            console.error("Update failed with reason:", result.error.message);
           }
       await dispatch(fetchDepartments({ search: '', page:10 }));
       setOpen(false);
