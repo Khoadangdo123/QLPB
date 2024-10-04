@@ -1,6 +1,10 @@
 // DetailTask.jsx
 import React, { useEffect, useState } from 'react';
-
+const comments = [
+	{ user: 'vantai', message: 'Hello', date: '13 days ago' },
+	{ user: 'tai van', message: 'Hello', date: '8 days ago' },
+	{ user: 'tai van', message: 'Hello', date: '7 days ago' }
+  ];
 const DetailTask = ({ 
 	expanded, 
 	setExpanded, 
@@ -15,7 +19,7 @@ const DetailTask = ({
   return (
 		<>
 			<div
-				className={`fixed top-0 right-0 h-full bg-white shadow-lg w-1/2 transform ${
+				className={`fixed overflow-auto top-0 right-0 h-full bg-white shadow-lg w-1/2 transform ${
 					expanded ? "translate-x-0" : "translate-x-full"
 				} transition-transform duration-300 ease-in-out`}
 				style={{
@@ -35,12 +39,12 @@ const DetailTask = ({
 				</div>
 
 				{/* Task Title */}
-				<div className="mb-6 px-6">
+				<div className="mb-4 px-6">
 					<h2 className="text-2xl font-semibold text-gray-800">{titleTask}</h2>
 				</div>
 
 				{/* Assignee and Due Date */}
-				<div className="mb-6 px-6 flex justify-between items-center">
+				<div className="mb-4 px-6 flex justify-between items-center">
 					<div className="flex items-center">
 						<div className="rounded-full h-10 w-10 bg-purple-600 flex items-center justify-center text-xl text-white">
 							{roleTeam[0]?.name?.slice(0,2)}
@@ -56,7 +60,7 @@ const DetailTask = ({
 				</div>
 
 				{/* Project Section */}
-				<div className="mb-6 px-6">
+				<div className="mb-4 px-6">
 					<div className="flex items-center">
 						<span className="bg-pink-600 text-white px-3 py-1 rounded-full text-sm">
 							.NET
@@ -66,7 +70,7 @@ const DetailTask = ({
 				</div>
 
 				{/* Dependencies */}
-				<div className="mb-6 px-6">
+				<div className="mb-4 px-6">
 					<p className="text-gray-700 font-medium">Dependencies</p>
 					<button className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 mt-2 rounded-full focus:outline-none">
 						Add dependencies
@@ -79,12 +83,33 @@ const DetailTask = ({
 					<textarea
 						className="w-full bg-gray-50 p-3 mt-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
 						placeholder="What is this task about?"
-						rows="4"
+						rows="3"
 					></textarea>
 				</div>
 
 				{/* Comments Section */}
-				<div className="mb-6 px-6">
+				<div className="mb-4 px-6">
+					<div
+						className="bg-gray-50 p-4 rounded border border-gray-200"
+						style={{ maxHeight: '150px', overflowY: 'auto' }} // Thanh trượt
+					>
+						{comments.map((comment, index) => (
+							<div key={index} className="mb-2">
+								<div className="flex items-center justify-between">
+									<div className="flex items-center">
+										<div className="rounded-full h-8 w-8 bg-purple-500 flex items-center justify-center text-xs text-white">
+											{comment.user.slice(0, 2)}
+										</div>
+										<span className="ml-3 text-gray-700">{comment.user}</span>
+									</div>
+									<span className="text-sm text-gray-500">{comment.date}</span>
+								</div>
+								<p className="ml-11 text-gray-600">{comment.message}</p>
+							</div>
+						))}
+					</div>
+				</div>
+				<div className="mb-4 px-6">
 					<div className="flex items-center">
 						<input
 							className="w-full bg-gray-50 p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"

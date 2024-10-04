@@ -28,7 +28,7 @@ const linkData = [
   },
   {
     label: "Dự Án",
-    link: "/tasks",
+    //link: "/tasks",
     icon: <FaTasks />,
     subMenu: taskSubMenu,
   },
@@ -223,7 +223,7 @@ const Sidebar = () => {
         <span className='text-2xl font-bold text-gray-900'>Quản lý công việc</span>
       </h1>
 
-      <div className='flex-1 flex flex-col gap-y-5'>
+      <div className='flex-1 flex flex-col gap-y-5 overflow-y-auto'>
         {sidebarLinks.map((link) => (
           <NavLink el={link} key={link.label} />
         ))}

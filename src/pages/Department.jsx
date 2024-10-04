@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Button from "../components/Button";
 import { IoMdAdd } from "react-icons/io";
 import { getInitials } from "../utils";
+import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
 import clsx from "clsx";
 import ConfirmatioDialog, { UserAction } from "../components/Dialogs";
 import Title from "../components/Title";
@@ -20,10 +21,32 @@ const Departments = () => {
   const [selected, setSelected] = useState(null);
   const [openUpdate, setOpenUpdate] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
+  const [connection, setConnection] = useState(null);
   const dispatch=useDispatch()
   useEffect(()=>{
     dispatch(fetchDepartments({ search: '', page: pageSize }));
   },[dispatch,pageSize])
+  useEffect(()=>{
+    const newConnection = new HubConnectionBuilder()
+      .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
+      .configureLogging(LogLevel.Information)
+      .build();
+
+    setConnection(newConnection);
+  },[])
+  useEffect(()=>{
+    if (connection && connection.state === "Disconnected") {
+        connection.start()
+          .then(() => {
+            console.log("Connected!");
+            connection.on("loadEmployee", () => {
+              dispatch(fetchDepartments({ search: '', page: pageSize }));
+            
+            });
+          })
+          .catch((error) => console.error("Connection failed: ", error));
+      }
+  },[dispatch,pageSize,connection])
   const departmentActionHandler = () => {};
   const deleteHandler = () => {};
 
