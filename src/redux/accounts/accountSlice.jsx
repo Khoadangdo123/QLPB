@@ -44,12 +44,12 @@ const accountSlice = createSlice({
       .addCase(addAccount.fulfilled, (state, action) => {
         state.list.push(action.payload);
       })
-      .addCase(updateAccount.fulfilled, (state, action) => {
-        const index = state.list.findIndex((account) => account.maNhanVien === action.payload.maNhanVien);
-        if (index !== -1) {
-          state.list[index] = action.payload;
-        }
-      });
+      // .addCase(updateAccount.fulfilled, (state, action) => {
+      //   const index = state.list.findIndex((account) => account.maNhanVien === action.payload.maNhanVien);
+      //   if (index !== -1) {
+      //     state.list[index] = action.payload;
+      //   }
+      // });
   },
 });
 

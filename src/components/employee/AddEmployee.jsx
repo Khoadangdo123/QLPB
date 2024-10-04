@@ -41,7 +41,7 @@ const AddEmployee = ({ open, setOpen, departmentData }) => {
         soDienThoai: data.soDienThoai,
         email:data.email
     })); 
-      await dispatch(fetchEmployees({ search: '', page: 10 }));
+      //await dispatch(fetchEmployees({ search: '', page: 10 }));
       setOpen(false);
     } catch (error) {
       console.error("Failed to add employee: ", error);

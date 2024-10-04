@@ -6,16 +6,18 @@ import Textbox from "../Textbox";
 import Loading from "../Loader";
 import Button from "../Button";
 import ModalWrapper from "../ModalWrapper";
-import {fetchDepartments } from "../../redux/departments/departmentSlice";
-import { addEmployee, fetchEmployees } from "../../redux/employees/employeeSlice";
+import {fetchEmployees } from "../../redux/employees/employeeSlice";
+import { fetchPermissions } from "../../redux/permission/permissionSlice";
 import { addAccount, fetchAccounts } from "../../redux/accounts/accountSlice";
 const AddAccount = ({ open, setOpen, accountData }) => {
   const defaultValues = accountData ?? {};
   const { user } = useSelector((state) => state.auth);
   const dispatch=useDispatch();
   const employees=useSelector((state)=>state.employees.list)
+  const nhomquyens=useSelector((state)=>state.permissions.list)
   useEffect(()=>{
-    dispatch(fetchEmployees({search:'',page:10}))
+    dispatch(fetchEmployees({search:'',page:20}))
+    dispatch(fetchPermissions({search:'',page:10}))
   },[dispatch])
   const isLoading = false;
   const isUpdating = false;
@@ -28,19 +30,17 @@ const AddAccount = ({ open, setOpen, accountData }) => {
 
   const handleOnSubmit =async (data) => {
     console.log("Employee Data:",{
-        maPhongBan: Number(data.maPhongBan),
-        tenChucVu: data.tenChucVu,
-        tenNhanVien: data.tenNhanVien,
-        soDienThoai: data.soDienThoai,
-        email:data.email
+        maNhanVien: Number(data.maNhanVien),
+        maNhomQuyen: Number(data.maQuyen),
+        tenTaiKhoan: data.tenTaiKhoan,
+        matKhau: data.matKhau
     });
     try {
       await dispatch(addAccount({
-        maPhongBan: Number(data.maPhongBan),
-        tenChucVu: data.tenChucVu,
-        tenNhanVien: data.tenNhanVien,
-        soDienThoai: data.soDienThoai,
-        email:data.email
+        maNhanVien: Number(data.maNhanVien),
+        maNhomQuyen: Number(data.maQuyen),
+        tenTaiKhoan: data.tenTaiKhoan,
+        matKhau: data.matKhau
     })); 
       await dispatch(fetchAccounts({ search: '', page: 10 }));
       setOpen(false);
@@ -58,15 +58,15 @@ const AddAccount = ({ open, setOpen, accountData }) => {
         >
           CREATE ACCOUNT
         </Dialog.Title>
-        <label htmlFor="tenChucVu" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="maNhanVien" className="block text-sm font-medium text-gray-700">
             
           </label>
           <select
             id="maNhanVien"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            {...register("maNhanVien", { required: "Select a head!" })}
+            {...register("maNhanVien", { required: "Chọn Nhân Viên" })}
           >
-            <option value="">Select Head</option>
+            <option value="">Chọn Nhân Viên</option>
             {employees.map((item) => (
               <option key={item.maNhanVien} value={item.maNhanVien}>
                 {item.tenNhanVien}
@@ -74,7 +74,23 @@ const AddAccount = ({ open, setOpen, accountData }) => {
             ))}
           </select>
         {errors.maNhanVien && <span className="text-red-600">{errors.maNhanVien.message}</span>}
-        <div className="mt-2 flex flex-col gap-6">
+        <label htmlFor="maQuyen" className="block text-sm font-medium text-gray-700">
+            
+          </label>
+          <select
+            id="maQuyen"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            {...register("maQuyen", { required: "Chọn Nhóm Quyền" })}
+          >
+            <option value="">Chọn Nhóm Quyền</option>
+            {nhomquyens.map((item,index) => (
+              <option key={item.maQuyen+"-"+index} value={item.maQuyen}>
+                {item.tenQuyen}
+              </option>
+            ))}
+          </select>
+        {errors.maQuyen && <span className="text-red-600">{errors.maQuyen.message}</span>}
+        {/* <div className="mt-2 flex flex-col gap-6">
           <Textbox
             placeholder="Nhóm Quyền"
             type="text"
@@ -86,7 +102,7 @@ const AddAccount = ({ open, setOpen, accountData }) => {
             })}
             error={errors.maNhomQuyen ? errors.maNhomQuyen.message : ""}
           />
-        </div>
+        </div> */}
         <div className="mt-2 flex flex-col gap-6">
           <Textbox
             placeholder="Tên Tài Khoản"
@@ -111,19 +127,6 @@ const AddAccount = ({ open, setOpen, accountData }) => {
               required: "Mật Khẩu is required!",
             })}
             error={errors.matKhau ? errors.matKhau.message : ""}
-          />
-        </div>
-        <div className="mt-2 flex flex-col gap-6">
-          <Textbox
-            placeholder="Email"
-            type="text"
-            name="email"
-            label="Email"
-            className="w-full rounded"
-            register={register("email", {
-              required: "Email is required!",
-            })}
-            error={errors.tenNhanVien ? errors.tenNhanVien.message : ""}
           />
         </div>
 

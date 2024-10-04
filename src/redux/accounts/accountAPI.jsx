@@ -10,6 +10,7 @@ export const fetchAccount = async (search = '', page = 10) => {
 // Add a new account
 export const addAccount = async (taiKhoan) => {
     const response = await axios.post(API_ENDPOINTS.TAIKHOAN, taiKhoan);
+    console.log("Successssss")
     return response.data;
 };
 

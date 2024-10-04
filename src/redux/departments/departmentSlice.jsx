@@ -41,6 +41,8 @@ const departmentSlice = createSlice({
         state.loading = false;
         state.status = 'failed';
         state.error = action.error.message;
+      }).addCase(updateDepartment.fulfilled, (state, action) => {
+        state.list.push(action.payload);
       });
   },
 });

@@ -8,7 +8,6 @@ import Button from "../Button";
 import ModalWrapper from "../ModalWrapper";
 import { fetchEmployees } from "../../redux/employees/employeeSlice";
 import { addDepartment, fetchDepartments } from "../../redux/departments/departmentSlice";
-import { parse } from "date-fns";
 
 const AddDepartment = ({ open, setOpen, employeeData }) => {
   const defaultValues = employeeData ?? {};
@@ -37,7 +36,7 @@ const AddDepartment = ({ open, setOpen, employeeData }) => {
         tenPhongBan:data.tenPhongBan,
         maTruongPhong:Number(data.maTruongPhong)
     })); 
-      await dispatch(fetchDepartments({ search: '', page: 1 }));
+      //await dispatch(fetchDepartments({ search: '', page: 1 }));
       setOpen(false);
     } catch (error) {
       console.error("Failed to add department: ", error);
@@ -51,7 +50,7 @@ const AddDepartment = ({ open, setOpen, employeeData }) => {
           as="h2"
           className="text-base font-bold leading-6 text-gray-900 mb-4"
         >
-          {departmentData ? "UPDATE DEPARTMENT" : "ADD NEW DEPARTMENT"}
+          ADD DEPARTMENT
         </Dialog.Title>
         <div className="mt-2 flex flex-col gap-6">
           <Textbox

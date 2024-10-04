@@ -6,8 +6,8 @@ import PageSizeSelect from "../components/PageSizeSelect";
 import AddAccount from "../components/account/AddAccount";
 import ConfirmatioDialog, { UserAction } from "../components/Dialogs";
 import Title from "../components/Title";
+import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
 import { fetchAccounts } from "../redux/accounts/accountSlice";
-
 const Accounts = () => {
   const [pageSize, setPageSize] = useState(10);
   const accounts = useSelector((state) => state.accounts.list);
@@ -16,18 +16,38 @@ const Accounts = () => {
   const [selected, setSelected] = useState(null);
   const [openUpdate, setOpenUpdate] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
+  const [connection, setConnection] = useState(null);
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(fetchAccounts({ search: "", page: pageSize }));
   }, [dispatch, pageSize]);
+  useEffect(()=>{
+    const newConnection = new HubConnectionBuilder()
+      .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
+      .configureLogging(LogLevel.Information)
+      .build();
 
+    setConnection(newConnection);
+  },[])
+  useEffect(()=>{
+    if (connection && connection.state === "Disconnected") {
+        connection.start()
+          .then(() => {
+            console.log("Connected!");
+            connection.on("loadTaiKhoan", () => {
+              dispatch(fetchAccounts({ search: '', page: pageSize }));
+            
+            });
+          })
+          .catch((error) => console.error("Connection failed: ", error));
+      }
+  },[dispatch,pageSize,connection])
   const accountActionHandler = () => {};
   const deleteHandler = () => {};
   const deleteClick = (id) => {
     setSelected(id);
     setOpenDialog(true);
   };
-  console.log(accounts)
   const editClick = (account) => {
     setSelectedAccount(account);
     setOpenUpdate(true);
