@@ -5,7 +5,6 @@ const initialState = {
   user: localStorage.getItem("userInfo")
     ? JSON.parse(localStorage.getItem("userInfo"))
     : user,
-
   isSidebarOpen: false,
 };
 

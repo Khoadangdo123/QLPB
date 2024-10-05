@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   MdDashboard,
   MdOutlineAddTask,
@@ -11,74 +11,76 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 import { setOpenSidebar } from "../redux/slices/authSlice";
 import clsx from "clsx";
-
-// Dữ liệu cho submenu của tab "Công Việc"
-const taskSubMenu = [
-  { label: "J2EE", link: "/tasks/j2ee", color: "bg-blue-500" },
-  { label: "C#", link: "/tasks/csharp", color: "bg-purple-500" },
-  { label: "QLDA", link: "/tasks/qlda", color: "bg-yellow-500" },
-];
-
-// Dữ liệu cho các tab trong sidebar
-const linkData = [
-  {
-    label: "Bảng Điều Khiển",
-    link: "/dashboard",
-    icon: <MdDashboard />,
-  },
-  {
-    label: "Dự Án",
-    //link: "/tasks",
-    icon: <FaTasks />,
-    subMenu: taskSubMenu,
-  },
-  {
-    label: "Đã Hoàn Thành",
-    link: "/completed/completed",
-    icon: <MdTaskAlt />,
-  },
-  {
-    label: "Đang Thực Hiện",
-    link: "/in-progress/in-progress",
-    icon: <MdOutlinePendingActions />,
-  },
-  {
-    label: "Cần Làm",
-    link: "/todo/todo",
-    icon: <MdOutlinePendingActions />,
-  },
-  {
-    label: "Nhóm",
-    link: "/team",
-    icon: <FaUsers />,
-  },
-  {
-    label: "Phòng Ban",
-    link: "/department",
-    icon: <FaUsers />,
-  },{
-    label: "Nhân Viên",
-    link: "/employee",
-    icon: <FaUsers />,
-  },
-  {
-    label: "Tài Khoản",
-    link: "/account",
-    icon: <FaUsers />,
-  },
-  {
-    label: "Thùng Rác",
-    link: "/trashed",
-    icon: <FaTrashAlt />,
-  },
-];
-
+import { fetchProjects } from "../redux/project/projectSlice";
 const Sidebar = () => {
-  const { user } = useSelector((state) => state.auth);
-  const dispatch = useDispatch();
+  const dispatch=useDispatch();
+  const { user } = useSelector((state) => state.authen);
+  const duans=useSelector((state)=>state.projects.list)
+  useEffect(()=>{
+    dispatch(fetchProjects({ search: '', page: 1 }))
+  },[dispatch])
+  console.log(duans)
+  const taskSubMenu = duans.map((duan) => ({
+    label: duan.tenDuAn,
+    link: `/project/${duan.maDuAn}`,
+    color: "bg-blue-500",
+  }));
+  const linkData = [
+    {
+      label: "Bảng Điều Khiển",
+      link: "/dashboard",
+      icon: <MdDashboard />,
+    },
+    {
+      label: "Dự Án",
+      //link: "/tasks",
+      icon: <FaTasks />,
+      subMenu: taskSubMenu,
+    },
+    {
+      label: "Đã Hoàn Thành",
+      link: "/completed/completed",
+      icon: <MdTaskAlt />,
+    },
+    {
+      label: "Đang Thực Hiện",
+      link: "/in-progress/in-progress",
+      icon: <MdOutlinePendingActions />,
+    },
+    {
+      label: "Cần Làm",
+      link: "/todo/todo",
+      icon: <MdOutlinePendingActions />,
+    },
+    {
+      label: "Nhóm",
+      link: "/team",
+      icon: <FaUsers />,
+    },
+    {
+      label: "Phòng Ban",
+      link: "/department",
+      icon: <FaUsers />,
+    },{
+      label: "Nhân Viên",
+      link: "/employee",
+      icon: <FaUsers />,
+    },
+    {
+      label: "Tài Khoản",
+      link: "/account",
+      icon: <FaUsers />,
+    },
+    {
+      label: "Thùng Rác",
+      link: "/trashed",
+      icon: <FaTrashAlt />,
+    },
+  ];
   const location = useLocation();
   const currentPath = location.pathname;
-  const sidebarLinks = user?.isAdmin ? linkData : linkData.slice(0, 5);
+  //const sidebarLinks = user?.isAdmin ? linkData : linkData.slice(0, 5);
+  const sidebarLinks = linkData
   const closeSidebar = () => {
     dispatch(setOpenSidebar(false));
   };

@@ -16,15 +16,15 @@ const stages = [
   { id: "done", name: "Done" },
 ];
 
-export default function (props) {
-  const { task } = props;
+export default function (congviec) {
+  // const { task } = props;
   return (
     <div className="w-full flex items-center  px-4">
       <div className="w-full flex py-2 border-b">
-        <div className="flex-1 px-4 truncate ">{task.title}</div>
-        <div className="flex-1 px-4 ">
+        <div className="flex-1 px-4 truncate ">{congviec.tenCongViec}</div>
+        {/* <div className="flex-1 px-4 ">
           <Selection items={priorities} selectedItem={task.priority} />
-        </div>
+        </div> */}
         <div className="flex-1 px-4 text-gray-400 flex items-center">
           <button
             className="hover:bg-gray-200 rounded-full px-2"
@@ -32,8 +32,8 @@ export default function (props) {
               alert("show calendar");
             }}
           >
-            {task.date ? (
-              formatDate(new Date(task.date))
+            {congviec.date ? (
+              formatDate(new Date(congviec.thoiGianKetThuc))
             ) : (
               <div className="p-1 w-fit border-2 border-dashed rounded-full border-gray-400">
                 <BiCalendar size={20} />
@@ -41,7 +41,7 @@ export default function (props) {
             )}
           </button>
         </div>
-        <div className="flex-1 px-4 flex items-center">
+        {/* <div className="flex-1 px-4 flex items-center">
           {task?.team?.map((m, index) => (
             <div
               key={index}
@@ -54,10 +54,10 @@ export default function (props) {
             </div>
           ))}
           <button onClick={()=>{alert("assign")}} className="rounded-full border-2 border-dashed size-fit p-1 ml-2 border-gray-400 text-gray-400"><BiPlus/></button>
-        </div>
-        <div className="flex-1 px-4 ">
+        </div> */}
+        {/* <div className="flex-1 px-4 ">
           <Selection items={stages} selectedItem={task.stage}/>
-        </div>
+        </div> */}
       </div>
     </div>
   );

@@ -10,7 +10,8 @@ const API_ENDPOINTS = {
     CHITIETQUYEN:`${API_URL}/ChiTietQuyen`,
     DUAN:`${API_URL}/DuAn`,
     PHANDUAN:`${API_URL}/PhanDuAn`,
-    PHANCONG:`${API_URL}/PhanCong`
+    PHANCONG:`${API_URL}/PhanCong`,
+    AUTH:`${API_URL}/Authentication/`
     
 };
   

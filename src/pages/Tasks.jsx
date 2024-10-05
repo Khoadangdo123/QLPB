@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaList } from "react-icons/fa";
 import { MdGridView } from "react-icons/md";
 import { useParams } from "react-router-dom";
@@ -13,6 +13,8 @@ import { tasks } from "../assets/data";
 import Table from "../components/task/Table";
 import AddTask from "../components/task/AddTask";
 import ListView from "../components/task/ListView";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchByIdProject, fetchProjects } from "../redux/project/projectSlice";
 
 const TABS = [
   { title: "Chế độ Bảng", icon: <MdGridView /> },
@@ -26,14 +28,27 @@ const TASK_TYPE = {
 };
 
 const Tasks = () => {
-  const params = useParams();
-
+  const {id} = useParams();
+  const dispath=useDispatch()
+  const duan=useSelector((state) =>
+    state.projects.list.find((project) => project.maDuAn === Number(id))
+  );
+  useEffect(() => {
+    if (id) {
+      dispath(fetchByIdProject(id));
+    }
+  }, [id, dispath]);
+  if (!duan) {
+    return <div>Loading...</div>;
+  }
+  console.log(duan)
+  console.log(typeof(id))
+  console.log(duan.phanDuAn)
   const [selected, setSelected] = useState(0);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const status = params?.status || "";
-
+  const status = id?.status || ""; 
   return loading ? (
     <div className='py-10'>
       <Loading />
@@ -54,7 +69,7 @@ const Tasks = () => {
       </div>
 
       <Tabs tabs={TABS} setSelected={setSelected}>
-        {!status && (
+        {/* {!status && (
           <div className='w-full flex justify-between gap-4 md:gap-x-12 py-4'>
             <TaskTitle label='Việc cần làm' className={TASK_TYPE.todo} />
             <TaskTitle
@@ -63,7 +78,7 @@ const Tasks = () => {
             />
             <TaskTitle label='Hoàn thành' className={TASK_TYPE.completed} />
           </div>
-        )}
+        )} */}
 
         {selected !== 1 ? (
           <BoardView tasks={tasks} />
@@ -71,7 +86,7 @@ const Tasks = () => {
           // <div className='w-full'>
           //   <Table tasks={tasks} />
           // </div>
-          <ListView/>
+          <ListView phanDuAn={duan.phanDuAn}/>
         )}
       </Tabs>
 

@@ -1,6 +1,6 @@
 import { Transition } from "@headlessui/react";
 import clsx from "clsx";
-import { Fragment, useRef } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
@@ -17,13 +17,13 @@ import Dashboard from "./pages/dashboard";
 import { setOpenSidebar } from "./redux/slices/authSlice";
 import Employees from "./pages/Employee";
 import Accounts from "./pages/Account";
-
+import * as signalR from '@microsoft/signalr';
 function Layout() {
-  const { user } = useSelector((state) => state.auth);
-
+  const authUser = useSelector((state) => state.authen);
+  console.log(authUser)
   const location = useLocation();
 
-  return user ? (
+  return authUser ? (
     <div className='w-full h-screen flex flex-col md:flex-row'>
       <div className='w-1/5 h-screen bg-white sticky top-0 hidden md:block'>
         <Sidebar />
@@ -42,10 +42,13 @@ function Layout() {
   ) : (
     <Navigate to='/log-in' state={{ from: location }} replace />
   );
+  // return (
+  //   <Navigate to='/log-in' state={{ from: location }} replace />
+  // )
 }
 
 const MobileSidebar = () => {
-  const { isSidebarOpen } = useSelector((state) => state.auth);
+  const { isSidebarOpen } = useSelector((state) => state.authen);
   const mobileMenuRef = useRef(null);
   const dispatch = useDispatch();
 
@@ -102,7 +105,7 @@ function App() {
         <Route element={<Layout />}>
           <Route index path='/' element={<Navigate to='/dashboard' />} />
           <Route path='/dashboard' element={<Dashboard />} />
-          <Route path='/tasks' element={<Tasks />} />
+          <Route path='/project/:id' element={<Tasks />} />
           {/* <Route path='/completed/:status' element={<Tasks />} /> */}
           <Route path='/in-progress/:status' element={<Tasks />} />
           <Route path='/todo/:status' element={<Tasks />} />

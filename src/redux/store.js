@@ -6,6 +6,10 @@ import employeeReducer from "./employees/employeeSlice"
 import accountReducer from "./accounts/accountSlice"
 import functionReducer from "./function/functionSlice"
 import permissionReducer from "./permission/permissionSlice"
+import authenReducer from "./authen/authenSlice"
+import projectReducer from "./project/projectSlice"
+import sectionReducer from "./section/sectionSlice"
+import taskRecuder from "./task/taskSlice"
 const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
@@ -14,7 +18,11 @@ const store = configureStore({
     employees:employeeReducer,
     accounts:accountReducer,
     functions:functionReducer,
-    permissions:permissionReducer
+    permissions:permissionReducer,
+    projects:projectReducer,
+    authen:authenReducer,
+    sections:sectionReducer,
+    tasks:taskRecuder
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware),

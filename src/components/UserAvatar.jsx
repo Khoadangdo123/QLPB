@@ -9,7 +9,8 @@ import { getInitials } from "../utils"; // Nhập hàm lấy chữ cái đầu t
 const UserAvatar = () => {
   const [open, setOpen] = useState(false); // Quản lý trạng thái mở của popup cho profile
   const [openPassword, setOpenPassword] = useState(false); // Quản lý trạng thái mở của popup cho thay đổi mật khẩu
-  const { user } = useSelector((state) => state.auth); // Lấy thông tin người dùng từ state Redux
+  const user = useSelector((state) => state.authen.user);
+  console.log(user) // Lấy thông tin người dùng từ state Redux
   const dispatch = useDispatch(); // Khởi tạo dispatch để gửi action
   const navigate = useNavigate(); // Khởi tạo hàm điều hướng
 
@@ -24,7 +25,7 @@ const UserAvatar = () => {
           <div>
             <Menu.Button className='w-10 h-10 2xl:w-12 2xl:h-12 items-center justify-center rounded-full bg-blue-600'>
               <span className='text-white font-semibold'>
-                {getInitials(user?.name)} {/* Hiển thị chữ cái đầu của tên người dùng */}
+                {getInitials(user?.refreshToken)} {/* Hiển thị chữ cái đầu của tên người dùng */}
               </span>
             </Menu.Button>
           </div>
