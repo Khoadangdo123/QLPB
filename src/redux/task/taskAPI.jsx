@@ -18,3 +18,8 @@ export const updateTask = async (id, task) => {
     const response = await axios.put(API_ENDPOINTS.CONGVIEC + "/" + id, task);
     return response.data;
 };
+export const fetchByIdTask = async (id) => {
+    const response = await axios.get(API_ENDPOINTS.CONGVIEC+"/"+id);
+    return response.data;
+};
+

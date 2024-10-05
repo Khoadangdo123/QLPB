@@ -1,9 +1,14 @@
 import { MdKeyboardArrowDown, MdKeyboardArrowUp } from "react-icons/md";
 import TaskListItem from "./TaskListItem";
 import { useState } from "react";
+import Button from "../Button";
+import { useParams } from "react-router-dom";
+import AddTask from "./AddTask";
 const TaskGroup=({phanduan})=>{
   console.log(phanduan)
   const [hidden, setHidden] = useState(false);
+  const [open, setOpen] = useState(false);
+  const {id} = useParams();
   return (
     <div className="w-full bg-transparent border-b-1">
       <button
@@ -14,6 +19,12 @@ const TaskGroup=({phanduan})=>{
       >
         <span className="">{phanduan.tenPhan}</span>{" "}
         {hidden ? <MdKeyboardArrowDown size={30} /> : <MdKeyboardArrowUp size={30} />}
+        <Button
+            onClick={() => setOpen(true)}
+            label='Tạo công việc'
+            // icon={<IoMdAdd className='text-lg' />}
+            className='flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 2xl:py-2.5'
+          />
       </button>
       <div
         className={`${hidden ? "max-h-0" : "max-h-[1000px]"} overflow-scroll duration-200 transition-all bg-slate-50 shadow-md`}
@@ -22,6 +33,7 @@ const TaskGroup=({phanduan})=>{
           return <TaskListItem congviec={item} />;
         })}
       </div>
+      <AddTask open={open} setOpen={setOpen} />
     </div>
   );
 }

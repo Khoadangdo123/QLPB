@@ -5,26 +5,26 @@ import UserInfo from "../UserInfo";
 import clsx from "clsx";
 
 const priorities = [
-  { id: "low", name: "Low" },
-  { id: "medium", name: "Medium" },
-  { id: "high", name: "High" },
+  { id: "low", name: "Thấp" },
+  { id: "medium", name: "Trung Bình" },
+  { id: "high", name: "Cao" },
 ];
 
 const stages = [
-  { id: "todo", name: "Todo" },
-  { id: "in_progress", name: "In progress" },
-  { id: "done", name: "Done" },
+  { id: "todo", name: "Cần Làm" },
+  { id: "in_progress", name: "Đang làm" },
+  { id: "done", name: "Hoàn thành" },
 ];
 
-export default function (congviec) {
-  // const { task } = props;
+export default function ({congviec}) {
+  console.log(congviec)
   return (
     <div className="w-full flex items-center  px-4">
       <div className="w-full flex py-2 border-b">
         <div className="flex-1 px-4 truncate ">{congviec.tenCongViec}</div>
-        {/* <div className="flex-1 px-4 ">
-          <Selection items={priorities} selectedItem={task.priority} />
-        </div> */}
+        <div className="flex-1 px-4 ">
+          <Selection items={priorities} selectedItem={congviec.mucDoUuTien} />
+        </div>
         <div className="flex-1 px-4 text-gray-400 flex items-center">
           <button
             className="hover:bg-gray-200 rounded-full px-2"
@@ -32,7 +32,7 @@ export default function (congviec) {
               alert("show calendar");
             }}
           >
-            {congviec.date ? (
+            {congviec.thoiGianKetThuc ? (
               formatDate(new Date(congviec.thoiGianKetThuc))
             ) : (
               <div className="p-1 w-fit border-2 border-dashed rounded-full border-gray-400">
@@ -55,9 +55,9 @@ export default function (congviec) {
           ))}
           <button onClick={()=>{alert("assign")}} className="rounded-full border-2 border-dashed size-fit p-1 ml-2 border-gray-400 text-gray-400"><BiPlus/></button>
         </div> */}
-        {/* <div className="flex-1 px-4 ">
-          <Selection items={stages} selectedItem={task.stage}/>
-        </div> */}
+        <div className="flex-1 px-4 ">
+          <Selection items={stages} selectedItem={congviec.trangThaiCongViec}/>
+        </div>
       </div>
     </div>
   );

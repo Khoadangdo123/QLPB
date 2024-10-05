@@ -26,7 +26,11 @@ const initialState = {
 const sectionSlice = createSlice({
   name: 'sections',
   initialState,
-  reducers: {},
+  reducers: {
+    setSections: (state, action) => {
+      state.list = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchSections.pending, (state) => {
@@ -47,12 +51,12 @@ const sectionSlice = createSlice({
         state.list.push(action.payload);
       })
       .addCase(updateSection.fulfilled, (state, action) => {
-        const index = state.list.findIndex((section) => section.id === action.payload.id);
+        const index = state.list.findIndex((section) => section.maPhanDuAn === action.payload.maPhanDuAn);
         if (index !== -1) {
           state.list[index] = action.payload;
         }
       });
   },
 });
-
+export const { setSections } = sectionSlice.actions;
 export default sectionSlice.reducer;

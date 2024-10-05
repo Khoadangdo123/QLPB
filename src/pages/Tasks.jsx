@@ -14,13 +14,12 @@ import Table from "../components/task/Table";
 import AddTask from "../components/task/AddTask";
 import ListView from "../components/task/ListView";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchByIdProject, fetchProjects } from "../redux/project/projectSlice";
-
+import { fetchByIdProject} from "../redux/project/projectSlice";
+import AddSection from "../components/section/AddSection";
 const TABS = [
   { title: "Chế độ Bảng", icon: <MdGridView /> },
   { title: "Chế độ Danh sách", icon: <FaList /> },  
 ];
-
 const TASK_TYPE = {
   todo: "bg-blue-600",
   "in progress": "bg-yellow-600",
@@ -35,11 +34,14 @@ const Tasks = () => {
   );
   useEffect(() => {
     if (id) {
-      dispath(fetchByIdProject(id));
+      dispath(fetchByIdProject(id))
     }
   }, [id, dispath]);
   if (!duan) {
     return <div>Loading...</div>;
+  }
+  if (!duan) {
+    return <div>Project not found</div>;
   }
   console.log(duan)
   console.log(typeof(id))
@@ -47,6 +49,7 @@ const Tasks = () => {
   const [selected, setSelected] = useState(0);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sections, setSections] = useState([]);
 
   const status = id?.status || ""; 
   return loading ? (
@@ -61,7 +64,7 @@ const Tasks = () => {
         {!status && (
           <Button
             onClick={() => setOpen(true)}
-            label='Tạo công việc'
+            label='Tạo phần dự án'
             icon={<IoMdAdd className='text-lg' />}
             className='flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 2xl:py-2.5'
           />
@@ -79,19 +82,15 @@ const Tasks = () => {
             <TaskTitle label='Hoàn thành' className={TASK_TYPE.completed} />
           </div>
         )} */}
-
         {selected !== 1 ? (
           <BoardView tasks={tasks} />
         ) : (
-          // <div className='w-full'>
-          //   <Table tasks={tasks} />
-          // </div>
-          <ListView phanDuAn={duan.phanDuAn}/>
+          <ListView phanDuAn={duan.phanDuAn} duAn={id}/>
         )}
       </Tabs>
 
-      <AddTask open={open} setOpen={setOpen} />
-
+      {/* <AddTask open={open} setOpen={setOpen} /> */}
+      <AddSection open={open} setOpen={setOpen} duAn={id}></AddSection>
     </div>
   );
 };

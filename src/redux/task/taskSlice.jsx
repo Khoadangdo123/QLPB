@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchTasks as fetchAPI, addTask as addAPI, updateTask as updateAPI } from './taskAPI';
+import { fetchTasks as fetchAPI, addTask as addAPI, updateTask as updateAPI,fetchByIdTask as fetchByIdAPI } from './taskAPI';
 
 export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async ({ search, page }) => {
   const response = await fetchAPI(search, page);
@@ -13,6 +13,10 @@ export const addTask = createAsyncThunk('tasks/addTask', async (task) => {
 
 export const updateTask = createAsyncThunk('tasks/updateTask', async ({ id, task }) => {
   const response = await updateAPI(id, task);
+  return response;
+});
+export const fetchByIdTask = createAsyncThunk('tasks/fetchByIdTask', async (id) => {
+  const response = await fetchByIdAPI(id);
   return response;
 });
 
@@ -51,7 +55,21 @@ const taskSlice = createSlice({
         if (index !== -1) {
           state.list[index] = action.payload;
         }
-      });
+      }).addCase(fetchByIdTask.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = 'succeeded';
+        const index = state.list.findIndex((task) => task.maCongViec === action.payload.maCongViec);
+        if (index === -1) {
+          state.list.push(action.payload);
+        } else {
+          state.list[index] = action.payload;
+        }
+      })
+      .addCase(fetchByIdTask.rejected, (state, action) => {
+        state.loading = false;
+        state.status = 'failed';
+        state.error = action.error.message;
+      });;
   },
 });
 
