@@ -11,7 +11,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 import { setOpenSidebar } from "../redux/slices/authSlice";
 import clsx from "clsx";
-import { fetchProjects } from "../redux/project/projectSlice";
+import { addProject, fetchProjects } from "../redux/project/projectSlice";
 const Sidebar = () => {
   const dispatch=useDispatch();
   const { user } = useSelector((state) => state.authen);
@@ -19,7 +19,6 @@ const Sidebar = () => {
   useEffect(()=>{
     dispatch(fetchProjects({ search: '', page: 1 }))
   },[dispatch])
-  console.log(duans)
   const taskSubMenu = duans.map((duan) => ({
     label: duan.tenDuAn,
     link: `/project/${duan.maDuAn}`,
@@ -88,8 +87,13 @@ const Sidebar = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [projectName, setProjectName] = useState("");
   const [error, setError] = useState(""); // State to track error
-
-  const handleProjectSubmit = (e) => {
+  useEffect(() => {
+    if (isModalOpen) {
+      const input = document.querySelector("input");
+      input?.focus();
+    }
+  }, [isModalOpen]);
+  const handleProjectSubmit =async (e) => {
     e.preventDefault();
 
     // Kiểm tra độ dài chuỗi
@@ -102,11 +106,17 @@ const Sidebar = () => {
       setError("Tên dự án không được để trống!"); 
       return;
     }
-
     setError("");
-    console.log("Dự án được tạo:", projectName);
-    setProjectName(""); // Reset ô input
-    setModalOpen(false); // Đóng modal
+    try{
+      await dispatch(addProject({
+        tenDuAn:projectName
+      }))
+      console.log("Dự án được tạo:", projectName);
+    setProjectName("");
+    setModalOpen(false);
+    }catch(e){
+      console.log(e)
+    }
   };
 
   // Component cho các đường dẫn trong Sidebar
@@ -183,7 +193,9 @@ const Sidebar = () => {
           <form onSubmit={handleProjectSubmit}>
             <input
               type="text"
+              onChange={(e)=>setProjectName(e.target.value)}
               placeholder="Tên dự án"
+              value={projectName}
               className={clsx(
                 "w-full p-2 border rounded mb-4 ",
                 error ? "border-red-500" : "border-gray-300"

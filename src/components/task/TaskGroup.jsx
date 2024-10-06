@@ -4,12 +4,13 @@ import { useState } from "react";
 import Button from "../Button";
 import { useParams } from "react-router-dom";
 import AddTask from "./AddTask";
-const TaskGroup=({phanduan})=>{
-  console.log(phanduan)
+const TaskGroup=({phanduan,duAn})=>{
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
+  const [taskRoot,setTaskRoot]=useState(false);
   const {id} = useParams();
   return (
+
     <div className="w-full bg-transparent border-b-1">
       <button
         onClick={() => {
@@ -33,7 +34,7 @@ const TaskGroup=({phanduan})=>{
           return <TaskListItem congviec={item} />;
         })}
       </div>
-      <AddTask open={open} setOpen={setOpen} />
+      <AddTask open={open} setOpen={setOpen} phanDuAn={phanduan.maPhanDuAn} duAn={duAn} congViecCha={taskRoot} />
     </div>
   );
 }

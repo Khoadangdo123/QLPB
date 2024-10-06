@@ -3,6 +3,10 @@ import { BGS, formatDate } from "../../utils";
 import Selection from "../Selection";
 import UserInfo from "../UserInfo";
 import clsx from "clsx";
+import Button from "../Button";
+import AddTask from "./AddTask";
+import { useState } from "react";
+import { IoMdAdd } from "react-icons/io";
 
 const priorities = [
   { id: "low", name: "Thấp" },
@@ -16,7 +20,9 @@ const stages = [
   { id: "done", name: "Hoàn thành" },
 ];
 
-export default function ({congviec}) {
+const TaskListItem=({congviec})=> {
+  const [open, setOpen] = useState(false);
+  const [taskRoot,setTaskRoot]=useState(false);
   console.log(congviec)
   return (
     <div className="w-full flex items-center  px-4">
@@ -58,7 +64,20 @@ export default function ({congviec}) {
         <div className="flex-1 px-4 ">
           <Selection items={stages} selectedItem={congviec.trangThaiCongViec}/>
         </div>
+        <div className="flex-1 px-4 flex justify-end">
+          <Button
+              onClick={() => {
+                setTaskRoot(congviec.maCongViec);
+                setOpen(true);
+              }}
+              label='Tạo Công Việc Con'
+              icon={<IoMdAdd className='text-lg' />}
+              className='flex flex-row-reverse gap-.5 items-center bg-blue-600 text-white rounded-md py-1 px-2 text-sm'
+            />
+        </div>
       </div>
+      <AddTask open={open} setOpen={setOpen} phanDuAn={congviec.maPhanDuAn} congViecCha={taskRoot} />
     </div>
   );
 }
+export default TaskListItem;

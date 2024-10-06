@@ -51,7 +51,7 @@ const taskSlice = createSlice({
         state.list.push(action.payload);
       })
       .addCase(updateTask.fulfilled, (state, action) => {
-        const index = state.list.findIndex((task) => task.id === action.payload.id);
+        const index = state.list.findIndex((task) => task.maCongViec === action.payload.maCongViec);
         if (index !== -1) {
           state.list[index] = action.payload;
         }

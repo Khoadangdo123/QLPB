@@ -6,8 +6,9 @@ import TaskGroup from "./TaskGroup";
 import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
 import { fetchSections } from "../../redux/section/sectionSlice";
-const ListView=({phanDuAn})=> {
+const ListView=({phanDuAn,duAn})=> {
   console.log(phanDuAn)
+  console.log(duAn)
   return (
     <div className="w-full bg-transparent">
       {/* <button className="p-2 bg-blue-500 text-white font-bold mb-4 rounded-md">
@@ -22,7 +23,7 @@ const ListView=({phanDuAn})=> {
           <div className="flex-1 border-l px-4 ">Giai Đoạn</div>
         </div>
         {phanDuAn.map((item) => {
-          return <TaskGroup phanduan={item}/>;
+          return <TaskGroup phanduan={item} duAn={duAn}/>;
           //console.log(item,1)
         })}
       </div>

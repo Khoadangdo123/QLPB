@@ -16,6 +16,7 @@ import ListView from "../components/task/ListView";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchByIdProject} from "../redux/project/projectSlice";
 import AddSection from "../components/section/AddSection";
+import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
 const TABS = [
   { title: "Chế độ Bảng", icon: <MdGridView /> },
   { title: "Chế độ Danh sách", icon: <FaList /> },  
@@ -28,15 +29,43 @@ const TASK_TYPE = {
 
 const Tasks = () => {
   const {id} = useParams();
-  const dispath=useDispatch()
+  const dispatch=useDispatch()
+  const [connection, setConnection] = useState(null);
   const duan=useSelector((state) =>
     state.projects.list.find((project) => project.maDuAn === Number(id))
   );
   useEffect(() => {
     if (id) {
-      dispath(fetchByIdProject(id))
+      dispatch(fetchByIdProject(id))
     }
-  }, [id, dispath]);
+  }, [id, dispatch]);
+  useEffect(()=>{
+    const newConnection = new HubConnectionBuilder()
+      .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
+      .configureLogging(LogLevel.Information)
+      .build();
+
+    setConnection(newConnection);
+  },[])
+  useEffect(() => {
+    if (connection && connection.state === "Disconnected") {
+      connection.start()
+        .then(() => {
+          console.log("Connected!");
+          connection.on("loadDuAn", () => {
+            if (id) {
+              dispatch(fetchByIdProject(id));
+            }
+          });
+          connection.on("loadCongViec", () => {
+            if (id) {
+              dispatch(fetchByIdProject(id));
+            }
+          });
+        })
+        .catch((error) => console.error("Connection failed: ", error));
+    }
+  }, [connection, id, dispatch]);
   if (!duan) {
     return <div>Loading...</div>;
   }
