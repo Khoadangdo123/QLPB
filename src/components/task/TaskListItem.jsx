@@ -27,7 +27,7 @@ export default function (props) {
         </div>
         <div className="flex-1 px-4 text-gray-400 flex items-center">
           <button
-            className="hover:bg-gray-200 rounded-full px-2"
+            className="hover:bg-gray-200 rounded-full"
             onClick={() => {
               alert("show calendar");
             }}

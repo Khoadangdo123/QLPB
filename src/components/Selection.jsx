@@ -11,7 +11,7 @@ export default function (props) {
     <select
       id="priority"
       value={selectedItem || "unset"}
-      className = {`rounded-full px-2 py-1 outline-none bg-transparent border-none font-bold ${mapColor?.get(selectedItem)}`}
+      className = {`rounded-full w-fit px-2 py-1 outline-none bg-transparent border-none font-bold ${mapColor?.get(selectedItem)}`}
     >
       <option className="bg-white text-black" value="unset">Unset</option>
       {items.map((priority) => {
