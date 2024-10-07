@@ -10,8 +10,11 @@ import Button from "../Button";
 import { useDispatch } from "react-redux";
 import { addTask } from "../../redux/task/taskSlice";
 import { fetchByIdProject } from "../../redux/project/projectSlice";
-
-const LISTS = ["Cao", "ĐANG LÀM", "HOÀN THÀNH"];
+import DepartmentSelect from "./DepartmentTask";
+import EmployeeSelect from "./EmployeeTask";
+import { addAssignment } from "../../redux/assignment/assignmentSlice";
+import { sendGmail } from "../../redux/sendgmail/sendgmailSlice";
+const LISTS = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const PRIORITY = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 
 const uploadedFileURLs = [];
@@ -25,7 +28,9 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
   } = useForm();
   const [team, setTeam] = useState(task?.team || []);
   const dispatch=useDispatch();
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
   const [stage, setStage] = useState(task?.stage?.toUpperCase() || LISTS[0]);
+  const [selectedDepartment, setSelectedDepartment] = useState([]);
   const [priority, setPriority] = useState(
     task?.priority?.toUpperCase() || PRIORITY[2]
   );
@@ -33,6 +38,7 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
   const [uploading, setUploading] = useState(false);
 
   const submitHandler =async (data) => {
+    console.log(congViecCha,duAn)
     let CongViec={
       maPhanDuAn: Number(phanDuAn),
       maCongViecCha: congViecCha===false?null:congViecCha,
@@ -43,10 +49,42 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
       trangThaiCongViec: false,
       mucDoHoanThanh: 0
     }
+    console.log(selectedDepartment)
+    console.log(selectedEmployees)
     try{
-      await dispatch(addTask(CongViec))
-      await dispatch(fetchByIdProject(Number(duAn)))
-      setOpen(false)
+      const result=await dispatch(addTask(CongViec)).unwrap();
+      if(selectedDepartment===null | selectedDepartment.length===0){
+        
+      }
+      if(selectedEmployees!==null | selectedEmployees.length>0){
+        // for (let employee of selectedEmployees) {
+        //   await dispatch(addAssignment({
+        //     maCongViec: result.maCongViec,
+        //     maNhanVien: Number(employee.maNhanVien),
+        //     vaiTro: employee.vaiTro,
+        //   }));
+        // }
+      }
+      // const assignmentPromises = selectedEmployees.map(employee => 
+      //   dispatch(addAssignment({
+      //     maCongViec: result.maCongViec,
+      //     maNhanVien: Number(employee.maNhanVien),
+      //     vaiTro: employee.vaiTro,
+      //   }))
+      // );
+      // await Promise.all(assignmentPromises);
+      // await dispatch(fetchByIdProject(Number(duAn)))
+      // setOpen(false)
+      // if(selectedEmployees!==null | selectedEmployees.length>0){
+      //   for (let employee of selectedEmployees) {
+      //     await dispatch(sendGmail({
+      //       name:employee.tenNhanVien,
+      //       toGmail:employee.email,
+      //       subject:"Thông Tin Phân Công Dự Án",
+      //       body:generateEmailTemplate(employee)
+      //     }));
+      //   }
+      // }
     }catch(e){
       console.log(e)
     }
@@ -59,6 +97,7 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
   return (
     <>
       <ModalWrapper open={open} setOpen={setOpen}>
+        <div className="max-h-screen overflow-y-auto">
         <form onSubmit={handleSubmit(submitHandler)}>
           <Dialog.Title
             as='h2'
@@ -87,8 +126,15 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
               error={errors.moTa ? errors.moTa.message : ""}
             />
 
-            <UserList setTeam={setTeam} team={team} />
-
+            {/* <UserList setTeam={setTeam} team={team} /> */}
+            <EmployeeSelect
+            selectedEmployees={selectedEmployees}
+            setSelectedEmployees={setSelectedEmployees}
+          />
+            <DepartmentSelect
+              selected={selectedDepartment}
+              setSelected={setSelectedDepartment}
+            />
             <div className='flex gap-4'>
               <SelectList
                 label='Mức Độ Ưu Tiên'
@@ -134,9 +180,43 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
             </div>
           </div>
         </form>
+        </div>
       </ModalWrapper>
     </>
   );
 };
-
+const generateEmailTemplate = (employee) => {
+  return `
+      <html>
+          <head>
+              <style>
+                  .email-container {
+                      font-family: Arial, sans-serif;
+                      line-height: 1.5;
+                  }
+                  .email-header {
+                      font-size: 18px;
+                      font-weight: bold;
+                      color: #333;
+                  }
+                  .email-body {
+                      margin-top: 20px;
+                      color: #555;
+                  }
+              </style>
+          </head>
+          <body>
+              <div class="email-container">
+                  <div class="email-header">Xin chào ${employee.tenNhanVien},</div>
+                  <div class="email-body">
+                      <p>Bạn đã được chọn để tham gia dự án với vai trò: ${employee.vaiTro}</p>
+                      <p>Vui lòng kiểm tra lại chi tiết trong hệ thống quản lý công việc của chúng tôi.</p>
+                      <p>Trân trọng,</p>
+                      <p>Đội ngũ quản lý dự án</p>
+                  </div>
+              </div>
+          </body>
+      </html>
+  `;
+};
 export default AddTask;

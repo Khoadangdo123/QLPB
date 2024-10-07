@@ -72,15 +72,11 @@ const Tasks = () => {
   if (!duan) {
     return <div>Project not found</div>;
   }
-  console.log(duan)
-  console.log(typeof(id))
-  console.log(duan.phanDuAn)
   const [selected, setSelected] = useState(0);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sections, setSections] = useState([]);
-
-  const status = id?.status || ""; 
+  const status = id || ""; 
   return loading ? (
     <div className='py-10'>
       <Loading />
@@ -90,7 +86,7 @@ const Tasks = () => {
       <div className='flex items-center justify-between mb-4'>
         <Title title={status ? `Trạng thái công việc` : "Các công việc"} />
 
-        {!status && (
+        {status && (
           <Button
             onClick={() => setOpen(true)}
             label='Tạo phần dự án'

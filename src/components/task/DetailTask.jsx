@@ -1,10 +1,11 @@
 // DetailTask.jsx
 import React, { useEffect, useState } from 'react';
-const comments = [
-	{ user: 'vantai', message: 'Hello', date: '13 days ago' },
-	{ user: 'tai van', message: 'Hello', date: '8 days ago' },
-	{ user: 'tai van', message: 'Hello', date: '7 days ago' }
-  ];
+import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
+// const comments = [
+// 	{ user: 'vantai', message: 'Hello', date: '13 days ago' },
+// 	{ user: 'tai van', message: 'Hello', date: '8 days ago' },
+// 	{ user: 'tai van', message: 'Hello', date: '7 days ago' }
+//   ];
 const DetailTask = ({ 
 	expanded, 
 	setExpanded, 
@@ -15,6 +16,53 @@ const DetailTask = ({
 	userTeam,
 	roleTeam
 }) => {
+	const maCongViec=task.maCongViec+"";
+	const [connection, setConnection] = useState(null);
+	const [messages, setMessages] = useState([]);
+	const [newComment, setNewComment] = useState("");
+	useEffect(()=>{
+		const newConnection = new HubConnectionBuilder()
+		  .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
+		  .configureLogging(LogLevel.Information)
+		  .build();
+		  newConnection.invoke("ThamGiaNhom", {maCongViec });
+		setConnection(newConnection);
+	  },[])
+	  useEffect(() => {
+		if (connection) {
+			connection.start()
+				.then(() => {
+					console.log("Connected!");
+	
+					// Tham gia nhóm
+					connection.invoke("ThamGiaNhom", maCongViec)
+						.then(() => {
+							console.log(`Joined group: ${maCongViec}`);
+						})
+						.catch(err => console.error("Error joining group: ", err));
+	
+					connection.on("ReceiveMessage", (user, message, date) => {
+						const newMessage = { user, message, date };
+						setMessages((prevMessages) => [...prevMessages, newMessage]);
+					});
+				})
+				.catch(err => console.error("Connection failed: ", err));
+		}
+	
+		return () => {
+			if (connection) {
+				connection.stop();
+			}
+		};
+	}, [connection, maCongViec]);
+	const handleSendComment = () => {
+		if (newComment.trim() === "") return;
+		connection.invoke("TraoDoiThongTin", maCongViec,localStorage.getItem('name'),newComment)
+			.then(() => {
+				setNewComment(""); 
+			})
+			.catch(err => console.error("Error sending message: ", err));
+	};
 
   return (
 		<>
@@ -47,9 +95,9 @@ const DetailTask = ({
 				<div className="mb-4 px-6 flex justify-between items-center">
 					<div className="flex items-center">
 						<div className="rounded-full h-10 w-10 bg-purple-600 flex items-center justify-center text-xl text-white">
-							{roleTeam[0]?.name?.slice(0,2)}
+							{roleTeam[0]?.nhanVien?.tenNhanVien.slice(0,2)}
 						</div>
-						<span className="ml-3 text-gray-700">{roleTeam[0]?.email}</span>
+						<span className="ml-3 text-gray-700">{roleTeam[0]?.nhanVien?.email}</span>
 					</div>
 					<div className="flex items-center">
 						<span className="text-red-600 mr-3 text-sm">{date}</span>
@@ -60,14 +108,14 @@ const DetailTask = ({
 				</div>
 
 				{/* Project Section */}
-				<div className="mb-4 px-6">
+				{/* <div className="mb-4 px-6">
 					<div className="flex items-center">
 						<span className="bg-pink-600 text-white px-3 py-1 rounded-full text-sm">
 							.NET
 						</span>
 						<span className="ml-3 text-gray-600">Untitled section</span>
 					</div>
-				</div>
+				</div> */}
 
 				{/* Dependencies */}
 				<div className="mb-4 px-6">
@@ -76,7 +124,6 @@ const DetailTask = ({
 						Add dependencies
 					</button>
 				</div>
-
 				{/* Description */}
 				<div className="mb-6 px-6">
 					<p className="text-gray-700 font-medium">Description</p>
@@ -84,6 +131,7 @@ const DetailTask = ({
 						className="w-full bg-gray-50 p-3 mt-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
 						placeholder="What is this task about?"
 						rows="3"
+						value={task.moTa}
 					></textarea>
 				</div>
 
@@ -93,7 +141,7 @@ const DetailTask = ({
 						className="bg-gray-50 p-4 rounded border border-gray-200"
 						style={{ maxHeight: '150px', overflowY: 'auto' }} // Thanh trượt
 					>
-						{comments.map((comment, index) => (
+						{messages.map((comment, index) => (
 							<div key={index} className="mb-2">
 								<div className="flex items-center justify-between">
 									<div className="flex items-center">
@@ -110,15 +158,20 @@ const DetailTask = ({
 					</div>
 				</div>
 				<div className="mb-4 px-6">
-					<div className="flex items-center">
-						<input
-							className="w-full bg-gray-50 p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-							placeholder="Add a comment"
-						/>
-						<button className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-full ml-3 focus:outline-none">
-							Send
-						</button>
-					</div>
+				<div className="flex items-center">
+					<input
+						value={newComment}
+						onChange={(e) => setNewComment(e.target.value)}
+						className="w-full bg-gray-50 p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+						placeholder="Add a comment"
+					/>
+					<button
+						className="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-full ml-3 focus:outline-none"
+						onClick={handleSendComment}
+					>
+						Send
+					</button>
+				</div>
 				</div>
 
 				{/* Collaborators Section */}
@@ -128,11 +181,11 @@ const DetailTask = ({
 							<span className="text-gray-700 font-medium">Collaborators:</span>
 							<div className="flex -space-x-2 ml-3">
 								{
-									userTeam?.team?.map((m, index) => {
+									userTeam.map((m, index) => {
 										return (
 											<>
 												<div className="rounded-full h-8 w-8 bg-purple-500 flex items-center justify-center text-xs text-white">
-													{m.name.slice(0,2)}
+													{m.nhanVien?.tenNhanVien.slice(0,2)}
 												</div>
 											</>
 										)
@@ -165,7 +218,6 @@ const DetailTask = ({
 						</button>
 					</div>
 				</div>
-
 				{/* Footer Actions */}
 				<div className="px-6 pb-6 flex justify-between items-center">
 					<button

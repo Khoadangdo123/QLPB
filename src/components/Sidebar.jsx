@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   MdDashboard,
   MdOutlineAddTask,
@@ -12,13 +12,35 @@ import { Link, useLocation } from "react-router-dom";
 import { setOpenSidebar } from "../redux/slices/authSlice";
 import clsx from "clsx";
 import { addProject, fetchProjects } from "../redux/project/projectSlice";
+import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
 const Sidebar = () => {
   const dispatch=useDispatch();
+  const [connection, setConnection] = useState(null);
   const { user } = useSelector((state) => state.authen);
   const duans=useSelector((state)=>state.projects.list)
   useEffect(()=>{
     dispatch(fetchProjects({ search: '', page: 1 }))
   },[dispatch])
+  useEffect(()=>{
+    const newConnection = new HubConnectionBuilder()
+      .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
+      .configureLogging(LogLevel.Information)
+      .build();
+
+    setConnection(newConnection);
+  },[])
+  useEffect(() => {
+    if (connection && connection.state === "Disconnected") {
+      connection.start()
+        .then(() => {
+          console.log("Connected!");
+          connection.on("loadDuAn", () => {
+            dispatch(fetchProjects({ search: '', page: 1 }))
+          });
+        })
+        .catch((error) => console.error("Connection failed: ", error));
+    }
+  }, [connection,dispatch]);
   const taskSubMenu = duans.map((duan) => ({
     label: duan.tenDuAn,
     link: `/project/${duan.maDuAn}`,
@@ -185,6 +207,13 @@ const Sidebar = () => {
 
   // Modal component để nhập tên dự án
   const Modal = ({ isOpen, onClose }) => {
+    const inputRef = useRef(null); // Tạo ref cho input
+
+     useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus(); // Focus vào input khi modal mở
+    }
+  }, [isOpen]); // Chỉ chạy khi modal mở
     if (!isOpen) return null;
     return (
       <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
@@ -193,6 +222,7 @@ const Sidebar = () => {
           <form onSubmit={handleProjectSubmit}>
             <input
               type="text"
+              ref={inputRef}
               onChange={(e)=>setProjectName(e.target.value)}
               placeholder="Tên dự án"
               value={projectName}
@@ -207,9 +237,9 @@ const Sidebar = () => {
               <button
                 type="button"
                 onClick={() => {
-                  setProjectName(""); // Reset lại trường dữ liệu
-                  setError(""); // Xóa lỗi nếu có
-                  onClose(); // Đóng modal
+                  setProjectName("");
+                  setError("");
+                  onClose();
                 }}
                 className="mr-2 px-4 py-2 bg-gray-300 rounded hover:bg-gray-400"
               >

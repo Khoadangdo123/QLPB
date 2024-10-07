@@ -30,7 +30,9 @@ const TaskCard = ({ task }) => {
   const searchByTitle = (title, users) => {
     return users.filter((user) => user.title === title);
   };
-
+  const toggleExpanded = () => {
+    setExpanded(prev => !prev); // Đảo ngược giá trị của expanded
+  };
 
   return (
     <>
@@ -41,7 +43,8 @@ const TaskCard = ({ task }) => {
         >
           <div 
             className='w-full flex justify-between'
-            onClick={() => setExpanded(true)}
+            //onClick={() => setExpanded(true)}
+            onClick={toggleExpanded} //
           >
             <div
               className={clsx(
@@ -141,15 +144,17 @@ const TaskCard = ({ task }) => {
         </div>
       </div>
       <AddSubTask open={open} setOpen={setOpen} id={task._id} />
-      <DetailTask 
-        expanded={expanded} 
-        setExpanded={setExpanded} 
-        task={task._id} 
-        titleTask={task.title}
-        date={formatDate(new Date(task?.date))}
-        roleTeam={searchByTitle("Administrator", task.team)}
-        userTeam={task}
-      />
+      {expanded && (
+        <DetailTask 
+          expanded={expanded} 
+          setExpanded={setExpanded} 
+          task={task._id} 
+          titleTask={task.title}
+          date={formatDate(new Date(task?.date))}
+          roleTeam={searchByTitle("Administrator", task.team)}
+          userTeam={task}
+        />
+      )}
     </>
   );
 };

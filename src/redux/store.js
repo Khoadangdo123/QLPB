@@ -9,7 +9,8 @@ import permissionReducer from "./permission/permissionSlice"
 import authenReducer from "./authen/authenSlice"
 import projectReducer from "./project/projectSlice"
 import sectionReducer from "./section/sectionSlice"
-import taskRecuder from "./task/taskSlice"
+import taskReduder from "./task/taskSlice"
+import sendGmailReducer from "./sendgmail/sendgmailSlice"
 const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
@@ -22,7 +23,9 @@ const store = configureStore({
     projects:projectReducer,
     authen:authenReducer,
     sections:sectionReducer,
-    tasks:taskRecuder
+    tasks:taskReduder,
+    sendGmail:sendGmailReducer
+
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware),
