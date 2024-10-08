@@ -18,6 +18,8 @@ import { setOpenSidebar } from "./redux/slices/authSlice";
 import Employees from "./pages/Employee";
 import Accounts from "./pages/Account";
 import * as signalR from '@microsoft/signalr';
+import RolePermission from "./pages/Permission";
+import TaskAssignment from "./pages/TaskAssignment";
 function Layout() {
   const authUser = useSelector((state) => state.authen);
   console.log(authUser)
@@ -113,10 +115,11 @@ function App() {
           <Route path='/department' element={<Departments/>} />
           <Route path='/employee' element={<Employees/>} />
           <Route path='/account' element={<Accounts/>} />
+          <Route path='/permission' element={<RolePermission/>} />
           <Route path='/trashed' element={<Trash />} />
+          <Route path='/taskassignment' element={<TaskAssignment/>} />
           <Route path='/task/:id' element={<TaskDetails />} />
         </Route>
-
         <Route path='/log-in' element={<Login />} />
       </Routes>
 

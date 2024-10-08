@@ -9,9 +9,6 @@ import { fetchSections } from "../../redux/section/sectionSlice";
 const ListView=({phanDuAn,duAn})=> {
   return (
     <div className="w-full bg-transparent">
-      {/* <button className="p-2 bg-blue-500 text-white font-bold mb-4 rounded-md">
-        add task
-      </button> */}
       <div className="text-lg bg-transparent">
         <div className="w-full flex border-y-2 py-2 px-4 font-bold -mb-2 bg-white shadow-sm text-sm">
           <div className="flex-1 w-1/4 px-4 ">Công Việc</div>

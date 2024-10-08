@@ -69,7 +69,7 @@ const taskSlice = createSlice({
         state.loading = false;
         state.status = 'failed';
         state.error = action.error.message;
-      });;
+      });
   },
 });
 

@@ -41,7 +41,13 @@ const TaskListItem=({congviec,duAn})=> {
     setExpanded(!expanded);
   };
   const chiuTrachNhiem = phancong?.phanCongs?.filter(m => m.vaiTro === "Người Chịu Trách Nhiệm");
+  console.log(chiuTrachNhiem)
   const thucHien = phancong?.phanCongs?.filter(m => m.vaiTro === "Người Thực Hiện");
+  //
+  const completedTasks = thucHien?.filter(task => task.trangThai === 'done').length || 0;
+  const totalTasks = thucHien?.length || 1;
+  const completionPercent = (completedTasks / totalTasks) * 100;
+  //
   const handleAddSubTask = (newSubTask) => {
     setSubTasks([...subTasks, newSubTask]);
     setOpen(false);
@@ -54,6 +60,16 @@ const TaskListItem=({congviec,duAn})=> {
           ) : (
             <span>{congviec.tenCongViec}</span>
           )}</div>
+           <div className="flex-1 px-4">
+          <div className="w-full bg-gray-200 rounded-full h-4">
+            <div
+              className="bg-blue-600 h-4 rounded-full"
+              style={{ width: `${completionPercent}%` }}
+            ></div>
+          </div>
+          <span className="text-xs text-gray-500">{completionPercent.toFixed(2)}% Hoàn thành</span>
+        </div>
+
         <div className="flex-1 w-1/5 px-4 ">
           {/* <Selection items={priorities} selectedItem={congviec.mucDoUuTien} /> */}
           <span>{congviec.mucDoUuTien}</span>

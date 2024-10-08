@@ -14,8 +14,8 @@ export default function (props) {
       className = {`rounded-full px-2 py-1 outline-none bg-transparent border-none font-bold ${mapColor?.get(selectedItem)}`}
     >
       <option className="bg-white text-black" value="unset">Unset</option>
-      {items.map((priority) => {
-        return <option className="bg-white text-black" value={priority.id}>{priority.name}</option>;
+      {items.map((priority,index) => {
+        return <option className="bg-white text-black" value={priority.id} key={index}>{priority.name}</option>;
       })}
     </select>
   );

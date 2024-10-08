@@ -13,6 +13,7 @@ import { setOpenSidebar } from "../redux/slices/authSlice";
 import clsx from "clsx";
 import { addProject, fetchProjects } from "../redux/project/projectSlice";
 import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
+import RolePermission from "../pages/Permission";
 const Sidebar = () => {
   const dispatch=useDispatch();
   const [connection, setConnection] = useState(null);
@@ -57,6 +58,16 @@ const Sidebar = () => {
       //link: "/tasks",
       icon: <FaTasks />,
       subMenu: taskSubMenu,
+    },
+    {
+      label: "Phân Quyền",
+      link: "/permission",
+      icon: <FaTasks />,
+    },
+    {
+      label: "Công Việc",
+      link: "/taskassignment",
+      icon: <FaTasks />,
     },
     {
       label: "Đã Hoàn Thành",

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchAssignments as fetchAPI, addAssignment as addAPI, updateAssignment as updateAPI, deleteAssignment as deleteAPI } from './assignmentAPI';
+import { fetchAssignments as fetchAPI, addAssignment as addAPI, updateAssignment as updateAPI, deleteAssignment as deleteAPI,fetchEmployeeAssignment as fetchEmployeeAssignmentAPI} from './assignmentAPI';
 
 export const fetchAssignments = createAsyncThunk('assignments/fetchAssignments', async ({ search, page }) => {
   const response = await fetchAPI(search, page);
@@ -20,6 +20,10 @@ export const deleteAssignment = createAsyncThunk('assignments/deleteAssignment',
   const response = await deleteAPI(id);
   return response;
 });
+export const fetchEmployeeAssignment=createAsyncThunk('assignments/employeeAssignment', async (id) => {
+  const response = await fetchEmployeeAssignmentAPI(id);
+  return response;
+})
 
 const initialState = {
   list: [],
@@ -42,14 +46,24 @@ const assignmentSlice = createSlice({
         state.loading = false;
         state.status = 'succeeded';
         state.list = action.payload;
-      })
+      }).addCase(fetchEmployeeAssignment.pending, (state) => {
+        state.loading = true;
+        state.status = 'loading';
+    })
+    .addCase(fetchEmployeeAssignment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = 'succeeded';
+        state.list = action.payload;
+    })
+    .addCase(fetchEmployeeAssignment.rejected, (state, action) => {
+        state.loading = false;
+        state.status = 'failed';
+        state.error = action.error.message;
+    })
       .addCase(fetchAssignments.rejected, (state, action) => {
         state.loading = false;
         state.status = 'failed';
         state.error = action.error.message;
-      })
-      .addCase(addAssignment.fulfilled, (state, action) => {
-        state.list.push(action.payload);
       })
       .addCase(updateAssignment.fulfilled, (state, action) => {
         const index = state.list.findIndex((assignment) => assignment.id === action.payload.id);

@@ -11,10 +11,12 @@ import projectReducer from "./project/projectSlice"
 import sectionReducer from "./section/sectionSlice"
 import taskReduder from "./task/taskSlice"
 import sendGmailReducer from "./sendgmail/sendgmailSlice"
+import assignmentReducer from "./assignment/assignmentSlice"
 const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
     auth: authReducer,
+    assignments:assignmentReducer,
     departments:departmetReducer,
     employees:employeeReducer,
     accounts:accountReducer,

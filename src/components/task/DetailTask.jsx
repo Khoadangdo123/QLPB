@@ -17,51 +17,46 @@ const DetailTask = ({
 	roleTeam
 }) => {
 	const maCongViec=task.maCongViec+"";
+	console.log(task)
 	const [connection, setConnection] = useState(null);
 	const [messages, setMessages] = useState([]);
 	const [newComment, setNewComment] = useState("");
-	useEffect(()=>{
+	useEffect(() => {
 		const newConnection = new HubConnectionBuilder()
-		  .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
-		  .configureLogging(LogLevel.Information)
-		  .build();
-		  newConnection.invoke("ThamGiaNhom", {maCongViec });
-		setConnection(newConnection);
-	  },[])
-	  useEffect(() => {
-		if (connection) {
-			connection.start()
-				.then(() => {
-					console.log("Connected!");
+			.withUrl("https://localhost:7131/hub")
+			.withAutomaticReconnect()
+			.configureLogging(LogLevel.Information)
+			.build();
+		newConnection
+			.start()
+			.then(() => {
+				console.log("Connected!");
+				setConnection(newConnection);
 	
-					// Tham gia nhóm
-					connection.invoke("ThamGiaNhom", maCongViec)
-						.then(() => {
-							console.log(`Joined group: ${maCongViec}`);
-						})
-						.catch(err => console.error("Error joining group: ", err));
-	
-					connection.on("ReceiveMessage", (user, message, date) => {
-						const newMessage = { user, message, date };
-						setMessages((prevMessages) => [...prevMessages, newMessage]);
-					});
-				})
-				.catch(err => console.error("Connection failed: ", err));
-		}
-	
-		return () => {
-			if (connection) {
-				connection.stop();
-			}
-		};
-	}, [connection, maCongViec]);
+				// Tham gia nhóm
+				newConnection.invoke("ThamGiaNhom", maCongViec)
+					.then(() => {
+						console.log(`Joined group: ${maCongViec}`);
+					})
+					.catch(err => console.error("Error joining group: ", err));
+				newConnection.on("ReceiveMessage", (user, message) => {
+					const newMessage = { user, message };
+					setMessages(prevMessages => [...prevMessages, newMessage]);
+				});
+			})
+			.catch(err => console.error("Connection failed: ", err));
+	}, [maCongViec]);
 	const handleSendComment = () => {
 		if (newComment.trim() === "") return;
-		connection.invoke("TraoDoiThongTin", maCongViec,localStorage.getItem('name'),newComment)
-			.then(() => {
-				setNewComment(""); 
-			})
-			.catch(err => console.error("Error sending message: ", err));
+		if (connection && connection.state === 'Connected') {
+            connection.invoke("TraoDoiThongTin", maCongViec, localStorage.getItem('name'), newComment)
+                .then(() => {
+                    setNewComment("");
+                })
+                .catch(err => console.error("Error sending message: ", err));
+        } else {
+            console.error("Connection is not established.");
+        }
 	};
 
   return (
@@ -93,19 +88,19 @@ const DetailTask = ({
 
 				{/* Assignee and Due Date */}
 				<div className="mb-4 px-6 flex justify-between items-center">
-					<div className="flex items-center">
-						<div className="rounded-full h-10 w-10 bg-purple-600 flex items-center justify-center text-xl text-white">
-							{roleTeam[0]?.nhanVien?.tenNhanVien.slice(0,2)}
+				<div className="flex items-center">
+					{roleTeam.map((member, index) => (
+						<div key={index} className="rounded-full h-10 w-10 bg-purple-600 flex items-center justify-center text-xl text-white mr-2">
+							{member.nhanVien?.tenNhanVien.slice(0, 2)}
 						</div>
-						<span className="ml-3 text-gray-700">{roleTeam[0]?.nhanVien?.email}</span>
-					</div>
-					<div className="flex items-center">
-						<span className="text-red-600 mr-3 text-sm">{date}</span>
-						<span className="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-xs">
-							Limited access
-						</span>
-					</div>
+					))}
+					<span className="ml-3 text-gray-700">{roleTeam[0]?.nhanVien?.email}</span>
 				</div>
+				<div className="flex items-center">
+					<span className="text-red-600 mr-3 text-sm">{date}</span>
+					<span className="bg-yellow-400 text-gray-900 px-3 py-1 rounded-full text-xs">Limited access</span>
+				</div>
+			</div>
 
 				{/* Project Section */}
 				{/* <div className="mb-4 px-6">
@@ -150,7 +145,7 @@ const DetailTask = ({
 										</div>
 										<span className="ml-3 text-gray-700">{comment.user}</span>
 									</div>
-									<span className="text-sm text-gray-500">{comment.date}</span>
+									{/* <span className="text-sm text-gray-500">{comment.date}</span> */}
 								</div>
 								<p className="ml-11 text-gray-600">{comment.message}</p>
 							</div>

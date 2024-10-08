@@ -14,6 +14,7 @@ import DepartmentSelect from "./DepartmentTask";
 import EmployeeSelect from "./EmployeeTask";
 import { addAssignment } from "../../redux/assignment/assignmentSlice";
 import { sendGmail } from "../../redux/sendgmail/sendgmailSlice";
+import { addWorkDepartment } from "../../redux/workdepartment/workdepartmentSlice";
 const LISTS = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const PRIORITY = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 
@@ -50,41 +51,58 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
       mucDoHoanThanh: 0
     }
     console.log(selectedDepartment)
-    console.log(selectedEmployees)
     try{
       const result=await dispatch(addTask(CongViec)).unwrap();
-      if(selectedDepartment===null | selectedDepartment.length===0){
-        
+      if (Array.isArray(selectedDepartment) && selectedDepartment.length > 0) {
+        const departmentPromises = selectedDepartment.map(async (department) => {
+          await dispatch(addWorkDepartment({
+            maCongViec: result.maCongViec,
+            maPhongBan: Number(department.maPhongBan)
+          }));
+  
+          await dispatch(addAssignment({
+            maCongViec: result.maCongViec,
+            maNhanVien: Number(department.maTruongPhong),
+            vaiTro: "Người Chịu Trách Nhiệm"
+          }));
+          await dispatch(sendGmail({
+            name: department.responsiblePerson,
+            toGmail: department.email,
+            subject: "Thông Tin Phân Công Dự Án",
+            body: generateEmailTemplateForManager(department)
+          }));
+          
+        });
+        await Promise.all(departmentPromises);
       }
+      if (Array.isArray(selectedEmployees) && selectedEmployees.length > 0) {
+        const employeePromises = selectedEmployees.map(async (employee) => {
+          await dispatch(addAssignment({
+            maCongViec: result.maCongViec,
+            maNhanVien: Number(employee.maNhanVien),
+            vaiTro: employee.vaiTro,
+          }));
+          await dispatch(sendGmail({
+            name: employee.tenNhanVien,
+            toGmail: employee.email,
+            subject: "Thông Tin Phân Công Dự Án",
+            body: generateEmailTemplate(employee)
+          }));
+        });
+        await Promise.all(employeePromises);
+      }
+      await dispatch(fetchByIdProject(Number(duAn)))
+      setOpen(false)
       if(selectedEmployees!==null | selectedEmployees.length>0){
-        // for (let employee of selectedEmployees) {
-        //   await dispatch(addAssignment({
-        //     maCongViec: result.maCongViec,
-        //     maNhanVien: Number(employee.maNhanVien),
-        //     vaiTro: employee.vaiTro,
-        //   }));
-        // }
+        for (let employee of selectedEmployees) {
+          await dispatch(sendGmail({
+            name:employee.tenNhanVien,
+            toGmail:employee.email,
+            subject:"Thông Tin Phân Công Dự Án",
+            body:generateEmailTemplate(employee)
+          }));
+        }
       }
-      // const assignmentPromises = selectedEmployees.map(employee => 
-      //   dispatch(addAssignment({
-      //     maCongViec: result.maCongViec,
-      //     maNhanVien: Number(employee.maNhanVien),
-      //     vaiTro: employee.vaiTro,
-      //   }))
-      // );
-      // await Promise.all(assignmentPromises);
-      // await dispatch(fetchByIdProject(Number(duAn)))
-      // setOpen(false)
-      // if(selectedEmployees!==null | selectedEmployees.length>0){
-      //   for (let employee of selectedEmployees) {
-      //     await dispatch(sendGmail({
-      //       name:employee.tenNhanVien,
-      //       toGmail:employee.email,
-      //       subject:"Thông Tin Phân Công Dự Án",
-      //       body:generateEmailTemplate(employee)
-      //     }));
-      //   }
-      // }
     }catch(e){
       console.log(e)
     }
@@ -217,6 +235,40 @@ const generateEmailTemplate = (employee) => {
               </div>
           </body>
       </html>
+  `;
+};
+const generateEmailTemplateForManager = (department) => {
+  return `
+    <html>
+        <head>
+            <style>
+                .email-container {
+                    font-family: Arial, sans-serif;
+                    line-height: 1.5;
+                }
+                .email-header {
+                    font-size: 18px;
+                    font-weight: bold;
+                    color: #333;
+                }
+                .email-body {
+                    margin-top: 20px;
+                    color: #555;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="email-container">
+                <div class="email-header">Xin chào ${department.responsiblePerson},</div>
+                <div class="email-body">
+                    <p>Bạn đã được giao nhiệm vụ quản lý công việc trong dự án với mã công việc: ${department.maCongViec}</p>
+                    <p>Vui lòng kiểm tra lại chi tiết trong hệ thống quản lý công việc của chúng tôi.</p>
+                    <p>Trân trọng,</p>
+                    <p>Đội ngũ quản lý dự án</p>
+                </div>
+            </div>
+        </body>
+    </html>
   `;
 };
 export default AddTask;

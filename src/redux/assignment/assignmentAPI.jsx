@@ -6,6 +6,10 @@ export const fetchAssignments = async (search = '', page = 1) => {
     const response = await axios.get(API_ENDPOINTS.PHANCONG + `?search=${search}&page=${page}`);
     return response.data;
 };
+export const fetchEmployeeAssignment = async (id) => {
+    const response = await axios.get(API_ENDPOINTS.PHANCONG + `/GetPhanCongNhanVien?maNhanVien=${id}`);
+    return response.data;
+};
 
 // Add a new assignment
 export const addAssignment = async (assignment) => {

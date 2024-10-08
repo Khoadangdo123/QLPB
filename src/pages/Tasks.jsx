@@ -30,6 +30,10 @@ const TASK_TYPE = {
 const Tasks = () => {
   const {id} = useParams();
   const dispatch=useDispatch()
+  const [selected, setSelected] = useState(0);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [sections, setSections] = useState([]);
   const [connection, setConnection] = useState(null);
   const duan=useSelector((state) =>
     state.projects.list.find((project) => project.maDuAn === Number(id))
@@ -66,16 +70,6 @@ const Tasks = () => {
         .catch((error) => console.error("Connection failed: ", error));
     }
   }, [connection, id, dispatch]);
-  if (!duan) {
-    return <div>Loading...</div>;
-  }
-  if (!duan) {
-    return <div>Project not found</div>;
-  }
-  const [selected, setSelected] = useState(0);
-  const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [sections, setSections] = useState([]);
   const status = id || ""; 
   return loading ? (
     <div className='py-10'>
