@@ -11,10 +11,10 @@ const TaskAssignmentList = ({congviec}) => {
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
     const [expanded, setExpanded] = useState(false);
-    const [completed, setCompleted] = useState();
+    const [completed, setCompleted] = useState(congviec.trangThaiCongViec);
     const dispatch=useDispatch();
     const maCongViec=congviec.maCongViec
-    console.log(maCongViec)
+    console.log(congviec)
     const phancong=useSelector((state) =>
         state.tasks.list.find((task) => task.maCongViec === maCongViec)
     );
@@ -38,14 +38,15 @@ const TaskAssignmentList = ({congviec}) => {
     if (loading) {
         return <p>Loading...</p>;
     }
-    console.log(phancong)
     const handleToggleDetail = () => {
         setExpanded(!expanded);
     };
+    console.log(phancong)
     const handleCheckboxChange = async (event) => {
         const isConfirmed = window.confirm("Bạn có chắc chắn muốn đánh dấu công việc đã hoàn thành?");
         if (isConfirmed) {
             setCompleted(event.target.checked);
+            console.log(completed)
         } else {
             event.target.checked = !event.target.checked;
         }

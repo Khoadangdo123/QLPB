@@ -65,6 +65,7 @@ const Tasks = () => {
             if (id) {
               dispatch(fetchByIdProject(id));
             }
+            alert("Hello")
           });
         })
         .catch((error) => console.error("Connection failed: ", error));

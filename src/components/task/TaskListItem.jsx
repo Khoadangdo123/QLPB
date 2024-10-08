@@ -40,17 +40,25 @@ const TaskListItem=({congviec,duAn})=> {
   const handleToggleDetail = () => {
     setExpanded(!expanded);
   };
+  console.log(phancong)
   const chiuTrachNhiem = phancong?.phanCongs?.filter(m => m.vaiTro === "Người Chịu Trách Nhiệm");
-  console.log(chiuTrachNhiem)
   const thucHien = phancong?.phanCongs?.filter(m => m.vaiTro === "Người Thực Hiện");
-  //
-  const completedTasks = thucHien?.filter(task => task.trangThai === 'done').length || 0;
-  const totalTasks = thucHien?.length || 1;
-  const completionPercent = (completedTasks / totalTasks) * 100;
+  const congViecHoanThanh = phancong?.phanCongs.filter(task => task.trangThaiCongViec === true).length || 0;
+  const tongCongViec = phancong?.phanCongs?.length || 1;
+  const completionPercent = (congViecHoanThanh / tongCongViec) * 100;
   //
   const handleAddSubTask = (newSubTask) => {
     setSubTasks([...subTasks, newSubTask]);
     setOpen(false);
+  };
+  const getCompletionColor = (percent) => {
+    if (percent < 50) {
+      return "bg-red-600";
+    } else if (percent >= 50 && percent < 80) {
+      return "bg-yellow-500";
+    } else {
+      return "bg-green-500";
+    }
   };
   return (
     <div className="w-full flex items-center  px-4">
@@ -60,18 +68,17 @@ const TaskListItem=({congviec,duAn})=> {
           ) : (
             <span>{congviec.tenCongViec}</span>
           )}</div>
-           <div className="flex-1 px-4">
-          <div className="w-full bg-gray-200 rounded-full h-4">
-            <div
-              className="bg-blue-600 h-4 rounded-full"
-              style={{ width: `${completionPercent}%` }}
-            ></div>
-          </div>
-          <span className="text-xs text-gray-500">{completionPercent.toFixed(2)}% Hoàn thành</span>
+          <div className="flex-1 px-4">
+        <div className="w-full bg-gray-200 rounded-full h-4">
+          <div
+            className={`${getCompletionColor(completionPercent)} h-4 rounded-full`}
+            style={{ width: `${completionPercent}%` }}
+          ></div>
         </div>
+        <span className="text-xs text-gray-500">{completionPercent.toFixed(2)}% Hoàn thành</span>
+      </div>
 
         <div className="flex-1 w-1/5 px-4 ">
-          {/* <Selection items={priorities} selectedItem={congviec.mucDoUuTien} /> */}
           <span>{congviec.mucDoUuTien}</span>
         </div>
         <div className="flex-1 px-4 text-gray-400 flex items-center">

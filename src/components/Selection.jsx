@@ -7,10 +7,14 @@ mapColor.set("high", "text-red-500")
 
 export default function (props) {
   const { items, selectedItem, setSelectedItem } = props;
+  const handleChange = (e) => {
+    setSelectedItem(e.target.value);
+  };
   return (
     <select
       id="priority"
       value={selectedItem || "unset"}
+      onChange={handleChange} 
       className = {`rounded-full px-2 py-1 outline-none bg-transparent border-none font-bold ${mapColor?.get(selectedItem)}`}
     >
       <option className="bg-white text-black" value="unset">Unset</option>
