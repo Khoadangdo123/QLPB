@@ -7,22 +7,28 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchByIdTask } from "../../redux/task/taskSlice";
 import DetailTask from "../task/DetailTask";
 import { BGS, formatDate } from "../../utils";
+import { updateAssignment } from "../../redux/assignment/assignmentSlice";
+import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
 const TaskAssignmentList = ({congviec}) => { 
     const [loading, setLoading] = useState(true);
     const [open, setOpen] = useState(false);
     const [expanded, setExpanded] = useState(false);
     const [completed, setCompleted] = useState(congviec.trangThaiCongViec);
+    const [connection, setConnection] = useState(null);
     const dispatch=useDispatch();
     const maCongViec=congviec.maCongViec
-    console.log(congviec)
+    const vaiTro=congviec.vaiTro
+    const maPhanCong=congviec.maPhanCong
     const phancong=useSelector((state) =>
         state.tasks.list.find((task) => task.maCongViec === maCongViec)
     );
+    
     useEffect(()=>{
         const fetchData = async () => {
             setLoading(true);
             try {
                 await dispatch(fetchByIdTask(maCongViec));
+                
             } catch (error) {
                 console.error("Error fetching task:", error);
             } finally {
@@ -36,17 +42,50 @@ const TaskAssignmentList = ({congviec}) => {
     },[maCongViec,dispatch])
 
     if (loading) {
-        return <p>Loading...</p>;
+        return (
+            <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                height: '100px',
+            }}>
+                <div style={{
+                    border: '4px solid rgba(0, 0, 0, 0.1)',
+                    borderLeftColor: '#3b82f6',
+                    borderRadius: '50%',
+                    width: '40px',
+                    height: '40px',
+                    animation: 'spin 1s linear infinite'
+                }} />
+            </div>
+        );
     }
+    if (!phancong) {
+        return <p>not found</p>
+    }
+    
     const handleToggleDetail = () => {
         setExpanded(!expanded);
     };
-    console.log(phancong)
     const handleCheckboxChange = async (event) => {
         const isConfirmed = window.confirm("Bạn có chắc chắn muốn đánh dấu công việc đã hoàn thành?");
         if (isConfirmed) {
-            setCompleted(event.target.checked);
-            console.log(completed)
+            const checked=event.target.checked
+            setCompleted(checked);
+            let PhanCong={
+                maCongViec:maCongViec,
+                maNhanVien:Number(localStorage.getItem("userId")),
+                vaiTro:vaiTro,
+                trangThaiCongViec:checked
+            }
+            try{
+                await dispatch(updateAssignment({id:maPhanCong,assignment:PhanCong}))
+                console.log("Updateeeeee")
+                //await dispatch(fetchByIdTask(maCongViec))
+            }catch(e){
+                console.error("Error updating assignment:", error);
+                alert('Có lỗi xảy ra trong quá trình cập nhật.');
+            }
         } else {
             event.target.checked = !event.target.checked;
         }
@@ -56,18 +95,15 @@ const TaskAssignmentList = ({congviec}) => {
     return (
         <div className="w-full flex items-center  px-4">
           <div className="w-full flex py-2 border-b text-sm" >
-            <div className="flex-1 w-1/4 px-4 truncate cursor-pointer"  onClick={handleToggleDetail} >{phancong.maCongViecCha ? (
-                <span className="text-gray-500">🔹 {phancong.tenCongViec}</span>
-              ) : (
-                <span>{phancong.tenCongViec}</span>
-              )}</div>
-               <div className="flex-1 w-1/5 px-4 ">
+          <div className="flex-1 w-2/12 px-4 truncate text-left cursor-pointer" onClick={handleToggleDetail}>
+    <span className="line-clamp-2">{phancong.tenCongViec || "N/A"}</span>
+</div>            <div className="flex-1 w-2/12 px-4 text-left">
               <span>{phancong.moTa}</span>
             </div>
-            <div className="flex-1 w-1/5 px-4 ">
+            <div className="flex-1 w-1/12 px-4 text-center">
               <span>{phancong.mucDoUuTien}</span>
             </div>
-            <div className="flex-1 px-4 text-gray-400 flex items-center">
+            <div className="flex-1 w-1/12 px-4 text-center">
             {phancong.thoiGianBatDau ? (
                   formatDate(new Date(phancong.thoiGianBatDau))
                 ) : (
@@ -76,7 +112,7 @@ const TaskAssignmentList = ({congviec}) => {
                   </div>
                 )}
             </div>
-            <div className="flex-1 px-4 text-gray-400 flex items-center">
+            <div className="flex-1 w-1/12 px-4 text-center">
             {phancong.thoiGianKetThuc ? (
                   formatDate(new Date(phancong.thoiGianKetThuc))
                 ) : (
@@ -85,7 +121,7 @@ const TaskAssignmentList = ({congviec}) => {
                   </div>
                 )}
             </div>
-            <div className="flex-1 px-4 flex items-center">
+            <div className="flex-1 w-2/12 px-4 flex items-center justify-center">
               {chiuTrachNhiem?.map((m, index) => (
                 
                 <div
@@ -100,7 +136,7 @@ const TaskAssignmentList = ({congviec}) => {
                 </div>
               ))}
             </div>
-            <div className="flex-1 px-4 flex items-center">
+            <div className="flex-1 w-2/12 px-4 flex items-center justify-center">
               {thucHien?.map((m, index) => (
                 <div
                   key={index}
@@ -114,10 +150,8 @@ const TaskAssignmentList = ({congviec}) => {
                 </div>
               ))}
             </div>
-            <div className="flex-1 px-4 ">
-              {/* <Selection items={stages} selectedItem={phancong.trangThaiCongViec}/> */}
-            </div>
-            <div className="flex-1 px-4 ">
+            
+            <div className="flex-1 w-1/12 px-4 text-center">
                     <input
                         type="checkbox"
                         checked={completed}

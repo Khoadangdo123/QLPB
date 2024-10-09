@@ -59,13 +59,24 @@ const Tasks = () => {
           connection.on("loadDuAn", () => {
             if (id) {
               dispatch(fetchByIdProject(id));
+              console.log("Dự Án: "+id)
             }
           });
           connection.on("loadCongViec", () => {
             if (id) {
               dispatch(fetchByIdProject(id));
             }
-            alert("Hello")
+          });
+          connection.on("loadPhanCong", () => {
+            if (id) {
+              dispatch(fetchByIdProject(id));
+            }
+          });
+          connection.on("updateCongViec", () => {
+            if (id) {
+              dispatch(fetchByIdProject(id));
+              console.log("Dự Án: "+id)
+            }
           });
         })
         .catch((error) => console.error("Connection failed: ", error));
@@ -92,16 +103,6 @@ const Tasks = () => {
       </div>
 
       <Tabs tabs={TABS} setSelected={setSelected}>
-        {/* {!status && (
-          <div className='w-full flex justify-between gap-4 md:gap-x-12 py-4'>
-            <TaskTitle label='Việc cần làm' className={TASK_TYPE.todo} />
-            <TaskTitle
-              label='Đang thực hiện'
-              className={TASK_TYPE["in progress"]}
-            />
-            <TaskTitle label='Hoàn thành' className={TASK_TYPE.completed} />
-          </div>
-        )} */}
         {selected !== 1 ? (
           <BoardView tasks={tasks} />
         ) : (

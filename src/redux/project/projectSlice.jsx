@@ -51,7 +51,7 @@ const projectSlice = createSlice({
         state.list.push(action.payload);
       })
       .addCase(updateProject.fulfilled, (state, action) => {
-        const index = state.list.findIndex((project) => project.id === action.payload.id);
+        const index = state.list.findIndex((project) => project.maDuAn === action.payload.maDuAn);
         if (index !== -1) {
           state.list[index] = action.payload;
         }

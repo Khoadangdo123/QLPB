@@ -11,7 +11,7 @@ import DetailTask from "./DetailTask";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchByIdTask } from "../../redux/task/taskSlice";
 import EmployeeInfo from "../EmployeeInfo";
-
+import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
 const priorities = [
   { id: "low", name: "Thấp" },
   { id: "medium", name: "Trung Bình" },
@@ -29,6 +29,7 @@ const TaskListItem=({congviec,duAn})=> {
   const [taskRoot,setTaskRoot]=useState(false);
   const [expanded, setExpanded] = useState(false);
   const [subTasks, setSubTasks] = useState([]);
+  const [connection, setConnection] = useState(null);
   const dispatch=useDispatch();
   const maCongViec=congviec.maCongViec
   const phancong=useSelector((state) =>
@@ -37,13 +38,34 @@ const TaskListItem=({congviec,duAn})=> {
   useEffect(()=>{
     dispatch(fetchByIdTask(maCongViec))
   },[maCongViec])
+  useEffect(()=>{
+    const newConnection = new HubConnectionBuilder()
+      .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
+      .configureLogging(LogLevel.Information)
+      .build();
+    setConnection(newConnection);
+  },[])
+  useEffect(() => {
+    if (connection && connection.state === "Disconnected") {
+      connection.start()
+        .then(() => {
+          console.log("Connected!");
+          connection.on("updateCongViec", () => {
+            if (maCongViec) {
+              dispatch(fetchByIdTask(maCongViec));
+            }
+          });
+        })
+        .catch((error) => console.error("Connection failed: ", error));
+    }
+  }, [connection, maCongViec, dispatch]);
   const handleToggleDetail = () => {
     setExpanded(!expanded);
   };
-  console.log(phancong)
   const chiuTrachNhiem = phancong?.phanCongs?.filter(m => m.vaiTro === "Người Chịu Trách Nhiệm");
   const thucHien = phancong?.phanCongs?.filter(m => m.vaiTro === "Người Thực Hiện");
-  const congViecHoanThanh = phancong?.phanCongs.filter(task => task.trangThaiCongViec === true).length || 0;
+  // const congViecHoanThanh = phancong?.phanCongs.filter(task => task.trangThaiCongViec === true).length || 0;
+  const congViecHoanThanh = phancong?.phanCongs?.filter(task => task.trangThaiCongViec === true).length ?? 0;
   const tongCongViec = phancong?.phanCongs?.length || 1;
   const completionPercent = (congViecHoanThanh / tongCongViec) * 100;
   //

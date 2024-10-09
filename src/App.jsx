@@ -23,6 +23,9 @@ import TaskAssignment from "./pages/TaskAssignment";
 function Layout() {
   const authUser = useSelector((state) => state.authen);
   console.log(authUser)
+  const token=authUser.user.token;
+  var payload = JSON.parse(atob(token.split('.')[1]));
+  localStorage.setItem("userId",payload.MaTaiKhoan)
   const location = useLocation();
 
   return authUser ? (

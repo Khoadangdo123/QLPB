@@ -65,12 +65,12 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
             maNhanVien: Number(department.maTruongPhong),
             vaiTro: "Người Chịu Trách Nhiệm"
           }));
-          await dispatch(sendGmail({
-            name: department.responsiblePerson,
-            toGmail: department.email,
-            subject: "Thông Tin Phân Công Dự Án",
-            body: generateEmailTemplateForManager(department)
-          }));
+          // await dispatch(sendGmail({
+          //   name: department.responsiblePerson,
+          //   toGmail: department.email,
+          //   subject: "Thông Tin Phân Công Dự Án",
+          //   body: generateEmailTemplateForManager(department)
+          // }));
           
         });
         await Promise.all(departmentPromises);
@@ -82,27 +82,17 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
             maNhanVien: Number(employee.maNhanVien),
             vaiTro: employee.vaiTro,
           }));
-          await dispatch(sendGmail({
-            name: employee.tenNhanVien,
-            toGmail: employee.email,
-            subject: "Thông Tin Phân Công Dự Án",
-            body: generateEmailTemplate(employee)
-          }));
+          // await dispatch(sendGmail({
+          //   name: employee.tenNhanVien,
+          //   toGmail: employee.email,
+          //   subject: "Thông Tin Phân Công Dự Án",
+          //   body: generateEmailTemplate(employee)
+          // }));
         });
         await Promise.all(employeePromises);
       }
       await dispatch(fetchByIdProject(Number(duAn)))
       setOpen(false)
-      if(selectedEmployees!==null | selectedEmployees.length>0){
-        for (let employee of selectedEmployees) {
-          await dispatch(sendGmail({
-            name:employee.tenNhanVien,
-            toGmail:employee.email,
-            subject:"Thông Tin Phân Công Dự Án",
-            body:generateEmailTemplate(employee)
-          }));
-        }
-      }
     }catch(e){
       console.log(e)
     }

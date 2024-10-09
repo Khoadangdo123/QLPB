@@ -66,13 +66,13 @@ const assignmentSlice = createSlice({
         state.error = action.error.message;
       })
       .addCase(updateAssignment.fulfilled, (state, action) => {
-        const index = state.list.findIndex((assignment) => assignment.id === action.payload.id);
+        const index = state.list.findIndex((assignment) => assignment.maPhanCong === action.payload.maPhanCong);
         if (index !== -1) {
           state.list[index] = action.payload;
         }
       })
       .addCase(deleteAssignment.fulfilled, (state, action) => {
-        state.list = state.list.filter((assignment) => assignment.id !== action.payload.id);
+        state.list = state.list.filter((assignment) => assignment.maPhanCong !== action.payload.maPhanCong);
       });
   },
 });

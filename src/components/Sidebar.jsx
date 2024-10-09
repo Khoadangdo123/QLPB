@@ -20,7 +20,7 @@ const Sidebar = () => {
   const { user } = useSelector((state) => state.authen);
   const duans=useSelector((state)=>state.projects.list)
   useEffect(()=>{
-    dispatch(fetchProjects({ search: '', page: 1 }))
+    dispatch(fetchProjects({ search: '', page: 20 }))
   },[dispatch])
   useEffect(()=>{
     const newConnection = new HubConnectionBuilder()
@@ -36,7 +36,7 @@ const Sidebar = () => {
         .then(() => {
           console.log("Connected!");
           connection.on("loadDuAn", () => {
-            dispatch(fetchProjects({ search: '', page: 1 }))
+            dispatch(fetchProjects({ search: '', page: 20 }))
           });
         })
         .catch((error) => console.error("Connection failed: ", error));
@@ -46,6 +46,7 @@ const Sidebar = () => {
     label: duan.tenDuAn,
     link: `/project/${duan.maDuAn}`,
     color: "bg-blue-500",
+    key:duan.maDuAn
   }));
   const linkData = [
     {
