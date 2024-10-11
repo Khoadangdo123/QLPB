@@ -40,6 +40,10 @@ const TaskAssignment=()=>{
                         setLoading(false);
                         console.log('Mai Văn Tài')
                     });
+                    connection.on("task",async (message)=>{
+                        console.log("task")
+                        alert(message)
+                    })
                 } catch (err) {
                     console.error("Error while starting connection: ", err);
                 }

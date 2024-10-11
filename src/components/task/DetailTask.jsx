@@ -17,7 +17,6 @@ const DetailTask = ({
 	roleTeam
 }) => {
 	const maCongViec=task.maCongViec+"";
-	console.log(task)
 	const [connection, setConnection] = useState(null);
 	const [messages, setMessages] = useState([]);
 	const [newComment, setNewComment] = useState("");
@@ -39,13 +38,24 @@ const DetailTask = ({
 						console.log(`Joined group: ${maCongViec}`);
 					})
 					.catch(err => console.error("Error joining group: ", err));
-				newConnection.off("ReceiveMessage");
+				//newConnection.off("ReceiveMessage");
 				newConnection.on("ReceiveMessage", (user, message) => {
 					const newMessage = { user, message };
+					console.log(newMessage)
 					setMessages(prevMessages => [...prevMessages, newMessage]);
+					console.log(newMessage)
 				});
+				newConnection.on("UserJoined",(message)=>{
+					console.log(message)
+				})
 			})
 			.catch(err => console.error("Connection failed: ", err));
+			return () => {
+				if (newConnection) {
+				  newConnection.stop();
+				  console.log("Connection stopped.");
+				}
+			  };
 	}, [maCongViec]);
 	const handleSendComment = () => {
 		if (newComment.trim() === "") return;
@@ -53,6 +63,7 @@ const DetailTask = ({
             connection.invoke("TraoDoiThongTin", maCongViec, localStorage.getItem('name'), newComment)
                 .then(() => {
                     setNewComment("");
+					console.log("reconnection")
                 })
                 .catch(err => console.error("Error sending message: ", err));
         } else {
@@ -86,7 +97,6 @@ const DetailTask = ({
 				<div className="mb-4 px-6">
 					<h2 className="text-2xl font-semibold text-gray-800">{titleTask}</h2>
 				</div>
-
 				{/* Assignee and Due Date */}
 				<div className="mb-4 px-6 flex justify-between items-center">
 				<div className="flex items-center">
@@ -122,12 +132,13 @@ const DetailTask = ({
 				</div> */}
 				{/* Description */}
 				<div className="mb-6 px-6">
-					<p className="text-gray-700 font-medium">Description</p>
+					<p className="text-gray-700 font-medium">Mô Tả</p>
 					<textarea
 						className="w-full bg-gray-50 p-3 mt-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
 						placeholder="What is this task about?"
 						rows="3"
 						value={task.moTa}
+						readOnly
 					></textarea>
 				</div>
 
@@ -174,16 +185,14 @@ const DetailTask = ({
 				<div className="mb-6 px-6">
 					<div className="flex justify-between items-center">
 						<div className="flex items-center">
-							<span className="text-gray-700 font-medium">Collaborators:</span>
+							<span className="text-gray-700 font-medium">Thành Viên:</span>
 							<div className="flex -space-x-2 ml-3">
 								{
 									userTeam.map((m, index) => {
 										return (
-											<>
-												<div className="rounded-full h-8 w-8 bg-purple-500 flex items-center justify-center text-xs text-white">
+											<div className="rounded-full h-8 w-8 bg-purple-500 flex items-center justify-center text-xs text-white" key={index}>
 													{m.nhanVien?.tenNhanVien.slice(0,2)}
 												</div>
-											</>
 										)
 									})
 								}

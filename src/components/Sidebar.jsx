@@ -70,20 +70,25 @@ const Sidebar = () => {
       link: "/taskassignment",
       icon: <FaTasks />,
     },
+    // {
+    //   label: "Đã Hoàn Thành",
+    //   link: "/completed/completed",
+    //   icon: <MdTaskAlt />,
+    // },
+    // {
+    //   label: "Đang Thực Hiện",
+    //   link: "/in-progress/in-progress",
+    //   icon: <MdOutlinePendingActions />,
+    // },
+    // {
+    //   label: "Cần Làm",
+    //   link: "/todo/todo",
+    //   icon: <MdOutlinePendingActions />,
+    // },
     {
-      label: "Đã Hoàn Thành",
-      link: "/completed/completed",
-      icon: <MdTaskAlt />,
-    },
-    {
-      label: "Đang Thực Hiện",
-      link: "/in-progress/in-progress",
-      icon: <MdOutlinePendingActions />,
-    },
-    {
-      label: "Cần Làm",
-      link: "/todo/todo",
-      icon: <MdOutlinePendingActions />,
+      label: "Công Việc Phòng Ban",
+      link: "/assignmentdepartment",
+      icon: <FaUsers />,
     },
     {
       label: "Nhóm",

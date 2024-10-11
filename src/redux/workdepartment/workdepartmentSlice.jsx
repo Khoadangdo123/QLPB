@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchWorkDepartment as fetchAPI, addWorkDepartment as addAPI, updateWorkDepartment as updateAPI, fetchByIdWorkDepartment as fetchByIdAPI } from './workdepartmentAPI';
+import { fetchWorkDepartment as fetchAPI, addWorkDepartment as addAPI, updateWorkDepartment as updateAPI, fetchByIdWorkDepartment as fetchByIdAPI,fetchByIdDepartment as fetchByIdDepartmentAPI} from './workdepartmentAPI';
 
 
 export const fetchWorkDepartment = createAsyncThunk('workDepartment/fetchWorkDepartment', async ({ search, page }) => {
@@ -18,13 +18,16 @@ export const fetchByIdWorkDepartment = createAsyncThunk('workDepartment/fetchByI
   const response = await fetchByIdAPI(id);
   return response;
 });
+export const fetchByIdDepartment = createAsyncThunk('workDepartment/fetchByIdDepartment', async (id) => {
+    const response = await fetchByIdDepartmentAPI(id);
+    return response;
+  });
 
 const initialState = {
   list: [],
   loading: false,
   error: null,
   status: "All",
-  currentWorkDepartment: null
 };
 
 const workDepartmentSlice = createSlice({
@@ -55,13 +58,26 @@ const workDepartmentSlice = createSlice({
         state.list.push(action.payload);
       })
       .addCase(updateWorkDepartment.fulfilled, (state, action) => {
-        const index = state.list.findIndex((WorkDepartment) => WorkDepartment.id === action.payload.id);
+        const index = state.list.findIndex((WorkDepartment) => WorkDepartment.maCongViecPhongBan === action.payload.maCongViecPhongBan);
         if (index !== -1) {
           state.list[index] = action.payload;
         }
       })
       .addCase(fetchByIdWorkDepartment.fulfilled, (state, action) => {
-        state.currentWorkDepartment = action.payload;
+        state.list = action.payload;
+      }).addCase(fetchByIdDepartment.pending, (state) => {
+        state.loading = true;
+        state.status = 'loading';
+      })
+      .addCase(fetchByIdDepartment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = 'succeeded';
+        state.list = action.payload;
+      })
+      .addCase(fetchByIdDepartment.rejected, (state, action) => {
+        state.loading = false;
+        state.status = 'failed';
+        state.error = action.error.message;
       });
   },
 });

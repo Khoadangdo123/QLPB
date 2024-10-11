@@ -13,3 +13,7 @@ export const updateDepartment=async (id,department)=>{
     const response=await axios.put(API_ENDPOINTS.PHONGBAN+"/"+id,department)
     return response.data;
 }
+export const fetchManagerDepartment=async (id)=>{
+    const response=await axios.get(API_ENDPOINTS.PHONGBAN+`/GetTruongPhongById/${id}`)
+    return response.data;
+}

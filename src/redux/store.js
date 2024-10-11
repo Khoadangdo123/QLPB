@@ -12,6 +12,7 @@ import sectionReducer from "./section/sectionSlice"
 import taskReduder from "./task/taskSlice"
 import sendGmailReducer from "./sendgmail/sendgmailSlice"
 import assignmentReducer from "./assignment/assignmentSlice"
+import workdepartmentReducer from "./workdepartment/workdepartmentSlice"
 const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
@@ -26,8 +27,8 @@ const store = configureStore({
     authen:authenReducer,
     sections:sectionReducer,
     tasks:taskReduder,
-    sendGmail:sendGmailReducer
-
+    sendGmail:sendGmailReducer,
+    workdepartments:workdepartmentReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware),

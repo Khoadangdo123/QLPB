@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchDepartment as fetchAPI, addDepartment as addAPI,updateDepartment as updateAPI } from './departmentAPI';
+import { fetchDepartment as fetchAPI, addDepartment as addAPI,updateDepartment as updateAPI,fetchManagerDepartment as fetchManagerDepartmentAPI } from './departmentAPI';
 
 export const fetchDepartments = createAsyncThunk('departments/fetchDepartments', async ({ search, page }) => {
   const response = await fetchAPI(search, page);
@@ -15,6 +15,10 @@ export const updateDepartment = createAsyncThunk('departments/updateDepartment',
   return response;
 });
 
+export const fetchManagerDepartment=createAsyncThunk('departments/fetchManagerDepartment', async (id) => {
+  const response = await fetchManagerDepartmentAPI(id);
+  return response;
+})
 const initialState = {
   list: [],
   loading: false,
@@ -35,13 +39,26 @@ const departmentSlice = createSlice({
       .addCase(fetchDepartments.fulfilled, (state, action) => {
         state.loading = false;
         state.status = 'succeeded';
-        state.list = action.payload; // Đảm bảo payload chứa dữ liệu đúng
+        state.list = action.payload;
       })
       .addCase(fetchDepartments.rejected, (state, action) => {
         state.loading = false;
         state.status = 'failed';
         state.error = action.error.message;
-      }).addCase(updateDepartment.fulfilled, (state, action) => {
+      }).addCase(fetchManagerDepartment.pending, (state) => {
+        state.loading = true;
+        state.status = 'loading';
+    })
+    .addCase(fetchManagerDepartment.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = 'succeeded';
+        state.list = action.payload;
+    })
+    .addCase(fetchManagerDepartment.rejected, (state, action) => {
+        state.loading = false;
+        state.status = 'failed';
+        state.error = action.error.message;
+    }).addCase(updateDepartment.fulfilled, (state, action) => {
         state.list.push(action.payload);
       });
   },

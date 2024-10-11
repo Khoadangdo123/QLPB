@@ -58,19 +58,19 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
           await dispatch(addWorkDepartment({
             maCongViec: result.maCongViec,
             maPhongBan: Number(department.maPhongBan)
-          }));
+          }))
   
           await dispatch(addAssignment({
             maCongViec: result.maCongViec,
             maNhanVien: Number(department.maTruongPhong),
             vaiTro: "Người Chịu Trách Nhiệm"
           }));
-          // await dispatch(sendGmail({
-          //   name: department.responsiblePerson,
-          //   toGmail: department.email,
-          //   subject: "Thông Tin Phân Công Dự Án",
-          //   body: generateEmailTemplateForManager(department)
-          // }));
+          await dispatch(sendGmail({
+            name: department.responsiblePerson,
+            toGmail: department.email,
+            subject: "Thông Tin Phân Công Dự Án",
+            body: generateEmailTemplateForManager(department)
+          }));
           
         });
         await Promise.all(departmentPromises);
@@ -82,12 +82,12 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
             maNhanVien: Number(employee.maNhanVien),
             vaiTro: employee.vaiTro,
           }));
-          // await dispatch(sendGmail({
-          //   name: employee.tenNhanVien,
-          //   toGmail: employee.email,
-          //   subject: "Thông Tin Phân Công Dự Án",
-          //   body: generateEmailTemplate(employee)
-          // }));
+          await dispatch(sendGmail({
+            name: employee.tenNhanVien,
+            toGmail: employee.email,
+            subject: "Thông Tin Phân Công Dự Án",
+            body: generateEmailTemplate(employee)
+          }));
         });
         await Promise.all(employeePromises);
       }
@@ -195,38 +195,58 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
 };
 const generateEmailTemplate = (employee) => {
   return `
-      <html>
-          <head>
-              <style>
-                  .email-container {
-                      font-family: Arial, sans-serif;
-                      line-height: 1.5;
-                  }
-                  .email-header {
-                      font-size: 18px;
-                      font-weight: bold;
-                      color: #333;
-                  }
-                  .email-body {
-                      margin-top: 20px;
-                      color: #555;
-                  }
-              </style>
-          </head>
-          <body>
-              <div class="email-container">
-                  <div class="email-header">Xin chào ${employee.tenNhanVien},</div>
-                  <div class="email-body">
-                      <p>Bạn đã được chọn để tham gia dự án với vai trò: ${employee.vaiTro}</p>
-                      <p>Vui lòng kiểm tra lại chi tiết trong hệ thống quản lý công việc của chúng tôi.</p>
-                      <p>Trân trọng,</p>
-                      <p>Đội ngũ quản lý dự án</p>
-                  </div>
-              </div>
-          </body>
-      </html>
+    <html>
+        <head>
+            <style>
+                .email-container {
+                    font-family: Arial, sans-serif;
+                    line-height: 1.5;
+                    background-color: #f4f4f4;
+                    padding: 20px;
+                    border-radius: 10px;
+                }
+                .email-header {
+                    font-size: 20px;
+                    font-weight: bold;
+                    color: #2e86c1;
+                }
+                .email-body {
+                    margin-top: 20px;
+                    color: #333;
+                    font-size: 16px;
+                }
+                p {
+                    margin: 10px 0;
+                }
+                .highlight {
+                    color: #d35400;
+                    font-weight: bold;
+                }
+                .footer {
+                    margin-top: 30px;
+                    font-size: 14px;
+                    color: #888;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="email-container">
+                <div class="email-header">Xin chào ${employee.tenNhanVien},</div>
+                <div class="email-body">
+                    <p>Bạn đã được chọn để tham gia dự án với vai trò: <span class="highlight">${employee.vaiTro}</span></p>
+                    <p>Vui lòng kiểm tra lại chi tiết trong hệ thống quản lý công việc của chúng tôi.</p>
+                    <p>Trân trọng,</p>
+                    <p>Đội ngũ quản lý dự án</p>
+                </div>
+                <div class="footer">
+                    <p>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email support@company.com.</p>
+                </div>
+            </div>
+        </body>
+    </html>
   `;
 };
+
 const generateEmailTemplateForManager = (department) => {
   return `
     <html>
@@ -235,15 +255,31 @@ const generateEmailTemplateForManager = (department) => {
                 .email-container {
                     font-family: Arial, sans-serif;
                     line-height: 1.5;
+                    background-color: #f9f9f9;
+                    padding: 20px;
+                    border-radius: 10px;
                 }
                 .email-header {
-                    font-size: 18px;
+                    font-size: 22px;
                     font-weight: bold;
-                    color: #333;
+                    color: #27ae60;
                 }
                 .email-body {
                     margin-top: 20px;
-                    color: #555;
+                    color: #333;
+                    font-size: 16px;
+                }
+                p {
+                    margin: 10px 0;
+                }
+                .highlight {
+                    color: #c0392b;
+                    font-weight: bold;
+                }
+                .footer {
+                    margin-top: 30px;
+                    font-size: 14px;
+                    color: #888;
                 }
             </style>
         </head>
@@ -251,14 +287,18 @@ const generateEmailTemplateForManager = (department) => {
             <div class="email-container">
                 <div class="email-header">Xin chào ${department.responsiblePerson},</div>
                 <div class="email-body">
-                    <p>Bạn đã được giao nhiệm vụ quản lý công việc trong dự án với mã công việc: ${department.maCongViec}</p>
+                    <p>Bạn đã được giao nhiệm vụ quản lý công việc trong dự án với mã công việc: <span class="highlight">${department.maCongViec}</span></p>
                     <p>Vui lòng kiểm tra lại chi tiết trong hệ thống quản lý công việc của chúng tôi.</p>
                     <p>Trân trọng,</p>
                     <p>Đội ngũ quản lý dự án</p>
+                </div>
+                <div class="footer">
+                    <p>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email support@company.com.</p>
                 </div>
             </div>
         </body>
     </html>
   `;
 };
+
 export default AddTask;

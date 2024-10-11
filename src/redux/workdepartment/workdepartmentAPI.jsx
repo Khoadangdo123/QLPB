@@ -22,3 +22,7 @@ export const fetchByIdWorkDepartment = async (id) => {
     const response = await axios.get(API_ENDPOINTS.CONGVIECPHONGBAN+"/"+id);
     return response.data;
 };
+export const fetchByIdDepartment = async (id) => {
+    const response = await axios.get(API_ENDPOINTS.CONGVIECPHONGBAN+`/GetPhongBanPhanCong/${id}`);
+    return response.data;
+};

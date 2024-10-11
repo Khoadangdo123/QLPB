@@ -20,6 +20,7 @@ import Accounts from "./pages/Account";
 import * as signalR from '@microsoft/signalr';
 import RolePermission from "./pages/Permission";
 import TaskAssignment from "./pages/TaskAssignment";
+import DepartmentAssignment from "./pages/DepartmentAssignment";
 function Layout() {
   const authUser = useSelector((state) => state.authen);
   console.log(authUser)
@@ -121,6 +122,7 @@ function App() {
           <Route path='/permission' element={<RolePermission/>} />
           <Route path='/trashed' element={<Trash />} />
           <Route path='/taskassignment' element={<TaskAssignment/>} />
+          <Route path='/assignmentdepartment' element={<DepartmentAssignment/>} />
           <Route path='/task/:id' element={<TaskDetails />} />
         </Route>
         <Route path='/log-in' element={<Login />} />

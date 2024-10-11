@@ -22,7 +22,6 @@ const TaskAssignmentList = ({congviec}) => {
     const phancong=useSelector((state) =>
         state.tasks.list.find((task) => task.maCongViec === maCongViec)
     );
-    
     useEffect(()=>{
         const fetchData = async () => {
             setLoading(true);
@@ -40,7 +39,6 @@ const TaskAssignmentList = ({congviec}) => {
             fetchData();
         }
     },[maCongViec,dispatch])
-
     if (loading) {
         return (
             <div style={{
