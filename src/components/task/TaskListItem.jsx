@@ -55,6 +55,16 @@ const TaskListItem=({congviec,duAn})=> {
               dispatch(fetchByIdTask(maCongViec));
             }
           });
+          connection.on("loadPhanCong", () => {
+            if (maCongViec) {
+              dispatch(fetchByIdTask(maCongViec));
+            }
+          });
+          // connection.on("loadCongViec", () => {
+          //   if (maCongViec) {
+          //     dispatch(fetchByIdTask(maCongViec));
+          //   }
+          // });
         })
         .catch((error) => console.error("Connection failed: ", error));
     }
@@ -64,7 +74,6 @@ const TaskListItem=({congviec,duAn})=> {
   };
   const chiuTrachNhiem = phancong?.phanCongs?.filter(m => m.vaiTro === "Người Chịu Trách Nhiệm");
   const thucHien = phancong?.phanCongs?.filter(m => m.vaiTro === "Người Thực Hiện");
-  // const congViecHoanThanh = phancong?.phanCongs.filter(task => task.trangThaiCongViec === true).length || 0;
   const congViecHoanThanh = phancong?.phanCongs?.filter(task => task.trangThaiCongViec === true).length ?? 0;
   const tongCongViec = phancong?.phanCongs?.length || 1;
   const completionPercent = (congViecHoanThanh / tongCongViec) * 100;
@@ -85,7 +94,7 @@ const TaskListItem=({congviec,duAn})=> {
   return (
     <div className="w-full flex items-center  px-4">
       <div className="w-full flex py-2 border-b text-sm" >
-        <div className="flex-1 w-1/4 px-4 truncate cursor-pointer"  onClick={handleToggleDetail} >{congviec.maCongViecCha ? (
+        {/* <div className="flex-1 w-1/4 px-4 truncate cursor-pointer"  onClick={handleToggleDetail} >{congviec.maCongViecCha ? (
             <span className="text-gray-500">🔹 {congviec.tenCongViec}</span>
           ) : (
             <span>{congviec.tenCongViec}</span>
@@ -98,7 +107,32 @@ const TaskListItem=({congviec,duAn})=> {
           ></div>
         </div>
         <span className="text-xs text-gray-500">{completionPercent.toFixed(2)}% Hoàn thành</span>
-      </div>
+      </div> */}
+      <div
+          className="flex-1 w-1/4 px-4 truncate cursor-pointer"
+          onClick={handleToggleDetail}
+        >
+          {congviec.maCongViecCha ? (
+            <span className="text-gray-500 break-words">
+              🔹 {congviec.tenCongViec}
+            </span>
+          ) : (
+            <span className="break-words">{congviec.tenCongViec}</span>
+          )}
+          {/* Phần trăm tiến độ */}
+
+          <div className="w-full bg-gray-200 rounded-full h-4 mt-2">
+            <div
+              className={`${getCompletionColor(
+                completionPercent
+              )} h-4 rounded-full`}
+              style={{ width: `${completionPercent}%` }}
+            ></div>
+          </div>
+          <span className="text-xs text-gray-500">
+            {completionPercent.toFixed(2)}% Hoàn thành
+          </span>
+        </div>
 
         <div className="flex-1 w-1/5 px-4 ">
           <span>{congviec.mucDoUuTien}</span>
@@ -160,10 +194,12 @@ const TaskListItem=({congviec,duAn})=> {
                 setTaskRoot(congviec.maCongViec);
                 setOpen(true);
               }}
-              label='Tạo Công Việc Con'
+              label='Tạo Công Việc'
               icon={<IoMdAdd className='text-lg' />}
-              className='flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs'
-              style={{ height: '28px', fontSize: '12px' }}
+              //className='flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs'
+              //style={{ height: '28px', fontSize: '12px' }}
+              className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 px-3 text-xs"
+
             />
         </div>
       </div>

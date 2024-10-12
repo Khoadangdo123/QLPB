@@ -40,6 +40,14 @@ const TaskAssignment=()=>{
                         setLoading(false);
                         console.log('Mai Văn Tài')
                     });
+                    //
+                    connection.on("loadCongViec",async () => {
+                        setLoading(true);
+                        await dispatch(fetchEmployeeAssignment(maNhanVien));
+                        setLoading(false);
+                        console.log('Mai Văn Tài')
+                    });
+                    //
                     connection.on("task",async (message)=>{
                         console.log("task")
                         alert(message)

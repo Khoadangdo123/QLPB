@@ -39,6 +39,54 @@ const TaskAssignmentList = ({congviec}) => {
             fetchData();
         }
     },[maCongViec,dispatch])
+    useEffect(() => {
+        const newConnection = new HubConnectionBuilder()
+            .withUrl("https://localhost:7131/hub")
+            .withAutomaticReconnect()
+            .configureLogging(LogLevel.Information)
+            .build();
+        setConnection(newConnection);
+    }, []);
+    useEffect(() => {
+        const startConnection = async () => {
+            if (connection && connection.state === "Disconnected") {
+                try {
+                    await connection.start();
+                    console.log("Connection started");
+                    connection.on("loadPhanCong",async () => {
+                        setLoading(true);
+                        await dispatch(fetchByIdTask(maCongViec));
+                        setLoading(false);
+                        console.log('Mai Văn Tài')
+                    });
+                    //
+                    connection.on("loadCongViec",async () => {
+                        setLoading(true);
+                        await dispatch(fetchByIdTask(maCongViec));
+                        setLoading(false);
+                        console.log('Mai Văn Tài')
+                    });
+                    //
+                    connection.on("task",async (message)=>{
+                        console.log("task")
+                        alert(message)
+                    })
+                } catch (err) {
+                    console.error("Error while starting connection: ", err);
+                }
+            }
+        };
+    
+        if (connection) {
+            startConnection();
+        }
+    
+        return () => {
+            if (connection) {
+                connection.off("loadCongViec");
+            }
+        };
+    }, [connection, dispatch, maCongViec]);
     if (loading) {
         return (
             <div style={{
