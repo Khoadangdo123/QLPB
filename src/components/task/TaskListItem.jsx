@@ -11,7 +11,7 @@ import DetailTask from "./DetailTask";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchByIdTask } from "../../redux/task/taskSlice";
 import EmployeeInfo from "../EmployeeInfo";
-import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
+import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 const priorities = [
   { id: "low", name: "Thấp" },
   { id: "medium", name: "Trung Bình" },
@@ -24,30 +24,32 @@ const stages = [
   { id: "done", name: "Hoàn thành" },
 ];
 
-const TaskListItem=({congviec,duAn})=> {
+const TaskListItem = ({ congviec, duAn }) => {
   const [open, setOpen] = useState(false);
-  const [taskRoot,setTaskRoot]=useState(false);
+  const [taskRoot, setTaskRoot] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [subTasks, setSubTasks] = useState([]);
   const [connection, setConnection] = useState(null);
-  const dispatch=useDispatch();
-  const maCongViec=congviec.maCongViec
-  const phancong=useSelector((state) =>
+  const dispatch = useDispatch();
+  const maCongViec = congviec.maCongViec;
+  const phancong = useSelector((state) =>
     state.tasks.list.find((task) => task.maCongViec === maCongViec)
   );
-  useEffect(()=>{
-    dispatch(fetchByIdTask(maCongViec))
-  },[maCongViec])
-  useEffect(()=>{
+  useEffect(() => {
+    dispatch(fetchByIdTask(maCongViec));
+  }, [maCongViec]);
+  useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
+      .withUrl("https://localhost:7131/hub")
+      .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
     setConnection(newConnection);
-  },[])
+  }, []);
   useEffect(() => {
     if (connection && connection.state === "Disconnected") {
-      connection.start()
+      connection
+        .start()
         .then(() => {
           console.log("Connected!");
           connection.on("updateCongViec", () => {
@@ -72,9 +74,15 @@ const TaskListItem=({congviec,duAn})=> {
   const handleToggleDetail = () => {
     setExpanded(!expanded);
   };
-  const chiuTrachNhiem = phancong?.phanCongs?.filter(m => m.vaiTro === "Người Chịu Trách Nhiệm");
-  const thucHien = phancong?.phanCongs?.filter(m => m.vaiTro === "Người Thực Hiện");
-  const congViecHoanThanh = phancong?.phanCongs?.filter(task => task.trangThaiCongViec === true).length ?? 0;
+  const chiuTrachNhiem = phancong?.phanCongs?.filter(
+    (m) => m.vaiTro === "Người Chịu Trách Nhiệm"
+  );
+  const thucHien = phancong?.phanCongs?.filter(
+    (m) => m.vaiTro === "Người Thực Hiện"
+  );
+  const congViecHoanThanh =
+    phancong?.phanCongs?.filter((task) => task.trangThaiCongViec === true)
+      .length ?? 0;
   const tongCongViec = phancong?.phanCongs?.length || 1;
   const completionPercent = (congViecHoanThanh / tongCongViec) * 100;
   //
@@ -82,6 +90,10 @@ const TaskListItem=({congviec,duAn})=> {
     setSubTasks([...subTasks, newSubTask]);
     setOpen(false);
   };
+  const isParentTask = (task) => {
+    return !task.maCongViecCha;
+  };
+
   const getCompletionColor = (percent) => {
     if (percent < 50) {
       return "bg-red-600";
@@ -91,28 +103,21 @@ const TaskListItem=({congviec,duAn})=> {
       return "bg-green-500";
     }
   };
+  const itemClass = isParentTask(congviec) ? "font-bold" : "pl-6 bg-gray-100";
   return (
-    <div className="w-full flex items-center  px-4">
-      <div className="w-full flex py-2 border-b text-sm" >
-        {/* <div className="flex-1 w-1/4 px-4 truncate cursor-pointer"  onClick={handleToggleDetail} >{congviec.maCongViecCha ? (
-            <span className="text-gray-500">🔹 {congviec.tenCongViec}</span>
-          ) : (
-            <span>{congviec.tenCongViec}</span>
-          )}</div>
-          <div className="flex-1 px-4">
-        <div className="w-full bg-gray-200 rounded-full h-4">
-          <div
-            className={`${getCompletionColor(completionPercent)} h-4 rounded-full`}
-            style={{ width: `${completionPercent}%` }}
-          ></div>
-        </div>
-        <span className="text-xs text-gray-500">{completionPercent.toFixed(2)}% Hoàn thành</span>
-      </div> */}
-      <div
-          className="flex-1 w-1/4 px-4 truncate cursor-pointer"
+    <div
+      className={`w-full flex items-center px-4 ${
+        isParentTask(congviec) ? "" : "ml-4"
+      }`}
+    >
+      <div className={`w-full flex py-1 border-b text-sm ${itemClass}`}>
+        <div
+          className={`flex-1 w-1/4 px-4 truncate cursor-pointer ${
+            isParentTask(congviec) ? "font-bold" : "pl-4"
+          }`}
           onClick={handleToggleDetail}
         >
-          {congviec.maCongViecCha ? (
+          {isParentTask(congviec) ? (
             <span className="text-gray-500 break-words">
               🔹 {congviec.tenCongViec}
             </span>
@@ -155,7 +160,6 @@ const TaskListItem=({congviec,duAn})=> {
         </div>
         <div className="flex-1 px-4 flex items-center">
           {chiuTrachNhiem?.map((m, index) => (
-            
             <div
               key={index}
               className={clsx(
@@ -163,11 +167,18 @@ const TaskListItem=({congviec,duAn})=> {
                 BGS[index % BGS?.length]
               )}
             >
-            {/* <UserInfo user={m} /> */}
-            <EmployeeInfo employee={m}/>
+              {/* <UserInfo user={m} /> */}
+              <EmployeeInfo employee={m} />
             </div>
           ))}
-          <button onClick={()=>{alert("assign")}} className="rounded-full border-2 border-dashed size-fit p-1 ml-2 border-gray-400 text-gray-400"><BiPlus/></button>
+          <button
+            onClick={() => {
+              alert("assign");
+            }}
+            className="rounded-full border-2 border-dashed size-fit p-1 ml-2 border-gray-400 text-gray-400"
+          >
+            <BiPlus />
+          </button>
         </div>
         <div className="flex-1 px-4 flex items-center">
           {thucHien?.map((m, index) => (
@@ -178,37 +189,47 @@ const TaskListItem=({congviec,duAn})=> {
                 BGS[index % BGS?.length]
               )}
             >
-            {/* <UserInfo user={m} /> */}
-            <EmployeeInfo employee={m}/>
+              {/* <UserInfo user={m} /> */}
+              <EmployeeInfo employee={m} />
             </div>
           ))}
-          <button onClick={()=>{alert("assign")}} className="rounded-full border-2 border-dashed size-fit p-1 ml-2 border-gray-400 text-gray-400"><BiPlus/></button>
+          <button
+            onClick={() => {
+              alert("assign");
+            }}
+            className="rounded-full border-2 border-dashed size-fit p-1 ml-2 border-gray-400 text-gray-400"
+          >
+            <BiPlus />
+          </button>
         </div>
         <div className="flex-1 px-4 ">
-          <Selection items={stages} selectedItem={congviec.trangThaiCongViec}/>
+          <Selection items={stages} selectedItem={congviec.trangThaiCongViec} />
         </div>
-        
+
         <div className="flex-1 px-4 flex justify-end">
           <Button
-              onClick={() => {
-                setTaskRoot(congviec.maCongViec);
-                setOpen(true);
-              }}
-              label='Tạo Công Việc'
-              icon={<IoMdAdd className='text-lg' />}
-              //className='flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs'
-              //style={{ height: '28px', fontSize: '12px' }}
-              className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 px-3 text-xs"
-
-            />
+            onClick={() => {
+              setTaskRoot(congviec.maCongViec);
+              setOpen(true);
+            }}
+            label="Tạo CV" // Rút ngắn văn bản nếu cần
+            icon={<IoMdAdd className="text-lg" />}
+            className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-0.5 px-2 text-xs h-8" // Giảm padding và xác định chiều cao
+          />
         </div>
       </div>
-      <AddTask open={open} setOpen={setOpen} phanDuAn={congviec.maPhanDuAn} duAn={duAn} congViecCha={taskRoot} />
+      <AddTask
+        open={open}
+        setOpen={setOpen}
+        phanDuAn={congviec.maPhanDuAn}
+        duAn={duAn}
+        congViecCha={taskRoot}
+      />
       {expanded && (
-        <DetailTask 
-          expanded={expanded} 
-          setExpanded={setExpanded} 
-          task={congviec} 
+        <DetailTask
+          expanded={expanded}
+          setExpanded={setExpanded}
+          task={congviec}
           titleTask={congviec.tenCongViec}
           date={formatDate(new Date(congviec.thoiGianKetThuc))}
           roleTeam={chiuTrachNhiem}
@@ -217,5 +238,5 @@ const TaskListItem=({congviec,duAn})=> {
       )}
     </div>
   );
-}
+};
 export default TaskListItem;

@@ -43,15 +43,15 @@ const functionSlice = createSlice({
         state.status = 'failed';
         state.error = action.error.message;
       })
-    //   .addCase(addFunction.fulfilled, (state, action) => {
-    //     state.list.push(action.payload);
-    //   })
-    //   .addCase(updateFunction.fulfilled, (state, action) => {
-    //     const index = state.list.findIndex((func) => func.id === action.payload.id);
-    //     if (index !== -1) {
-    //       state.list[index] = action.payload;
-    //     }
-    //   });
+      .addCase(addFunction.fulfilled, (state, action) => {
+        state.list.push(action.payload);
+      })
+      .addCase(updateFunction.fulfilled, (state, action) => {
+        const index = state.list.findIndex((func) => func.maChucNang === action.payload.maChucNang);
+        if (index !== -1) {
+          state.list[index] = action.payload;
+        }
+      });
   },
 });
 

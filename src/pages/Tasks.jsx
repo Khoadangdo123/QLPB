@@ -35,6 +35,8 @@ const Tasks = () => {
   const [loading, setLoading] = useState(false);
   const [sections, setSections] = useState([]);
   const [connection, setConnection] = useState(null);
+  const [showTimeline, setShowTimeline] = useState(false);
+  const [timelineModalOpen, setTimelineModalOpen] = useState(false);
   const duan=useSelector((state) =>
     state.projects.list.find((project) => project.maDuAn === Number(id))
   );
@@ -83,6 +85,9 @@ const Tasks = () => {
     }
   }, [connection, id, dispatch]);
   const status = id || ""; 
+  const toggleTimelineModal = () => {
+    setTimelineModalOpen(!timelineModalOpen);
+  };
   return loading ? (
     <div className='py-10'>
       <Loading />
@@ -93,12 +98,20 @@ const Tasks = () => {
         <Title title={status ? `Trạng thái công việc` : "Các công việc"} />
 
         {status && (
-          <Button
-            onClick={() => setOpen(true)}
-            label='Tạo phần dự án'
-            icon={<IoMdAdd className='text-lg' />}
-            className='flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 2xl:py-2.5'
-          />
+          <div className="flex gap-4">
+            <Button
+              onClick={() => setOpen(true)}
+              label="Tạo phần dự án"
+              icon={<IoMdAdd className="text-lg" />}
+              className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 2xl:py-2.5"
+            />
+            <Button
+              onClick={toggleTimelineModal} 
+              label="Hiển thị Timeline"
+              icon={<IoMdAdd className="text-lg" />}
+              className="flex flex-row-reverse gap-1 items-center bg-green-600 text-white rounded-md py-2 2xl:py-2.5"
+            />
+          </div>
         )}
       </div>
 
@@ -109,7 +122,6 @@ const Tasks = () => {
           <ListView phanDuAn={duan.phanDuAn} duAn={id}/>
         )}
       </Tabs>
-
       {/* <AddTask open={open} setOpen={setOpen} /> */}
       <AddSection open={open} setOpen={setOpen} duAn={id}></AddSection>
     </div>
