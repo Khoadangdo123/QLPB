@@ -1,138 +1,166 @@
-import React, { useState } from "react";
-import { useDispatch } from "react-redux";
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchPermissionById } from "../../redux/permission/permissionSlice";
 
-const UserPermissions = ({ role }) => {
-  const dispatch=useDispatch()
-  const permissionsData = {
-    Admin: [
-      {
-        function: "Quản lý tài khoản",
-        actions: [
-          { id: 1, action: "Tạo", allowed: true },
-          { id: 2, action: "Đọc", allowed: true },
-          { id: 3, action: "Cập nhật", allowed: true },
-          { id: 4, action: "Xóa", allowed: true },
-        ],
-      },
-      {
-        function: "Quản lý phòng ban",
-        actions: [
-          { id: 5, action: "Tạo", allowed: true },
-          { id: 6, action: "Đọc", allowed: true },
-          { id: 7, action: "Cập nhật", allowed: true },
-          { id: 8, action: "Xóa", allowed: true },
-        ],
-      },
-    ],
-    User: [
-      {
-        function: "Quản lý tài khoản",
-        actions: [
-          { id: 1, action: "Tạo", allowed: false },
-          { id: 2, action: "Đọc", allowed: true },
-          { id: 3, action: "Cập nhật", allowed: false },
-          { id: 4, action: "Xóa", allowed: false },
-        ],
-      },
-      {
-        function: "Quản lý phòng ban",
-        actions: [
-          { id: 5, action: "Tạo", allowed: false },
-          { id: 6, action: "Đọc", allowed: true },
-          { id: 7, action: "Cập nhật", allowed: false },
-          { id: 8, action: "Xóa", allowed: false },
-        ],
-      },
-    ],
-    Manager: [
-      {
-        function: "Quản lý tài khoản",
-        actions: [
-          { id: 1, action: "Tạo", allowed: false },
-          { id: 2, action: "Đọc", allowed: true },
-          { id: 3, action: "Cập nhật", allowed: true },
-          { id: 4, action: "Xóa", allowed: false },
-        ],
-      },
-      {
-        function: "Quản lý phòng ban",
-        actions: [
-          { id: 5, action: "Tạo", allowed: false },
-          { id: 6, action: "Đọc", allowed: true },
-          { id: 7, action: "Cập nhật", allowed: true },
-          { id: 8, action: "Xóa", allowed: false },
-        ],
-      },
-    ],
+const UserPermissions = ({ role, onClose }) => {
+  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch()
+  const data=useSelector((state)=>state.permissions.list)
+  const allPermissionsData = [
+    {
+      function: "Quản lý tài khoản",
+      actions: [
+        { id: 1, action: "Xem", allowed: false },
+        { id: 2, action: "Thêm", allowed: false },
+        { id: 3, action: "Sửa", allowed: false },
+        { id: 4, action: "Xóa", allowed: false },
+      ],
+    },
+    {
+      function: "Quản lý phòng ban",
+      actions: [
+        { id: 5, action: "Xem", allowed: false },
+        { id: 6, action: "Thêm", allowed: false },
+        { id: 7, action: "Sửa", allowed: false },
+        { id: 8, action: "Xóa", allowed: false },
+      ],
+    },
+    // Add more functions as needed
+    {
+      function: "Quản lý dự án",
+      actions: [
+        { id: 9, action: "Xem", allowed: false },
+        { id: 10, action: "Thêm", allowed: false },
+        { id: 11, action: "Sửa", allowed: false },
+        { id: 12, action: "Xóa", allowed: false },
+      ],
+    },
+    {
+      function: "Quản lý báo cáo",
+      actions: [
+        { id: 13, action: "Xem", allowed: false },
+        { id: 14, action: "Thêm", allowed: false },
+        { id: 15, action: "Sửa", allowed: false },
+        { id: 16, action: "Xóa", allowed: false },
+      ],
+    },
+    // Continue adding other functions as necessary
+  ];
+
+  // State to manage actions for the selected role
+  const [permissions, setPermissions] = useState([]);
+
+  useEffect(() => {
+    // Populate permissions with all functions
+    const updatedPermissions = allPermissionsData.map((perm) => {
+      // Logic to determine if the action is allowed can be added here
+      const actions = perm.actions.map((action) => {
+        return { ...action, allowed: false }; // Set default allowed to false
+      });
+      return { ...perm, actions };
+    });
+
+    setPermissions(updatedPermissions);
+  }, [role]);
+
+  const handleCheckboxChange = (permissionId) => {
+    const isChecked = permissions.find(perm => perm.function === permissionId)?.actions.every(action => action.allowed);
+    setPermissions((prevPermissions) =>
+      prevPermissions.map((perm) =>
+        perm.function === permissionId
+          ? {
+              ...perm,
+              actions: perm.actions.map((action) => ({
+                ...action,
+                allowed: !isChecked // Toggle all actions based on current state
+              })),
+            }
+          : perm
+      )
+    );
   };
 
-  const [permissions, setPermissions] = useState(permissionsData[role.tenQuyen] || []);
-
-  const handlePermissionChange = (functionIndex, actionId) => {
+  const handleActionChange = (permissionId, actionId) => {
     setPermissions((prevPermissions) =>
-      prevPermissions.map((permission, index) =>
-        index === functionIndex
+      prevPermissions.map((perm) =>
+        perm.function === permissionId
           ? {
-              ...permission,
-              actions: permission.actions.map((action) =>
+              ...perm,
+              actions: perm.actions.map((action) =>
                 action.id === actionId
                   ? { ...action, allowed: !action.allowed }
                   : action
               ),
             }
-          : permission
+          : perm
       )
     );
   };
 
-  return (
-    <div className="p-6 bg-white rounded-lg shadow-lg">
-      <h1 className="text-2xl font-semibold mb-6">Phân Quyền Người Dùng</h1>
+  const handleSave = () => {
+    // Dispatch an action to save the permissions for the role
+    // dispatch(savePermissions({ roleId: role.maQuyen, permissions }));
+    onClose();
+  };
 
-      <table className="min-w-full border-collapse border border-gray-200 text-left">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="border border-gray-200 p-3">Chức năng</th>
-            <th className="border border-gray-200 p-3">Tạo</th>
-            <th className="border border-gray-200 p-3">Đọc</th>
-            <th className="border border-gray-200 p-3">Cập nhật</th>
-            <th className="border border-gray-200 p-3">Xóa</th>
+  return (
+    <div>
+      <h2 className="text-xl mb-4">Quyền cho {role.tenQuyen}</h2>
+      <table className="min-w-full bg-white border border-gray-300">
+        <thead>
+          <tr className="bg-gray-200">
+            <th className="py-2 px-4 border">Chức năng</th>
+            <th className="py-2 px-4 border">Xem</th>
+            <th className="py-2 px-4 border">Thêm</th>
+            <th className="py-2 px-4 border">Sửa</th>
+            <th className="py-2 px-4 border">Xóa</th>
           </tr>
         </thead>
         <tbody>
-          {permissions.length > 0 ? ( // Kiểm tra permissions có tồn tại và có phần tử
-            permissions.map((permission, functionIndex) => (
-              <tr key={permission.function} className="hover:bg-gray-50">
-                <td className="border border-gray-200 p-3">{permission.function}</td>
-                {permission.actions.map((action) => (
-                  <td
-                    key={action.id}
-                    className="border border-gray-200 p-3 text-center"
-                  >
+          {permissions.map((permission) => (
+            <React.Fragment key={permission.function}>
+              <tr>
+                <td className="py-2 px-4 border">
+                  <label className="flex items-center">
                     <input
                       type="checkbox"
-                      className="form-checkbox h-5 w-5 text-blue-600"
-                      checked={action.allowed}
-                      onChange={() =>
-                        handlePermissionChange(functionIndex, action.id)
-                      }
+                      checked={permission.actions.every(action => action.allowed)}
+                      onChange={() => handleCheckboxChange(permission.function)}
                     />
+                    <span className="ml-2">{permission.function}</span>
+                  </label>
+                </td>
+                {permission.actions.map((action) => (
+                  <td key={action.id} className="py-2 px-4 border">
+                    <label className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={action.allowed}
+                        onChange={() => handleActionChange(permission.function, action.id)}
+                      />
+                      <span className="ml-2">{action.allowed ? "Có" : "Không"}</span>
+                    </label>
                   </td>
                 ))}
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td
-                colSpan="5"
-                className="text-center border border-gray-200 p-3 text-red-500"
-              >
-                Không có quyền nào được tìm thấy cho nhóm quyền này.
-              </td>
-            </tr>
-          )}
+            </React.Fragment>
+          ))}
         </tbody>
       </table>
+      <div className="mt-4">
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+          onClick={handleSave}
+        >
+          Lưu
+        </button>
+        <button
+          className="bg-gray-300 text-gray-700 px-4 py-2 rounded ml-2"
+          onClick={onClose}
+        >
+          Đóng
+        </button>
+      </div>
     </div>
   );
 };

@@ -18,3 +18,7 @@ export const updatePermission = async (id, permission) => {
     const response = await axios.put(API_ENDPOINTS.NHOMQUYEN + "/" + id, permission);
     return response.data;
 };
+export const fetchPermissionById = async (id) => {
+    const response = await axios.get(API_ENDPOINTS.NHOMQUYEN + "/" + id);
+    return response.data;
+};

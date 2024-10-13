@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchPermissions as fetchAPI, addPermission as addAPI, updatePermission as updateAPI } from './permissionAPI';
+import { fetchPermissions as fetchAPI, addPermission as addAPI, updatePermission as updateAPI,fetchPermissionById as fetchByIdAPI } from './permissionAPI';
 
 export const fetchPermissions = createAsyncThunk('permissions/fetchPermissions', async ({ search, page }) => {
   const response = await fetchAPI(search, page);
@@ -13,6 +13,10 @@ export const addPermission = createAsyncThunk('permissions/addPermission', async
 
 export const updatePermission = createAsyncThunk('permissions/updatePermission', async ({ id, permission }) => {
   const response = await updateAPI(id, permission);
+  return response;
+});
+export const fetchPermissionById = createAsyncThunk('permissions/fetchPermissionById', async (id) => {
+  const response = await fetchByIdAPI(id);
   return response;
 });
 
@@ -42,16 +46,24 @@ const permissionSlice = createSlice({
         state.loading = false;
         state.status = 'failed';
         state.error = action.error.message;
+      }).addCase(fetchPermissionById.fulfilled, (state, action) => {
+        const index = state.list.findIndex((permission) => permission.maQuyen === action.payload.maQuyen);
+        
+        if (index !== -1) {
+          state.list[index] = action.payload;
+        } else {
+          state.list.push(action.payload);
+        }
       })
-    //   .addCase(addPermission.fulfilled, (state, action) => {
-    //     state.list.push(action.payload);
-    //   })
-    //   .addCase(updatePermission.fulfilled, (state, action) => {
-    //     const index = state.list.findIndex((permission) => permission.id === action.payload.id);
-    //     if (index !== -1) {
-    //       state.list[index] = action.payload;
-    //     }
-    //   });
+      .addCase(addPermission.fulfilled, (state, action) => {
+        state.list.push(action.payload);
+      })
+      .addCase(updatePermission.fulfilled, (state, action) => {
+        const index = state.list.findIndex((permission) => permission.maQuyen === action.payload.maQuyen);
+        if (index !== -1) {
+          state.list[index] = action.payload;
+        }
+      });
   },
 });
 

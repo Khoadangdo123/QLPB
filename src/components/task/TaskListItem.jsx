@@ -62,11 +62,6 @@ const TaskListItem = ({ congviec, duAn }) => {
               dispatch(fetchByIdTask(maCongViec));
             }
           });
-          // connection.on("loadCongViec", () => {
-          //   if (maCongViec) {
-          //     dispatch(fetchByIdTask(maCongViec));
-          //   }
-          // });
         })
         .catch((error) => console.error("Connection failed: ", error));
     }
@@ -93,7 +88,9 @@ const TaskListItem = ({ congviec, duAn }) => {
   const isParentTask = (task) => {
     return !task.maCongViecCha;
   };
-
+  const hasSubTasks = (task) => {
+    return task.congViecCon && task.congViecCon.length > 0;
+  };
   const getCompletionColor = (percent) => {
     if (percent < 50) {
       return "bg-red-600";
@@ -103,7 +100,11 @@ const TaskListItem = ({ congviec, duAn }) => {
       return "bg-green-500";
     }
   };
-  const itemClass = isParentTask(congviec) ? "font-bold" : "pl-6 bg-gray-100";
+  const itemClass = isParentTask(congviec) 
+  ? hasSubTasks(congviec) 
+    ? "font-bold text-blue-600 bg-blue-100"
+    : "font-bold bg-blue-200"
+  : "pl-6 bg-gray-100";
   return (
     <div
       className={`w-full flex items-center px-4 ${

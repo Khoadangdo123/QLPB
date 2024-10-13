@@ -28,6 +28,7 @@
     "react-modal": "^3.16.1",
     "react-redux": "^9.1.0",
     "react-router-dom": "^6.22.0",
+    "react-vertical-timeline-component": "^3.6.0",
     "react-vis": "^1.12.1",
     "react-visjs-timeline": "^1.6.0",
     "recharts": "^2.12.0",

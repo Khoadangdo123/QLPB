@@ -17,6 +17,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchByIdProject} from "../redux/project/projectSlice";
 import AddSection from "../components/section/AddSection";
 import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
+import Timeline from "../components/task/TimeLine";
+import ModalWrapper from "../components/ModalWrapper";
 const TABS = [
   { title: "Chế độ Bảng", icon: <MdGridView /> },
   { title: "Chế độ Danh sách", icon: <FaList /> },  
@@ -86,6 +88,7 @@ const Tasks = () => {
   }, [connection, id, dispatch]);
   const status = id || ""; 
   const toggleTimelineModal = () => {
+    // setShowTimeline((prev) => !prev);
     setTimelineModalOpen(!timelineModalOpen);
   };
   return loading ? (
@@ -124,6 +127,11 @@ const Tasks = () => {
       </Tabs>
       {/* <AddTask open={open} setOpen={setOpen} /> */}
       <AddSection open={open} setOpen={setOpen} duAn={id}></AddSection>
+      {/* {showTimeline && <Timeline />} */}
+      <ModalWrapper open={timelineModalOpen} setOpen={setTimelineModalOpen}>
+        <h2 className="text-lg font-semibold mb-4">Timeline Dự án</h2>
+        <Timeline/>
+      </ModalWrapper>
     </div>
   );
 };

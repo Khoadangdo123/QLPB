@@ -82,12 +82,12 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
             maNhanVien: Number(employee.maNhanVien),
             vaiTro: employee.vaiTro,
           }));
-          // await dispatch(sendGmail({
-          //   name: employee.tenNhanVien,
-          //   toGmail: employee.email,
-          //   subject: "Thông Tin Phân Công Dự Án",
-          //   body: generateEmailTemplate(employee)
-          // }));
+          await dispatch(sendGmail({
+            name: employee.tenNhanVien,
+            toGmail: employee.email,
+            subject: "Thông Tin Phân Công Dự Án",
+            body: generateEmailTemplate(employee)
+          }));
         });
         await Promise.all(employeePromises);
       }

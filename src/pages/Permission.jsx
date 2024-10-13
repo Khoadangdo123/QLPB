@@ -52,7 +52,6 @@ const Permission = () => {
         .catch((error) => console.error("Connection failed: ", error));
     }
   }, [dispatch, pageSize, connection]);
-  console.log(roles);
   const roleActionHandler = () => {};
   const deleteHandler = () => {};
 

@@ -7,8 +7,8 @@ const DepartmentAssignment=()=>{
     const [loading, setLoading] = useState(true);
     const [connection, setConnection] = useState(null);
     const dispatch=useDispatch();
-    //const maNhanVien=Number(localStorage.getItem("userId"));
-    const maNhanVien=3
+    const maNhanVien=Number(localStorage.getItem("userId"));
+    //const maNhanVien=3
     const phongbans=useSelector((state)=>state.departments)
     useEffect(() => {
         const loadData = async () => {
