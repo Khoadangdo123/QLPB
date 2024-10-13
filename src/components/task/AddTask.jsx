@@ -7,29 +7,96 @@ import UserList from "./UserList";
 import SelectList from "../SelectList";
 import { BiImages } from "react-icons/bi";
 import Button from "../Button";
-
-const LISTS = ["CẦN LÀM", "ĐANG LÀM", "HOÀN THÀNH"];
+import { useDispatch } from "react-redux";
+import { addTask } from "../../redux/task/taskSlice";
+import { fetchByIdProject } from "../../redux/project/projectSlice";
+import DepartmentSelect from "./DepartmentTask";
+import EmployeeSelect from "./EmployeeTask";
+import { addAssignment } from "../../redux/assignment/assignmentSlice";
+import { sendGmail } from "../../redux/sendgmail/sendgmailSlice";
+import { addWorkDepartment } from "../../redux/workdepartment/workdepartmentSlice";
+const LISTS = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const PRIORITY = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 
 const uploadedFileURLs = [];
 
-const AddTask = ({ open, setOpen }) => {
+const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
   const task = "";
-
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
   const [team, setTeam] = useState(task?.team || []);
+  const dispatch=useDispatch();
+  const [selectedEmployees, setSelectedEmployees] = useState([]);
   const [stage, setStage] = useState(task?.stage?.toUpperCase() || LISTS[0]);
+  const [selectedDepartment, setSelectedDepartment] = useState([]);
   const [priority, setPriority] = useState(
     task?.priority?.toUpperCase() || PRIORITY[2]
   );
   const [assets, setAssets] = useState([]);
   const [uploading, setUploading] = useState(false);
 
-  const submitHandler = () => {};
+  const submitHandler =async (data) => {
+    console.log(congViecCha,duAn)
+    let CongViec={
+      maPhanDuAn: Number(phanDuAn),
+      maCongViecCha: congViecCha===false?null:congViecCha,
+      tenCongViec: data.tenCongViec,
+      moTa: data.moTa,
+      mucDoUuTien: stage,
+      thoiGianKetThuc: data.thoiGianKetThuc,
+      trangThaiCongViec: false,
+      mucDoHoanThanh: 0
+    }
+    console.log(selectedDepartment)
+    try{
+      const result=await dispatch(addTask(CongViec)).unwrap();
+      if (Array.isArray(selectedDepartment) && selectedDepartment.length > 0) {
+        const departmentPromises = selectedDepartment.map(async (department) => {
+          await dispatch(addWorkDepartment({
+            maCongViec: result.maCongViec,
+            maPhongBan: Number(department.maPhongBan)
+          }))
+  
+          await dispatch(addAssignment({
+            maCongViec: result.maCongViec,
+            maNhanVien: Number(department.maTruongPhong),
+            vaiTro: "Người Chịu Trách Nhiệm"
+          }));
+          await dispatch(sendGmail({
+            name: department.responsiblePerson,
+            toGmail: department.email,
+            subject: "Thông Tin Phân Công Dự Án",
+            body: generateEmailTemplateForManager(department)
+          }));
+          
+        });
+        await Promise.all(departmentPromises);
+      }
+      if (Array.isArray(selectedEmployees) && selectedEmployees.length > 0) {
+        const employeePromises = selectedEmployees.map(async (employee) => {
+          await dispatch(addAssignment({
+            maCongViec: result.maCongViec,
+            maNhanVien: Number(employee.maNhanVien),
+            vaiTro: employee.vaiTro,
+          }));
+          await dispatch(sendGmail({
+            name: employee.tenNhanVien,
+            toGmail: employee.email,
+            subject: "Thông Tin Phân Công Dự Án",
+            body: generateEmailTemplate(employee)
+          }));
+        });
+        await Promise.all(employeePromises);
+      }
+      await dispatch(fetchByIdProject(Number(duAn)))
+      setOpen(false)
+    }catch(e){
+      console.log(e)
+    }
+  };
 
   const handleSelect = (e) => {
     setAssets(e.target.files);
@@ -38,30 +105,47 @@ const AddTask = ({ open, setOpen }) => {
   return (
     <>
       <ModalWrapper open={open} setOpen={setOpen}>
+        <div className="max-h-screen overflow-y-auto">
         <form onSubmit={handleSubmit(submitHandler)}>
           <Dialog.Title
             as='h2'
             className='text-base font-bold leading-6 text-gray-900 mb-4'
           >
-            {task ? "CẬP NHẬT CÔNG VIỆC" : "THÊM CÔNG VIỆC"}
+            THÊM CÔNG VIỆC
           </Dialog.Title>
 
           <div className='mt-2 flex flex-col gap-6'>
             <Textbox
-              placeholder='Tiêu đề công việc'
+              placeholder='Tên công việc'
               type='text'
               name='title'
-              label='Tiêu đề công việc'
+              label='Tên công việc'
               className='w-full rounded'
-              register={register("title", { required: "Tiêu đề là bắt buộc" })}
-              error={errors.title ? errors.title.message : ""}
+              register={register("tenCongViec", { required: "Tên công việc là bắt buộc" })}
+              error={errors.tenCongViec ? errors.tenCongViec.message : ""}
+            />
+             <Textbox
+              placeholder='Mô tả'
+              type='text'
+              name='title'
+              label='Mô tả'
+              className='w-full rounded'
+              register={register("moTa", { required: "Mô tả công việc là bắt buộc" })}
+              error={errors.moTa ? errors.moTa.message : ""}
             />
 
-            <UserList setTeam={setTeam} team={team} />
-
+            {/* <UserList setTeam={setTeam} team={team} /> */}
+            <EmployeeSelect
+            selectedEmployees={selectedEmployees}
+            setSelectedEmployees={setSelectedEmployees}
+          />
+            <DepartmentSelect
+              selected={selectedDepartment}
+              setSelected={setSelectedDepartment}
+            />
             <div className='flex gap-4'>
               <SelectList
-                label='Giai đoạn công việc'
+                label='Mức Độ Ưu Tiên'
                 lists={LISTS}
                 selected={stage}
                 setSelected={setStage}
@@ -70,42 +154,15 @@ const AddTask = ({ open, setOpen }) => {
               <div className='w-full'>
                 <Textbox
                   placeholder='Ngày'
-                  type='date'
+                  type='datetime-local'
                   name='date'
                   label='Ngày hoàn thành'
                   className='w-full rounded'
-                  register={register("date", {
+                  register={register("thoiGianKetThuc", {
                     required: "Ngày là bắt buộc!",
                   })}
                   error={errors.date ? errors.date.message : ""}
                 />
-              </div>
-            </div>
-
-            <div className='flex gap-4'>
-              <SelectList
-                label='Mức độ ưu tiên'
-                lists={PRIORITY}
-                selected={priority}
-                setSelected={setPriority}
-              />
-
-              <div className='w-full flex items-center justify-center mt-4'>
-                <label
-                  className='flex items-center gap-1 text-base text-ascent-2 hover:text-ascent-1 cursor-pointer my-4'
-                  htmlFor='imgUpload'
-                >
-                  <input
-                    type='file'
-                    className='hidden'
-                    id='imgUpload'
-                    onChange={(e) => handleSelect(e)}
-                    accept='.jpg, .png, .jpeg'
-                    multiple={true}
-                  />
-                  <BiImages />
-                  <span>Thêm Tài Liệu</span>
-                </label>
               </div>
             </div>
 
@@ -131,9 +188,117 @@ const AddTask = ({ open, setOpen }) => {
             </div>
           </div>
         </form>
+        </div>
       </ModalWrapper>
     </>
   );
+};
+const generateEmailTemplate = (employee) => {
+  return `
+    <html>
+        <head>
+            <style>
+                .email-container {
+                    font-family: Arial, sans-serif;
+                    line-height: 1.5;
+                    background-color: #f4f4f4;
+                    padding: 20px;
+                    border-radius: 10px;
+                }
+                .email-header {
+                    font-size: 20px;
+                    font-weight: bold;
+                    color: #2e86c1;
+                }
+                .email-body {
+                    margin-top: 20px;
+                    color: #333;
+                    font-size: 16px;
+                }
+                p {
+                    margin: 10px 0;
+                }
+                .highlight {
+                    color: #d35400;
+                    font-weight: bold;
+                }
+                .footer {
+                    margin-top: 30px;
+                    font-size: 14px;
+                    color: #888;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="email-container">
+                <div class="email-header">Xin chào ${employee.tenNhanVien},</div>
+                <div class="email-body">
+                    <p>Bạn đã được chọn để tham gia dự án với vai trò: <span class="highlight">${employee.vaiTro}</span></p>
+                    <p>Vui lòng kiểm tra lại chi tiết trong hệ thống quản lý công việc của chúng tôi.</p>
+                    <p>Trân trọng,</p>
+                    <p>Đội ngũ quản lý dự án</p>
+                </div>
+                <div class="footer">
+                    <p>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email support@company.com.</p>
+                </div>
+            </div>
+        </body>
+    </html>
+  `;
+};
+
+const generateEmailTemplateForManager = (department) => {
+  return `
+    <html>
+        <head>
+            <style>
+                .email-container {
+                    font-family: Arial, sans-serif;
+                    line-height: 1.5;
+                    background-color: #f9f9f9;
+                    padding: 20px;
+                    border-radius: 10px;
+                }
+                .email-header {
+                    font-size: 22px;
+                    font-weight: bold;
+                    color: #27ae60;
+                }
+                .email-body {
+                    margin-top: 20px;
+                    color: #333;
+                    font-size: 16px;
+                }
+                p {
+                    margin: 10px 0;
+                }
+                .highlight {
+                    color: #c0392b;
+                    font-weight: bold;
+                }
+                .footer {
+                    margin-top: 30px;
+                    font-size: 14px;
+                    color: #888;
+                }
+            </style>
+        </head>
+        <body>
+            <div class="email-container">
+                <div class="email-header">Xin chào ${department.responsiblePerson},</div>
+                <div class="email-body">
+                    <p>Bạn đã được giao nhiệm vụ quản lý công việc trong dự án với mã công việc: <span class="highlight">${department.maCongViec}</span></p>
+                    <p>Vui lòng kiểm tra lại chi tiết trong hệ thống quản lý công việc của chúng tôi.</p>
+                    <p>Trân trọng,</p>
+                    <p>Đội ngũ quản lý dự án</p>
+                </div>
+                <div class="footer">
+                    <p>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ với chúng tôi qua email support@company.com.</p>
+                </div>
+            </div>
+        </body>
+    </html>
+  `;
 };
 
 export default AddTask;

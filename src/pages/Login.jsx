@@ -3,10 +3,12 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import Textbox from "../components/Textbox";
 import Button from "../components/Button";
-import { useSelector } from "react-redux";
-
+import { useDispatch, useSelector } from "react-redux";
+import {AuthLogin} from "../redux/authen/authenSlice"
 const Login = () => {
-  const { user } = useSelector((state) => state.auth);
+  //const { user } = useSelector((state) => state.auth);
+  const {authUser,loading,error}=useSelector((state)=>state.authen)
+  const dispath=useDispatch()
   const {
     register,
     handleSubmit,
@@ -16,12 +18,26 @@ const Login = () => {
   const navigate = useNavigate();
 
   const submitHandler = async (data) => {
-    console.log("submit");
+    try{
+      let AuthRequest={
+        tenTaiKhoan:data.tenTaiKhoan,
+        matKhau:data.matKhau
+      }
+      console.log(AuthRequest)
+      const result = await dispath(AuthLogin(AuthRequest))
+      if(result.payload && result.payload.isSuccess){
+        navigate('/dashboard')
+      }
+    }catch(e){
+      console.log(e);
+    }
   };
 
   useEffect(() => {
-    user && navigate("/dashboard");
-  }, [user]);
+    if (authUser) {
+      navigate('/dashboard');
+    }
+  }, [authUser, navigate]);
 
   return (
     <div className='w-full min-h-screen flex items-center justify-center flex-col lg:flex-row bg-[#f3f4f6]'>
@@ -60,26 +76,26 @@ const Login = () => {
     
             <div className='flex flex-col gap-y-5'>
               <Textbox
-                placeholder='email@example.com'
-                type='email'
-                name='email'
-                label='Địa chỉ Email'
+                placeholder='tài khoản của bạn'
+                type='text'
+                name='tenTaiKhoan'
+                label='Tài Khoản'
                 className='w-full rounded-full'
-                register={register("email", {
-                  required: "Địa chỉ Email là bắt buộc!",
+                register={register("tenTaiKhoan", {
+                  required: "Tài Khoản là bắt buộc!",
                 })}
-                error={errors.email ? errors.email.message : ""}
+                error={errors.tenTaiKhoan ? errors.tenTaiKhoan.message : ""}
               />
               <Textbox
                 placeholder='mật khẩu của bạn'
                 type='password'
-                name='password'
+                name='matKhau'
                 label='Mật khẩu'
                 className='w-full rounded-full'
-                register={register("password", {
+                register={register("matKhau", {
                   required: "Mật khẩu là bắt buộc!",
                 })}
-                error={errors.password ? errors.password.message : ""}
+                error={errors.matKhau ? errors.matKhau.message : ""}
               />
     
               <span className='text-sm text-gray-500 hover:text-blue-600 hover:underline cursor-pointer'>
@@ -91,6 +107,9 @@ const Login = () => {
                 label='Gửi'
                 className='w-full h-10 bg-blue-700 text-white rounded-full'
               />
+              {error &&(
+                <div className="alert alert-danger" role="alert">{error}</div>
+              )}
             </div>
           </form>
         </div>

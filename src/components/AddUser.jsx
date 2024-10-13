@@ -9,7 +9,7 @@ import Button from "./Button";
 
 const AddUser = ({ open, setOpen, userData }) => {
   let defaultValues = userData ?? {};
-  const { user } = useSelector((state) => state.auth);
+  //const { user } = useSelector((state) => state.auth);
 
   const isLoading = false,
     isUpdating = false;

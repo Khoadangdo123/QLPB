@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaList } from "react-icons/fa";
 import { MdGridView } from "react-icons/md";
 import { useParams } from "react-router-dom";
@@ -12,12 +12,17 @@ import BoardView from "../components/BoardView";
 import { tasks } from "../assets/data";
 import Table from "../components/task/Table";
 import AddTask from "../components/task/AddTask";
-
+import ListView from "../components/task/ListView";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchByIdProject} from "../redux/project/projectSlice";
+import AddSection from "../components/section/AddSection";
+import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
+import Timeline from "../components/task/TimeLine";
+import ModalWrapper from "../components/ModalWrapper";
 const TABS = [
   { title: "Chế độ Bảng", icon: <MdGridView /> },
   { title: "Chế độ Danh sách", icon: <FaList /> },  
 ];
-
 const TASK_TYPE = {
   todo: "bg-blue-600",
   "in progress": "bg-yellow-600",
@@ -25,14 +30,67 @@ const TASK_TYPE = {
 };
 
 const Tasks = () => {
-  const params = useParams();
-
+  const {id} = useParams();
+  const dispatch=useDispatch()
   const [selected, setSelected] = useState(0);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [sections, setSections] = useState([]);
+  const [connection, setConnection] = useState(null);
+  const [showTimeline, setShowTimeline] = useState(false);
+  const [timelineModalOpen, setTimelineModalOpen] = useState(false);
+  const duan=useSelector((state) =>
+    state.projects.list.find((project) => project.maDuAn === Number(id))
+  );
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchByIdProject(id))
+    }
+  }, [id, dispatch]);
+  useEffect(()=>{
+    const newConnection = new HubConnectionBuilder()
+      .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
+      .configureLogging(LogLevel.Information)
+      .build();
 
-  const status = params?.status || "";
-
+    setConnection(newConnection);
+  },[])
+  useEffect(() => {
+    if (connection && connection.state === "Disconnected") {
+      connection.start()
+        .then(() => {
+          console.log("Connected!");
+          connection.on("loadDuAn", () => {
+            if (id) {
+              dispatch(fetchByIdProject(id));
+              console.log("Dự Án: "+id)
+            }
+          });
+          connection.on("loadCongViec", () => {
+            if (id) {
+              dispatch(fetchByIdProject(id));
+            }
+          });
+          connection.on("loadPhanCong", () => {
+            if (id) {
+              dispatch(fetchByIdProject(id));
+            }
+          });
+          connection.on("updateCongViec", () => {
+            if (id) {
+              dispatch(fetchByIdProject(id));
+              console.log("Dự Án: "+id)
+            }
+          });
+        })
+        .catch((error) => console.error("Connection failed: ", error));
+    }
+  }, [connection, id, dispatch]);
+  const status = id || ""; 
+  const toggleTimelineModal = () => {
+    // setShowTimeline((prev) => !prev);
+    setTimelineModalOpen(!timelineModalOpen);
+  };
   return loading ? (
     <div className='py-10'>
       <Loading />
@@ -42,39 +100,38 @@ const Tasks = () => {
       <div className='flex items-center justify-between mb-4'>
         <Title title={status ? `Trạng thái công việc` : "Các công việc"} />
 
-        {!status && (
-          <Button
-            onClick={() => setOpen(true)}
-            label='Tạo công việc'
-            icon={<IoMdAdd className='text-lg' />}
-            className='flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 2xl:py-2.5'
-          />
+        {status && (
+          <div className="flex gap-4">
+            <Button
+              onClick={() => setOpen(true)}
+              label="Tạo phần dự án"
+              icon={<IoMdAdd className="text-lg" />}
+              className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 2xl:py-2.5"
+            />
+            <Button
+              onClick={toggleTimelineModal} 
+              label="Hiển thị Timeline"
+              icon={<IoMdAdd className="text-lg" />}
+              className="flex flex-row-reverse gap-1 items-center bg-green-600 text-white rounded-md py-2 2xl:py-2.5"
+            />
+          </div>
         )}
       </div>
 
       <Tabs tabs={TABS} setSelected={setSelected}>
-        {!status && (
-          <div className='w-full flex justify-between gap-4 md:gap-x-12 py-4'>
-            <TaskTitle label='Việc cần làm' className={TASK_TYPE.todo} />
-            <TaskTitle
-              label='Đang thực hiện'
-              className={TASK_TYPE["in progress"]}
-            />
-            <TaskTitle label='Hoàn thành' className={TASK_TYPE.completed} />
-          </div>
-        )}
-
         {selected !== 1 ? (
           <BoardView tasks={tasks} />
         ) : (
-          <div className='w-full'>
-            <Table tasks={tasks} />
-          </div>
+          <ListView phanDuAn={duan.phanDuAn} duAn={id}/>
         )}
       </Tabs>
-
-      <AddTask open={open} setOpen={setOpen} />
-
+      {/* <AddTask open={open} setOpen={setOpen} /> */}
+      <AddSection open={open} setOpen={setOpen} duAn={id}></AddSection>
+      {/* {showTimeline && <Timeline />} */}
+      <ModalWrapper open={timelineModalOpen} setOpen={setTimelineModalOpen}>
+        <h2 className="text-lg font-semibold mb-4">Timeline Dự án</h2>
+        <Timeline/>
+      </ModalWrapper>
     </div>
   );
 };

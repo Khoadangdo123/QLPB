@@ -34,7 +34,7 @@ const Table = ({ tasks }) => {
   const TableHeader = () => (
     <thead className='w-full border-b border-gray-300'>
       <tr className='w-full text-black  text-left'>
-        <th className='py-2'>Tên Nhiệm Vụ</th>
+        <th className='py-2'>Tên Nhiệm Vụ ewfwe</th>
         <th className='py-2'>Cấp Độ</th>
         <th className='py-2 line-clamp-1'>Ngày Bắt Đầu</th>
         <th className='py-2'>Thông Tin</th>
@@ -129,6 +129,7 @@ const Table = ({ tasks }) => {
       <div className='bg-white  px-2 md:px-4 pt-4 pb-9 shadow-md rounded'>
         <div className='overflow-x-auto'>
           <table className='w-full '>
+
             <TableHeader />
             {tasks.map((task, index) => (
               <TableRow key={index} task={task} />
