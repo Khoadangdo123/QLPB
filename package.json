@@ -14,6 +14,7 @@
     "@microsoft/signalr": "^8.0.7",
     "@reduxjs/toolkit": "^2.2.7",
     "axios": "^1.7.7",
+    "caniuse-lite": "^1.0.30001668",
     "clsx": "^2.1.0",
     "date-fns": "^4.1.0",
     "i18next": "^23.15.1",

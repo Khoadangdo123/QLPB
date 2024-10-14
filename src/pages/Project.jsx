@@ -3,21 +3,56 @@ import Button from "../components/Button";
 import { IoMdAdd } from "react-icons/io";
 import { useDispatch, useSelector } from "react-redux";
 import PageSizeSelect from "../components/PageSizeSelect";
+import ConfirmatioDialog, { UserAction } from "../components/Dialogs";
 import AddProject from "../components/project/AddProject";
-import { fetchProjects } from "../redux/projects/projectSlice";
+import { fetchProjects } from "../redux/project/projectSlice";
+import UpdateProject from "../components/project/UpdateProject";
+import DeleteProjectById from "../components/project/DeleteProjectById";
 
 const Projects = () => {
   const [pageSize, setPageSize] = useState(10);
   const projects = useSelector((state) => state.projects.list);
+  const [openDialog, setOpenDialog] = useState(false);
   const [open, setOpen] = useState(false);
-  const dispatch = useDispatch();
+  const [openAction, setOpenAction] = useState(false);
+  const [selected, setSelected] = useState(null);
+  const [openUpdate, setOpenUpdate] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [projectIdToDelete, setProjectIdToDelete] = useState(null);
+  const [connection, setConnection] = useState(null);
+  const dispatch=useDispatch()
 
   useEffect(() => {
     dispatch(fetchProjects({ search: "", page: pageSize }));
   }, [dispatch, pageSize]);
 
-  const editClick = (project) => {
-    // Implement logic to edit project
+  useEffect(()=>{
+    if (connection && connection.state === "Disconnected") {
+        connection.start()
+          .then(() => {
+            console.log("Connected!");
+            connection.on("loadProject", () => {
+              dispatch(fetchProjects({ search: '', page: pageSize }));
+            
+            });
+          })
+          .catch((error) => console.error("Connection failed: ", error));
+      }
+  },[dispatch,pageSize,connection])
+  const projectActionHandler = () => {};
+  const deleteHandler = () => {};
+
+  const deleteClick = (id) => {
+    setProjectIdToDelete(id);
+    console.log("id", id);
+    setOpenDelete(true);
+  };
+
+  const editClick = (project) => { 
+    setSelectedProject(project);
+    console.log("project", project);
+    setOpenUpdate(true);
   };
 
   const TableHeader = () => (
@@ -39,6 +74,12 @@ const Projects = () => {
           label="Edit"
           type="button"
           onClick={() => editClick(project)}
+        />
+        <Button
+          className="text-red-600 hover:text-red-500 font-semibold sm:px-0"
+          label="Delete"
+          type="button"
+          onClick={() => deleteClick(project.maDuAn)}
         />
       </td>
     </tr>
@@ -63,7 +104,7 @@ const Projects = () => {
             <table className="w-full mb-5">
               <TableHeader />
               <tbody>
-                {projects?.map((project, index) => (
+                {projects?.filter(project => project.trangThai === true).map((project, index) => (
                   <TableRow key={index} project={project} />
                 ))}
               </tbody>
@@ -73,6 +114,19 @@ const Projects = () => {
       </div>
 
       <AddProject open={open} setOpen={setOpen} projectData={null} />
+      <UpdateProject open={openUpdate} setOpen={setOpenUpdate} projectData={selectedProject} />
+      <DeleteProjectById open={openDelete} setOpen={setOpenDelete} projectId={projectIdToDelete} />
+      {/* <ConfirmatioDialog
+        open={openDialog}
+        setOpen={setOpenDialog}
+        onClick={deleteHandler}
+      /> */}
+
+      <UserAction
+        open={openAction}
+        setOpen={setOpenAction}
+        onClick={projectActionHandler}
+      />
     </>
   );
 };

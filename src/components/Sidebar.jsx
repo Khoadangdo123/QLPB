@@ -6,7 +6,7 @@ import {
   MdSettings,
   MdTaskAlt,
 } from "react-icons/md";
-import { FaTasks, FaTrashAlt, FaUsers, FaPlus } from "react-icons/fa";
+import { FaTasks, FaTrashAlt, FaUsers, FaPlus, FaList } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 import { setOpenSidebar } from "../redux/slices/authSlice";
@@ -59,6 +59,11 @@ const Sidebar = () => {
       //link: "/tasks",
       icon: <FaTasks />,
       subMenu: taskSubMenu,
+    },
+    {
+      label: "Quản Lý Dự Án",
+      link: "/project",
+      icon: <FaList />,
     },
     {
       label: "Phân Quyền",

@@ -21,3 +21,9 @@ export const updateProject = async (id, project) => {
     const response = await axios.put(API_ENDPOINTS.DUAN + "/" + id, project);
     return response.data;
 };
+
+export const deleteProjectById = async (id) => {
+    const response = await axios.delete(API_ENDPOINTS.DUAN + "/" + id);
+    return response.data;
+};
+

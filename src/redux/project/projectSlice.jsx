@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchProjects as fetchAPI, addProject as addAPI, updateProject as updateAPI,fetchByIdProject as fetchByIdAPI } from './projectAPI';
+import { fetchProjects as fetchAPI, addProject as addAPI, updateProject as updateAPI,fetchByIdProject as fetchByIdAPI, deleteProjectById as deleteByIdAPI } from './projectAPI';
 
 export const fetchProjects = createAsyncThunk('projects/fetchProjects', async ({ search, page }) => {
   const response = await fetchAPI(search, page);
@@ -17,6 +17,10 @@ export const updateProject = createAsyncThunk('projects/updateProject', async ({
 });
 export const fetchByIdProject = createAsyncThunk('projects/fetchByIdProject', async (id) => {
   const response = await fetchByIdAPI(id);
+  return response;
+});
+export const deleteProjectById = createAsyncThunk('projects/deleteProjectById', async (id) => {
+  const response = await deleteByIdAPI(id);
   return response;
 });
 
@@ -69,6 +73,9 @@ const projectSlice = createSlice({
         state.loading = false;
         state.status = 'failed';
         state.error = action.error.message;
+      })
+      .addCase(deleteProjectById.fulfilled, (state, action) => {
+        state.list = state.list.filter((project) => project.maDuAn !== action.payload.maDuAn);
       });
   },
 });
