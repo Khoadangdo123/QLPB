@@ -51,6 +51,7 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
       mucDoHoanThanh: 0
     }
     console.log(selectedDepartment)
+    console.log(CongViec.tenCongViec)
     try{
       const result=await dispatch(addTask(CongViec)).unwrap();
       if (Array.isArray(selectedDepartment) && selectedDepartment.length > 0) {
@@ -65,12 +66,12 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
             maNhanVien: Number(department.maTruongPhong),
             vaiTro: "Người Chịu Trách Nhiệm"
           }));
-          await dispatch(sendGmail({
-            name: department.responsiblePerson,
-            toGmail: department.email,
-            subject: "Thông Tin Phân Công Dự Án",
-            body: generateEmailTemplateForManager(department)
-          }));
+          // await dispatch(sendGmail({
+          //   name: department.responsiblePerson,
+          //   toGmail: department.email,
+          //   subject: "Thông Tin Phân Công Dự Án",
+          //   body: generateEmailTemplateForManager(department,CongViec)
+          // }));
           
         });
         await Promise.all(departmentPromises);
@@ -86,7 +87,7 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
             name: employee.tenNhanVien,
             toGmail: employee.email,
             subject: "Thông Tin Phân Công Dự Án",
-            body: generateEmailTemplate(employee)
+            body: generateEmailTemplate(employee,CongViec)
           }));
         });
         await Promise.all(employeePromises);
@@ -189,11 +190,11 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
           </div>
         </form>
         </div>
-      </ModalWrapper>
+      </ModalWrapper> 
     </>
   );
 };
-const generateEmailTemplate = (employee) => {
+const generateEmailTemplate = (employee, CongViec) => {
   return `
     <html>
         <head>
@@ -233,7 +234,9 @@ const generateEmailTemplate = (employee) => {
             <div class="email-container">
                 <div class="email-header">Xin chào ${employee.tenNhanVien},</div>
                 <div class="email-body">
-                    <p>Bạn đã được chọn để tham gia dự án với vai trò: <span class="highlight">${employee.vaiTro}</span></p>
+                    <p>Bạn đã được giao công việc <span class="highlight">${CongViec.tenCongViec}</span> trong dự án.</p>
+                    <p>Vai trò của bạn: <span class="highlight">${employee.vaiTro}</span></p>
+                    <p>Ngày kết thúc công việc: <span class="highlight">${new Date(CongViec.thoiGianKetThuc).toLocaleDateString()}</span></p>
                     <p>Vui lòng kiểm tra lại chi tiết trong hệ thống quản lý công việc của chúng tôi.</p>
                     <p>Trân trọng,</p>
                     <p>Đội ngũ quản lý dự án</p>
@@ -247,7 +250,8 @@ const generateEmailTemplate = (employee) => {
   `;
 };
 
-const generateEmailTemplateForManager = (department) => {
+
+const generateEmailTemplateForManager = (department, CongViec) => {
   return `
     <html>
         <head>
@@ -287,7 +291,8 @@ const generateEmailTemplateForManager = (department) => {
             <div class="email-container">
                 <div class="email-header">Xin chào ${department.responsiblePerson},</div>
                 <div class="email-body">
-                    <p>Bạn đã được giao nhiệm vụ quản lý công việc trong dự án với mã công việc: <span class="highlight">${department.maCongViec}</span></p>
+                    <p>Phòng ban của bạn đã được giao công việc <span class="highlight">${CongViec.tenCongViec}</span> trong dự án.</p>
+                    <p>Ngày hoàn thành dự kiến: <span class="highlight">${new Date(CongViec.thoiGianKetThuc).toLocaleDateString()}</span></p>
                     <p>Vui lòng kiểm tra lại chi tiết trong hệ thống quản lý công việc của chúng tôi.</p>
                     <p>Trân trọng,</p>
                     <p>Đội ngũ quản lý dự án</p>

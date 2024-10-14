@@ -1,164 +1,132 @@
 import React, { useEffect, useState } from 'react';
 
-const TimelineItem = ({ project, isLast }) => {
-  const [currentDate, setCurrentDate] = useState(new Date());
+// Hàm tính tổng số ngày giữa hai ngày
+const getDaysBetween = (startDate, endDate) => {
+  return Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+};
 
-  // Cập nhật thời gian hiện tại theo thời gian thực
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentDate(new Date());
-    }, 1000); // Cập nhật mỗi giây
-    return () => clearInterval(interval);
-  }, []);
+// Hàm tạo một mảng các ngày từ ngày bắt đầu đến ngày kết thúc
+const generateTimelineDates = (startDate, endDate) => {
+  const dates = [];
+  let currentDate = new Date(startDate);
+  while (currentDate <= endDate) {
+    dates.push(new Date(currentDate));
+    currentDate.setDate(currentDate.getDate() + 1); // Tăng 1 ngày
+  }
+  return dates;
+};
 
+// Component hiển thị một dự án trên timeline
+const TimelineItem = ({ project, startTimeline, totalDays }) => {
   const startDate = new Date(project.startDate);
   const endDate = new Date(project.endDate);
 
-  // Tính toán số ngày từ ngày bắt đầu đến ngày kết thúc
-  const totalDuration = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)); // Tổng số ngày của dự án
-  const elapsedDuration = Math.ceil((currentDate - startDate) / (1000 * 60 * 60 * 24)); // Số ngày đã trôi qua
-  const progressPercent = Math.min(Math.max((elapsedDuration * 100) / totalDuration, 0), 100); // Phần trăm tiến độ, giới hạn từ 0 đến 100
+  const startOffset = getDaysBetween(startTimeline, startDate);
+  const projectDuration = getDaysBetween(startDate, endDate);
 
   const styles = {
     item: {
-      display: 'flex',
       position: 'relative',
-      alignItems: 'flex-start',
-      marginBottom: '50px',
-      padding: '20px',
-      backgroundColor: '#fff',
-      borderRadius: '8px',
-      boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
-      width: '600px',
-    },
-    content: {
-      marginLeft: '40px',
-    },
-    date: {
-      position: 'absolute',
-      top: 0,
-      left: '-40px',
-      width: '80px',
-      textAlign: 'center',
-      fontSize: '14px',
-      color: '#666',
-      backgroundColor: '#fff',
-      border: '1px solid #ddd',
-      borderRadius: '50%',
-      padding: '10px',
-      zIndex: 1,
-    },
-    circle: {
-      position: 'absolute',
-      left: '-25px',
-      top: '15px',
-      width: '10px',
-      height: '10px',
-      borderRadius: '50%',
-      backgroundColor: '#3498db',
-      zIndex: 2,
-    },
-    line: {
-      position: 'absolute',
-      left: '-20px',
-      top: '0',
-      bottom: isLast ? '15px' : '-40px',
-      width: '2px',
-      backgroundColor: '#ddd',
-      zIndex: 1,
-    },
-    title: {
-      fontSize: '18px',
-      fontWeight: 'bold',
-      marginBottom: '5px',
-    },
-    description: {
-      fontSize: '14px',
-      color: '#777',
-      marginBottom: '10px',
-    },
-    barContainer: {
-      width: '300px',
-      position: 'relative',
+      marginBottom: '20px', // Tăng khoảng cách giữa các dự án
     },
     bar: {
-      backgroundColor: '#e0e0e0',
-      height: '6px',
-      borderRadius: '10px',
-      position: 'relative',
-      marginTop: '10px',
+      position: 'absolute',
+      left: `${(startOffset / totalDays) * 100}%`,
+      width: `${(projectDuration / totalDays) * 100}%`,
+      backgroundColor: project.color || '#3498db',
+      height: '50px', // Tăng chiều cao thanh biểu đồ
+      borderRadius: '8px',
     },
-    progress: {
-      backgroundColor: '#3498db',
-      height: '100%',
-      borderRadius: '10px',
-    },
-    days: {
-      marginTop: '5px',
-      fontSize: '12px',
-      color: '#2ecc71',
+    projectTitle: {
+      position: 'absolute',
+      left: `${(startOffset / totalDays) * 100}%`,
+      fontSize: '16px', // Tăng kích thước phông chữ
+      color: '#fff',
+      backgroundColor: project.color || '#3498db',
+      padding: '10px',
+      borderRadius: '8px 8px 0 0',
+      whiteSpace: 'nowrap',
     },
   };
 
   return (
     <div style={styles.item}>
-      <div style={styles.circle}></div>
-      <div style={styles.line}></div>
-      <div style={styles.date}>
-        <span>{project.startDate}</span>
-      </div>
-
-      <div style={styles.content}>
-        <h3 style={styles.title}>{project.title}</h3>
-        <p style={styles.description}>{project.description}</p>
-
-        {/* Thanh thời gian */}
-        <div style={styles.barContainer}>
-          <div style={styles.bar}>
-            <div
-              style={{
-                ...styles.progress,
-                width: `${progressPercent}%`, // Hiển thị phần trăm tiến độ thực tế
-              }}
-            />
-          </div>
-          <div style={styles.days}>{elapsedDuration} / {totalDuration} ngày</div>
-        </div>
-      </div>
+      <div style={styles.bar} />
+      <div style={styles.projectTitle}>{project.title}</div>
     </div>
   );
 };
 
+// Component hiển thị trục thời gian
+const TimelineAxis = ({ startTimeline, endTimeline }) => {
+  const dates = generateTimelineDates(startTimeline, endTimeline);
+
+  const styles = {
+    axisContainer: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      padding: '10px 0',
+      fontSize: '14px', // Tăng kích thước phông chữ của trục thời gian
+      color: '#888',
+    },
+    dateItem: {
+      flex: 1,
+      textAlign: 'center',
+    },
+  };
+
+  return (
+    <div style={styles.axisContainer}>
+      {dates.map((date, index) => (
+        <div key={index} style={styles.dateItem}>
+          {date.toLocaleDateString()}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Component chính để hiển thị timeline
 const Timeline = () => {
   const projects = [
     {
       id: 1,
-      title: 'Dự án A',
+      title: 'Project A',
       startDate: '2024-10-01',
       endDate: '2024-10-20',
-      description: 'Mô tả về dự án A.',
+      color: '#e74c3c',
     },
     {
       id: 2,
-      title: 'Dự án B',
+      title: 'Project B',
       startDate: '2024-10-05',
       endDate: '2024-10-25',
-      description: 'Mô tả về dự án B.',
+      color: '#2ecc71',
+    },
+    {
+      id: 3,
+      title: 'Project C',
+      startDate: '2024-10-10',
+      endDate: '2024-10-30',
+      color: '#3498db',
     },
   ];
 
+  const startTimeline = new Date('2024-10-01'); // Ngày bắt đầu của timeline
+  const endTimeline = new Date('2024-10-30'); // Ngày kết thúc của timeline
+  const totalDays = getDaysBetween(startTimeline, endTimeline);
+
   const containerStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '20px',
-    position: 'relative',
+    width: '100%',
+    padding: '30px', // Tăng padding để tạo không gian rộng hơn
+    backgroundColor: '#f5f5f5',
   };
 
   return (
     <div style={containerStyle}>
-      {projects.map((project, index) => (
-        <TimelineItem key={project.id} project={project} isLast={index === projects.length - 1} />
+      <TimelineAxis startTimeline={startTimeline} endTimeline={endTimeline} />
+      {projects.map((project) => (
+        <TimelineItem key={project.id} project={project} startTimeline={startTimeline} totalDays={totalDays} />
       ))}
     </div>
   );

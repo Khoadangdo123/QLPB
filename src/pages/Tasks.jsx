@@ -129,8 +129,10 @@ const Tasks = () => {
       <AddSection open={open} setOpen={setOpen} duAn={id}></AddSection>
       {/* {showTimeline && <Timeline />} */}
       <ModalWrapper open={timelineModalOpen} setOpen={setTimelineModalOpen}>
-        <h2 className="text-lg font-semibold mb-4">Timeline Dự án</h2>
-        <Timeline/>
+      <div className="w-full max-w-6xl h-full max-h-[80vh] bg-white rounded-lg p-4">
+    <h2 className="text-lg font-semibold mb-4">Timeline Dự án</h2>
+    <Timeline/>
+  </div>
       </ModalWrapper>
     </div>
   );

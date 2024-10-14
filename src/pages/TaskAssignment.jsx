@@ -9,9 +9,6 @@ const TaskAssignment=()=>{
     const [loading, setLoading] = useState(true);
     const maNhanVien=Number(localStorage.getItem("userId"));
     const phancongs=useSelector((state)=>state.assignments)
-    // useEffect(()=>{
-    //     dispatch(fetchEmployeeAssignment(maNhanVien))
-    // },[maNhanVien,dispatch])
     useEffect(() => {
         const loadData = async () => {
             setLoading(true);
@@ -59,12 +56,18 @@ const TaskAssignment=()=>{
         };
     
         if (connection) {
+            connection.off("task");
+            connection.off("loadPhanCong");
+            connection.off("loadCongViec");    
             startConnection();
         }
     
         return () => {
             if (connection) {
+                connection.off("task");
+                connection.off("loadPhanCong");
                 connection.off("loadCongViec");
+                //connection.off("loadCongViec");
             }
         };
     }, [connection, dispatch, maNhanVien]);

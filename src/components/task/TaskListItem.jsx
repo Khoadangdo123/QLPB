@@ -100,11 +100,24 @@ const TaskListItem = ({ congviec, duAn }) => {
       return "bg-green-500";
     }
   };
-  const itemClass = isParentTask(congviec) 
-  ? hasSubTasks(congviec) 
-    ? "font-bold text-blue-600 bg-blue-100"
-    : "font-bold bg-blue-200"
-  : "pl-6 bg-gray-100";
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case "low":
+        return "text-green-500";
+      case "medium":
+        return "text-yellow-500";
+      case "high":
+        return "text-red-500";
+      default:
+        return "text-gray-500";
+    }
+  };
+
+  const itemClass = isParentTask(congviec)
+    ? hasSubTasks(congviec)
+      ? "font-bold text-blue-600 bg-blue-100"
+      : "font-bold bg-blue-200"
+    : "pl-6 bg-gray-100";
   return (
     <div
       className={`w-full flex items-center px-4 ${

@@ -66,6 +66,11 @@ const Sidebar = () => {
       icon: <FaTasks />,
     },
     {
+      label: "Milestones",
+      link: "/milestones",
+      icon: <FaTasks />,
+    },
+    {
       label: "Công Việc",
       link: "/taskassignment",
       icon: <FaTasks />,
