@@ -48,7 +48,7 @@ const UserPermissions = ({ role, onClose }) => {
     setPermissions(updatedPermissions);
   }, [functions, permissionsByRole]);
 
-  const handleCheckboxChange = (permissionId) => {
+  const handleCheckboxChange =async (permissionId) => {
     console.log("-----------");
     const permission = permissions.find(
       (perm) => perm.function === permissionId
@@ -59,14 +59,20 @@ const UserPermissions = ({ role, onClose }) => {
     console.log("maQuyen:", maQuyen);
     console.log("maChucNang:", maChucNang);
     console.log("Chọn toàn bộ hành động:", !isChecked);
-
-    permission.actions.forEach((action) => {
-      console.log("Action:", action.action);
-      console.log(
-        "maChiTietQuyen:",
-        action.maChiTietQuyen || "Chưa có quyền chi tiết"
-      );
-    });
+    const status=!isChecked
+    for (const action of permission.actions) {
+      let chiTietQuyen = {
+        maChiTietQuyen: action.maChiTietQuyen,
+        maQuyen: maQuyen,
+        maChucNang: maChucNang,
+        hanhDong: action.action,
+        status: status,
+      };
+  
+      if (!(await save(chiTietQuyen))) {
+        console.log("Error saving permission detail for action:", action.action);
+      }
+    }
     setPermissions((prevPermissions) =>
       prevPermissions.map((perm) =>
         perm.function === permissionId
@@ -81,8 +87,34 @@ const UserPermissions = ({ role, onClose }) => {
       )
     );
   };
-
-  const handleActionChange = (permissionId, actionId) => {
+  async function save(chiTietQuyen){
+    try{
+      let model={
+        maNhomQuyen:chiTietQuyen.maQuyen,
+        maChucNang:chiTietQuyen.maChucNang,
+        hanhDong:chiTietQuyen.hanhDong,
+      }
+      if(chiTietQuyen.maChiTietQuyen===null){
+        console.log(model)
+        const result=await dispatch(addPermissionDetail(model)).unwrap()
+        console.log(result)
+      }else{
+        if(chiTietQuyen.maChiTietQuyen!==null && chiTietQuyen.status===true){
+          //dispatch(updatePermission(chitietquyen))
+          console.log(chiTietQuyen)
+        }
+        if(chiTietQuyen.maChiTietQuyen!==null && chiTietQuyen.status===false){
+          chiTietQuyen.hanhDong="x";
+          console.log(chiTietQuyen)
+          //dispatch(updatePermission(chitietquyen))
+        }
+      }
+      return true
+    }catch(e){
+      return false;
+    }
+  }
+  const handleActionChange =async (permissionId, actionId) => {
     const permission = permissions.find(
       (perm) => perm.function === permissionId
     );
@@ -92,34 +124,20 @@ const UserPermissions = ({ role, onClose }) => {
     const maChiTietQuyen = action.maChiTietQuyen;
     const maQuyen = role.maQuyen;
     const status=!action.allowed;
-    console.log("maQuyen:", maQuyen);
-    console.log("maChucNang:", maChucNang);
-    console.log("Action Name:", actionName);
-    console.log("maChiTietQuyen:", maChiTietQuyen);
-    console.log("status:",status)
-    let chitietquyen={
+    let chiTietQuyen={
+      maChiTietQuyen:maChiTietQuyen,
       maQuyen:maQuyen,
       maChucNang:maChucNang,
-      hanhDong:actionName
+      hanhDong:actionName,
+      status:status
     }
     //
     try{
-      if(maChiTietQuyen===null){
-        console.log(chitietquyen)
-        //dispatch(addPermissionDetail(chitietquyen))
-      }else{
-        if(maChiTietQuyen!==null && status===true){
-          //dispatch(updatePermission(chitietquyen))
-          console.log(chitietquyen)
-        }
-        if(maChiTietQuyen!==null && status===false){
-          chitietquyen.hanhDong="x";
-          console.log(chitietquyen)
-          //dispatch(updatePermission(chitietquyen))
-        }
+      if (!(await save(chiTietQuyen))) {
+        console.log("Error saving permission detail for action:", actionName);
       }
     }catch(e){
-
+      console.log(e)
     }
     setPermissions((prevPermissions) =>
       prevPermissions.map((perm) =>
