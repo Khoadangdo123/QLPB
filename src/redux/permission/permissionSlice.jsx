@@ -46,14 +46,19 @@ const permissionSlice = createSlice({
         state.loading = false;
         state.status = 'failed';
         state.error = action.error.message;
-      }).addCase(fetchPermissionById.fulfilled, (state, action) => {
-        const index = state.list.findIndex((permission) => permission.maQuyen === action.payload.maQuyen);
-        
-        if (index !== -1) {
-          state.list[index] = action.payload;
-        } else {
-          state.list.push(action.payload);
-        }
+      }).addCase(fetchPermissionById.pending, (state) => {
+        state.loading = true;
+        state.status = 'loading';
+      })
+      .addCase(fetchPermissionById.fulfilled, (state, action) => {
+        state.loading = false;
+        state.status = 'succeeded';
+        state.currentRole = action.payload;
+      })
+      .addCase(fetchPermissionById.rejected, (state, action) => {
+        state.loading = false;
+        state.status = 'failed';
+        state.error = action.error.message;
       })
       .addCase(addPermission.fulfilled, (state, action) => {
         state.list.push(action.payload);

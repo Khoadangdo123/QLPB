@@ -23,6 +23,7 @@ import TaskAssignment from "./pages/TaskAssignment";
 import DepartmentAssignment from "./pages/DepartmentAssignment";
 import Milestones from "./components/task/Milestones";
 import ProjectTimeline from "./components/task/Milestones";
+import ChatBox from "./components/task/Milestones";
 function Layout() {
   const authUser = useSelector((state) => state.authen);
   console.log(authUser)
@@ -126,7 +127,8 @@ function App() {
           <Route path='/taskassignment' element={<TaskAssignment/>} />
           <Route path='/assignmentdepartment' element={<DepartmentAssignment/>} />
           <Route path='/task/:id' element={<TaskDetails />} />
-          <Route path='/milestones' element={<ProjectTimeline />} />
+          <Route path='/milestones' element={<ChatBox />} />
+          <Route path="*" element={<Navigate to="/dashboard" />} />
         </Route>
         <Route path='/log-in' element={<Login />} />
       </Routes>

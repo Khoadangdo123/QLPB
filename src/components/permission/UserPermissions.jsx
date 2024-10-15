@@ -1,70 +1,72 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchPermissionById } from "../../redux/permission/permissionSlice";
+import { fetchPermissionById, updatePermission } from "../../redux/permission/permissionSlice";
+import { fetchFunctions } from "../../redux/function/functionSlice";
+import { addPermissionDetail } from "../../redux/permissiondetail/permissionDetailSlice";
 
 const UserPermissions = ({ role, onClose }) => {
-  const [loading, setLoading] = useState(true);
-  const dispatch = useDispatch()
-  const data=useSelector((state)=>state.permissions.list)
-  const allPermissionsData = [
-    {
-      function: "Quản lý tài khoản",
-      actions: [
-        { id: 1, action: "Xem", allowed: false },
-        { id: 2, action: "Thêm", allowed: false },
-        { id: 3, action: "Sửa", allowed: false },
-        { id: 4, action: "Xóa", allowed: false },
-      ],
-    },
-    {
-      function: "Quản lý phòng ban",
-      actions: [
-        { id: 5, action: "Xem", allowed: false },
-        { id: 6, action: "Thêm", allowed: false },
-        { id: 7, action: "Sửa", allowed: false },
-        { id: 8, action: "Xóa", allowed: false },
-      ],
-    },
-    // Add more functions as needed
-    {
-      function: "Quản lý dự án",
-      actions: [
-        { id: 9, action: "Xem", allowed: false },
-        { id: 10, action: "Thêm", allowed: false },
-        { id: 11, action: "Sửa", allowed: false },
-        { id: 12, action: "Xóa", allowed: false },
-      ],
-    },
-    {
-      function: "Quản lý báo cáo",
-      actions: [
-        { id: 13, action: "Xem", allowed: false },
-        { id: 14, action: "Thêm", allowed: false },
-        { id: 15, action: "Sửa", allowed: false },
-        { id: 16, action: "Xóa", allowed: false },
-      ],
-    },
-    // Continue adding other functions as necessary
-  ];
-
-  // State to manage actions for the selected role
+  const maQuyen = role.maQuyen;
   const [permissions, setPermissions] = useState([]);
+  const dispatch = useDispatch();
 
+  const functions = useSelector((state) => state.functions.list);
+  const permissionsByRole = useSelector((state) =>
+    state.permissions.list.find((nhomquyen) => nhomquyen.maQuyen === maQuyen)
+  );
   useEffect(() => {
-    // Populate permissions with all functions
-    const updatedPermissions = allPermissionsData.map((perm) => {
-      // Logic to determine if the action is allowed can be added here
-      const actions = perm.actions.map((action) => {
-        return { ...action, allowed: false }; // Set default allowed to false
+    dispatch(fetchFunctions({ search: "", page: 10 }));
+    dispatch(fetchPermissionById(maQuyen));
+  }, [dispatch, maQuyen]);
+  // console.log(functions);
+  // console.log(permissionsByRole);
+  useEffect(() => {
+    if (!permissionsByRole || !permissionsByRole.chiTietQuyens) return;
+
+    const updatedPermissions = functions.map((func) => {
+      const actions = ["Xem", "Thêm", "Sửa", "Xóa"].map((action, index) => {
+        const chiTietQuyen = permissionsByRole.chiTietQuyens.find(
+          (perm) =>
+            perm.maChucNang === func.maChucNang && perm.hanhDong === action
+        );
+        const allowed = !!chiTietQuyen;
+
+        return {
+          id: index + 1,
+          action,
+          allowed,
+          maChiTietQuyen: chiTietQuyen ? chiTietQuyen.maChiTietQuyen : null,
+        };
       });
-      return { ...perm, actions };
+
+      return {
+        function: func.tenChucNang,
+        functionId: func.maChucNang,
+        actions,
+      };
     });
 
     setPermissions(updatedPermissions);
-  }, [role]);
+  }, [functions, permissionsByRole]);
 
   const handleCheckboxChange = (permissionId) => {
-    const isChecked = permissions.find(perm => perm.function === permissionId)?.actions.every(action => action.allowed);
+    console.log("-----------");
+    const permission = permissions.find(
+      (perm) => perm.function === permissionId
+    );
+    const maChucNang = permission.functionId;
+    const maQuyen = role.maQuyen;
+    const isChecked = permission.actions.every((action) => action.allowed);
+    console.log("maQuyen:", maQuyen);
+    console.log("maChucNang:", maChucNang);
+    console.log("Chọn toàn bộ hành động:", !isChecked);
+
+    permission.actions.forEach((action) => {
+      console.log("Action:", action.action);
+      console.log(
+        "maChiTietQuyen:",
+        action.maChiTietQuyen || "Chưa có quyền chi tiết"
+      );
+    });
     setPermissions((prevPermissions) =>
       prevPermissions.map((perm) =>
         perm.function === permissionId
@@ -72,7 +74,7 @@ const UserPermissions = ({ role, onClose }) => {
               ...perm,
               actions: perm.actions.map((action) => ({
                 ...action,
-                allowed: !isChecked // Toggle all actions based on current state
+                allowed: !isChecked,
               })),
             }
           : perm
@@ -81,6 +83,44 @@ const UserPermissions = ({ role, onClose }) => {
   };
 
   const handleActionChange = (permissionId, actionId) => {
+    const permission = permissions.find(
+      (perm) => perm.function === permissionId
+    );
+    const action = permission.actions.find((action) => action.id === actionId);
+    const maChucNang = permission.functionId;
+    const actionName = action.action;
+    const maChiTietQuyen = action.maChiTietQuyen;
+    const maQuyen = role.maQuyen;
+    const status=!action.allowed;
+    console.log("maQuyen:", maQuyen);
+    console.log("maChucNang:", maChucNang);
+    console.log("Action Name:", actionName);
+    console.log("maChiTietQuyen:", maChiTietQuyen);
+    console.log("status:",status)
+    let chitietquyen={
+      maQuyen:maQuyen,
+      maChucNang:maChucNang,
+      hanhDong:actionName
+    }
+    //
+    try{
+      if(maChiTietQuyen===null){
+        console.log(chitietquyen)
+        //dispatch(addPermissionDetail(chitietquyen))
+      }else{
+        if(maChiTietQuyen!==null && status===true){
+          //dispatch(updatePermission(chitietquyen))
+          console.log(chitietquyen)
+        }
+        if(maChiTietQuyen!==null && status===false){
+          chitietquyen.hanhDong="x";
+          console.log(chitietquyen)
+          //dispatch(updatePermission(chitietquyen))
+        }
+      }
+    }catch(e){
+
+    }
     setPermissions((prevPermissions) =>
       prevPermissions.map((perm) =>
         perm.function === permissionId
@@ -96,11 +136,41 @@ const UserPermissions = ({ role, onClose }) => {
       )
     );
   };
-
   const handleSave = () => {
-    // Dispatch an action to save the permissions for the role
-    // dispatch(savePermissions({ roleId: role.maQuyen, permissions }));
-    onClose();
+    const selectedPermissions = permissions
+      .map((perm) => {
+        const selectedActions = perm.actions
+          .filter((action) => action.allowed)
+          .map((action) => ({
+            action: action.action,
+            maChiTietQuyen: action.maChiTietQuyen,
+          }));
+
+        return selectedActions.length > 0
+          ? {
+              role: maQuyen,
+              functionName: perm.function,
+              functionId: perm.functionId,
+              actions: selectedActions,
+            }
+          : null;
+      })
+      .filter((perm) => perm !== null);
+
+    selectedPermissions.forEach((item) => {
+      console.log("-----------");
+      console.log("Function ID:", item.functionId, "Role:", item.role);
+      item.actions.forEach((actionItem) => {
+        console.log(
+          "Action:",
+          actionItem.action,
+          "maChiTietQuyen:",
+          actionItem.maChiTietQuyen
+        );
+      });
+      console.log("-----------");
+    });
+    // onClose();
   };
 
   return (
@@ -124,7 +194,9 @@ const UserPermissions = ({ role, onClose }) => {
                   <label className="flex items-center">
                     <input
                       type="checkbox"
-                      checked={permission.actions.every(action => action.allowed)}
+                      checked={permission.actions.every(
+                        (action) => action.allowed
+                      )}
                       onChange={() => handleCheckboxChange(permission.function)}
                     />
                     <span className="ml-2">{permission.function}</span>
@@ -136,9 +208,13 @@ const UserPermissions = ({ role, onClose }) => {
                       <input
                         type="checkbox"
                         checked={action.allowed}
-                        onChange={() => handleActionChange(permission.function, action.id)}
+                        onChange={() =>
+                          handleActionChange(permission.function, action.id)
+                        }
                       />
-                      <span className="ml-2">{action.allowed ? "Có" : "Không"}</span>
+                      <span className="ml-2">
+                        {action.allowed ? "Có" : "Không"}
+                      </span>
                     </label>
                   </td>
                 ))}

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchPermissionDetail as fetchAPI, addPermissionDetail as addAPI, updatePermissionDetail as updateAPI } from './permissionDetailAPI';
+import { fetchPermissionDetails as fetchAPI, addPermissionDetail as addAPI, updatePermissionDetail as updateAPI } from './permissionDetailAPI';
 
 export const fetchPermissionDetails = createAsyncThunk('permissionDetails/fetchPermissionDetails', async ({ search, page }) => {
   const response = await fetchAPI(search, page);
@@ -47,7 +47,7 @@ const permissionDetailSlice = createSlice({
         state.list.push(action.payload);
       })
       .addCase(updatePermissionDetail.fulfilled, (state, action) => {
-        const index = state.list.findIndex((permissionDetail) => permissionDetail.id === action.payload.id);
+        const index = state.list.findIndex((permissionDetail) => permissionDetail.maChiTietQuyen === action.payload.maChiTietQuyen);
         if (index !== -1) {
           state.list[index] = action.payload;
         }

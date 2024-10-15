@@ -67,10 +67,10 @@ const TaskAssignmentList = ({congviec}) => {
                         console.log('Mai Văn Tài')
                     });
                     //
-                    connection.on("task",async (message)=>{
-                        console.log("task")
-                        alert(message)
-                    })
+                    // connection.on("task",async (message)=>{
+                    //     console.log("task")
+                    //     alert(message)
+                    // })
                 } catch (err) {
                     console.error("Error while starting connection: ", err);
                 }
