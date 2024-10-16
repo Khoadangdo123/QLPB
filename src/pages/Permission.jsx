@@ -173,7 +173,11 @@ const Permission = () => {
       {/* Nội dung modal */}
       <UserPermissions
         role={selectedRolePermissions}
-        onClose={() => setOpenPermissionModal(false)}
+        onClose={() => {
+          setOpenPermissionModal(false);
+          dispatch(fetchPermissions({ search: "", page: pageSize }));
+          //dispatch(fetchPermissionById(selectedRolePermissions.maQuyen));
+        }}
       />
     </div>
   </div>

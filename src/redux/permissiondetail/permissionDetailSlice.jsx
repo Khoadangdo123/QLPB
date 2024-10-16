@@ -1,8 +1,10 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchPermissionDetails as fetchAPI, addPermissionDetail as addAPI, updatePermissionDetail as updateAPI } from './permissionDetailAPI';
+import { fetchPermissionDetails as fetchAPI, addPermissionDetail as addAPI, updatePermissionDetail as updateAPI,
+  deletePermissionDetail as deleteAPI
+ } from './permissionDetailAPI';
 
-export const fetchPermissionDetails = createAsyncThunk('permissionDetails/fetchPermissionDetails', async ({ search, page }) => {
-  const response = await fetchAPI(search, page);
+export const fetchPermissionDetails = createAsyncThunk('permissionDetails/fetchPermissionDetails', async () => {
+  const response = await fetchAPI();
   return response;
 });
 
@@ -15,7 +17,10 @@ export const updatePermissionDetail = createAsyncThunk('permissionDetails/update
   const response = await updateAPI(id, permissionDetail);
   return response;
 });
-
+export const deletePermissionDetail = createAsyncThunk('permissionDetails/deletePermissionDetail', async (id) => {
+  const response = await deleteAPI(id);
+  return response;
+});
 const initialState = {
   list: [],
   loading: false,
@@ -51,7 +56,9 @@ const permissionDetailSlice = createSlice({
         if (index !== -1) {
           state.list[index] = action.payload;
         }
-      });
+      }).addCase(deletePermissionDetail.fulfilled, (state, action) => {
+        state.list = state.list.filter(permissionDetail => permissionDetail.maChiTietQuyen !== action.payload.maChiTietQuyen);
+    });;
   },
 });
 

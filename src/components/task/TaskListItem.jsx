@@ -12,6 +12,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchByIdTask } from "../../redux/task/taskSlice";
 import EmployeeInfo from "../EmployeeInfo";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import UpdateTask from "./UpdateTask";
 const priorities = [
   { id: "low", name: "Thấp" },
   { id: "medium", name: "Trung Bình" },
@@ -26,6 +27,7 @@ const stages = [
 
 const TaskListItem = ({ congviec, duAn }) => {
   const [open, setOpen] = useState(false);
+  const [openUpdate, setOpenUpdate] = useState(false);
   const [taskRoot, setTaskRoot] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [subTasks, setSubTasks] = useState([]);
@@ -220,7 +222,7 @@ const TaskListItem = ({ congviec, duAn }) => {
           <Selection items={stages} selectedItem={congviec.trangThaiCongViec} />
         </div>
 
-        <div className="flex-1 px-4 flex justify-end">
+        <div className="flex-1 px-4 flex flex-col justify-end items-center gap-2">
           <Button
             onClick={() => {
               setTaskRoot(congviec.maCongViec);
@@ -230,11 +232,27 @@ const TaskListItem = ({ congviec, duAn }) => {
             icon={<IoMdAdd className="text-lg" />}
             className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-0.5 px-2 text-xs h-8" // Giảm padding và xác định chiều cao
           />
+          <Button
+            onClick={() => {
+              //setTaskRoot(congviec.maCongViec);
+              setOpenUpdate(true);
+            }}
+            label="Sửa CV" // Rút ngắn văn bản nếu cần
+            icon={<IoMdAdd className="text-lg" />}
+            className="flex flex-row-reverse gap-1 items-center bg-green-600 text-white rounded-md py-0.5 px-2 text-xs h-8" // Giảm padding và xác định chiều cao
+          />
         </div>
       </div>
       <AddTask
         open={open}
         setOpen={setOpen}
+        phanDuAn={congviec.maPhanDuAn}
+        duAn={duAn}
+        congViecCha={taskRoot}
+      />
+      <UpdateTask
+        open={openUpdate}
+        setOpen={setOpenUpdate}
         phanDuAn={congviec.maPhanDuAn}
         duAn={duAn}
         congViecCha={taskRoot}

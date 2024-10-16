@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchPermissionById, updatePermission } from "../../redux/permission/permissionSlice";
+import { fetchPermissionById, fetchPermissions, updatePermission } from "../../redux/permission/permissionSlice";
 import { fetchFunctions } from "../../redux/function/functionSlice";
-import { addPermissionDetail } from "../../redux/permissiondetail/permissionDetailSlice";
+import { addPermissionDetail, deletePermissionDetail, fetchPermissionDetails, updatePermissionDetail } from "../../redux/permissiondetail/permissionDetailSlice";
 
 const UserPermissions = ({ role, onClose }) => {
   const maQuyen = role.maQuyen;
@@ -14,42 +14,54 @@ const UserPermissions = ({ role, onClose }) => {
     state.permissions.list.find((nhomquyen) => nhomquyen.maQuyen === maQuyen)
   );
   useEffect(() => {
-    dispatch(fetchFunctions({ search: "", page: 10 }));
-    dispatch(fetchPermissionById(maQuyen));
+    const fetchData = async () => {
+      try {
+        await dispatch(fetchFunctions({ search: "", page: 10 }))
+        await dispatch(fetchPermissionById(maQuyen))
+      } catch (error) {
+        console.log("Error fetching data:", error);
+      }
+    };
+    fetchData();
   }, [dispatch, maQuyen]);
-  // console.log(functions);
-  // console.log(permissionsByRole);
   useEffect(() => {
-    if (!permissionsByRole || !permissionsByRole.chiTietQuyens) return;
-
-    const updatedPermissions = functions.map((func) => {
-      const actions = ["Xem", "Thêm", "Sửa", "Xóa"].map((action, index) => {
-        const chiTietQuyen = permissionsByRole.chiTietQuyens.find(
-          (perm) =>
-            perm.maChucNang === func.maChucNang && perm.hanhDong === action
-        );
-        const allowed = !!chiTietQuyen;
-
+    const fetchPermissions = async () => {
+      if (!permissionsByRole || !permissionsByRole.chiTietQuyens) return;
+  
+      console.log("Fetched permissionsByRole:", permissionsByRole);
+      console.log(permissionsByRole.chiTietQuyens)
+      const updatedPermissions = functions.map((func) => {
+        const actions = ["Xem", "Thêm", "Sửa", "Xóa"].map((action, index) => {
+          const chiTietQuyen = permissionsByRole.chiTietQuyens.find(
+            (perm) =>
+              perm.maChucNang === func.maChucNang 
+              && perm.hanhDong === action
+              && perm.maNhomQuyen === maQuyen
+          );
+          console.log(chiTietQuyen)
+          const allowed = !!chiTietQuyen;
+          console.log(allowed)
+          return {
+            id: index + 1,
+            action,
+            allowed,
+            maChiTietQuyen: chiTietQuyen ? chiTietQuyen.maChiTietQuyen : null,
+          };
+        });
         return {
-          id: index + 1,
-          action,
-          allowed,
-          maChiTietQuyen: chiTietQuyen ? chiTietQuyen.maChiTietQuyen : null,
+          function: func.tenChucNang,
+          functionId: func.maChucNang,
+          actions,
         };
       });
-
-      return {
-        function: func.tenChucNang,
-        functionId: func.maChucNang,
-        actions,
-      };
-    });
-
-    setPermissions(updatedPermissions);
+  
+      setPermissions(updatedPermissions);
+    };
+  
+    fetchPermissions();
   }, [functions, permissionsByRole]);
 
   const handleCheckboxChange =async (permissionId) => {
-    console.log("-----------");
     const permission = permissions.find(
       (perm) => perm.function === permissionId
     );
@@ -60,19 +72,6 @@ const UserPermissions = ({ role, onClose }) => {
     console.log("maChucNang:", maChucNang);
     console.log("Chọn toàn bộ hành động:", !isChecked);
     const status=!isChecked
-    for (const action of permission.actions) {
-      let chiTietQuyen = {
-        maChiTietQuyen: action.maChiTietQuyen,
-        maQuyen: maQuyen,
-        maChucNang: maChucNang,
-        hanhDong: action.action,
-        status: status,
-      };
-  
-      if (!(await save(chiTietQuyen))) {
-        console.log("Error saving permission detail for action:", action.action);
-      }
-    }
     setPermissions((prevPermissions) =>
       prevPermissions.map((perm) =>
         perm.function === permissionId
@@ -86,31 +85,72 @@ const UserPermissions = ({ role, onClose }) => {
           : perm
       )
     );
+    for (const action of permission.actions) {
+      let chiTietQuyen = {
+        maChiTietQuyen: action.maChiTietQuyen,
+        maQuyen: maQuyen,
+        maChucNang: maChucNang,
+        hanhDong: action.action,
+        status: status,
+      };
+      if ((await save(chiTietQuyen))===false) {
+        console.log("Error saving permission detail for action:", action.action);
+      }
+    }
   };
   async function save(chiTietQuyen){
+    console.log("CTQ: ",chiTietQuyen)
     try{
       let model={
         maNhomQuyen:chiTietQuyen.maQuyen,
         maChucNang:chiTietQuyen.maChucNang,
         hanhDong:chiTietQuyen.hanhDong,
       }
+      console.log(chiTietQuyen.maChiTietQuyen)
       if(chiTietQuyen.maChiTietQuyen===null){
+        console.log(chiTietQuyen)
         console.log(model)
         const result=await dispatch(addPermissionDetail(model)).unwrap()
+        chiTietQuyen.maChiTietQuyen = result.maChiTietQuyen;
         console.log(result)
+        setPermissions((prevPermissions) =>
+          prevPermissions.map((perm) =>
+            perm.functionId === chiTietQuyen.maChucNang
+              ? {
+                  ...perm,
+                  actions: perm.actions.map((action) =>
+                    action.action === chiTietQuyen.hanhDong
+                      ? { ...action, maChiTietQuyen: result.maChiTietQuyen, allowed: true }
+                      : action
+                  ),
+                }
+              : perm
+          )
+        );
       }else{
-        if(chiTietQuyen.maChiTietQuyen!==null && chiTietQuyen.status===true){
-          //dispatch(updatePermission(chitietquyen))
-          console.log(chiTietQuyen)
-        }
-        if(chiTietQuyen.maChiTietQuyen!==null && chiTietQuyen.status===false){
-          chiTietQuyen.hanhDong="x";
-          console.log(chiTietQuyen)
-          //dispatch(updatePermission(chitietquyen))
-        }
+        console.log(model)
+        const result=await dispatch(deletePermissionDetail(chiTietQuyen.maChiTietQuyen))
+        setPermissions((prevPermissions) =>
+          prevPermissions.map((perm) =>
+              perm.functionId === chiTietQuyen.maChucNang
+                  ? {
+                        ...perm,
+                        actions: perm.actions.map((action) =>
+                            action.action === chiTietQuyen.hanhDong
+                                ? { ...action, maChiTietQuyen: null, allowed: false }
+                                : action
+                        ),
+                    }
+                  : perm
+          )
+      );
+      console.log(result)
       }
+      await dispatch(fetchPermissionById(maQuyen))
+      console.log(permissionsByRole)
       return true
     }catch(e){
+      console.log(e)
       return false;
     }
   }
@@ -132,13 +172,6 @@ const UserPermissions = ({ role, onClose }) => {
       status:status
     }
     //
-    try{
-      if (!(await save(chiTietQuyen))) {
-        console.log("Error saving permission detail for action:", actionName);
-      }
-    }catch(e){
-      console.log(e)
-    }
     setPermissions((prevPermissions) =>
       prevPermissions.map((perm) =>
         perm.function === permissionId
@@ -153,44 +186,15 @@ const UserPermissions = ({ role, onClose }) => {
           : perm
       )
     );
+    try{
+      if ((await save(chiTietQuyen))===false) {
+        console.log("Error saving permission detail for action:", actionName);
+      }
+      //await dispatch(fetchPermissionById(maQuyen));
+    }catch(e){
+      console.log(e)
+    }
   };
-  const handleSave = () => {
-    const selectedPermissions = permissions
-      .map((perm) => {
-        const selectedActions = perm.actions
-          .filter((action) => action.allowed)
-          .map((action) => ({
-            action: action.action,
-            maChiTietQuyen: action.maChiTietQuyen,
-          }));
-
-        return selectedActions.length > 0
-          ? {
-              role: maQuyen,
-              functionName: perm.function,
-              functionId: perm.functionId,
-              actions: selectedActions,
-            }
-          : null;
-      })
-      .filter((perm) => perm !== null);
-
-    selectedPermissions.forEach((item) => {
-      console.log("-----------");
-      console.log("Function ID:", item.functionId, "Role:", item.role);
-      item.actions.forEach((actionItem) => {
-        console.log(
-          "Action:",
-          actionItem.action,
-          "maChiTietQuyen:",
-          actionItem.maChiTietQuyen
-        );
-      });
-      console.log("-----------");
-    });
-    // onClose();
-  };
-
   return (
     <div>
       <h2 className="text-xl mb-4">Quyền cho {role.tenQuyen}</h2>
@@ -242,12 +246,12 @@ const UserPermissions = ({ role, onClose }) => {
         </tbody>
       </table>
       <div className="mt-4">
-        <button
+        {/* <button
           className="bg-blue-600 text-white px-4 py-2 rounded"
           onClick={handleSave}
         >
           Lưu
-        </button>
+        </button> */}
         <button
           className="bg-gray-300 text-gray-700 px-4 py-2 rounded ml-2"
           onClick={onClose}
@@ -258,5 +262,5 @@ const UserPermissions = ({ role, onClose }) => {
     </div>
   );
 };
-
-export default UserPermissions;
+ 
+export default UserPermissions; 
