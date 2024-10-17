@@ -6,7 +6,7 @@ import clsx from "clsx";
 import Button from "../Button";
 import AddTask from "./AddTask";
 import { useEffect, useState } from "react";
-import { IoMdAdd } from "react-icons/io";
+import { IoMdAdd, IoMdCreate, IoMdTrash } from "react-icons/io";
 import DetailTask from "./DetailTask";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchByIdTask } from "../../redux/task/taskSlice";
@@ -222,24 +222,33 @@ const TaskListItem = ({ congviec, duAn }) => {
           <Selection items={stages} selectedItem={congviec.trangThaiCongViec} />
         </div>
 
-        <div className="flex-1 px-4 flex flex-col justify-end items-center gap-2">
+        <div className="flex-1 px-4 flex flex-wrap justify-end items-center gap-2">
           <Button
             onClick={() => {
               setTaskRoot(congviec.maCongViec);
               setOpen(true);
             }}
-            label="Tạo CV" // Rút ngắn văn bản nếu cần
+            //label="Tạo CV" // Rút ngắn văn bản nếu cần
             icon={<IoMdAdd className="text-lg" />}
-            className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-0.5 px-2 text-xs h-8" // Giảm padding và xác định chiều cao
+            className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
           />
           <Button
             onClick={() => {
               //setTaskRoot(congviec.maCongViec);
               setOpenUpdate(true);
             }}
-            label="Sửa CV" // Rút ngắn văn bản nếu cần
-            icon={<IoMdAdd className="text-lg" />}
-            className="flex flex-row-reverse gap-1 items-center bg-green-600 text-white rounded-md py-0.5 px-2 text-xs h-8" // Giảm padding và xác định chiều cao
+            //label="Sửa CV" // Rút ngắn văn bản nếu cần
+            icon={<IoMdCreate className="text-lg" />}
+            className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
+          />
+          <Button
+            onClick={() => {
+              //setTaskRoot(congviec.maCongViec);
+              //setOpenUpdate(true);
+            }}
+            //label="Xóa CV" // Rút ngắn văn bản nếu cần
+            icon={<IoMdTrash className="text-lg" />}
+            className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
           />
         </div>
       </div>
@@ -251,11 +260,13 @@ const TaskListItem = ({ congviec, duAn }) => {
         congViecCha={taskRoot}
       />
       <UpdateTask
-        open={openUpdate}
-        setOpen={setOpenUpdate}
+        openUpdate={openUpdate}
+        setOpenUpdate={setOpenUpdate}
         phanDuAn={congviec.maPhanDuAn}
         duAn={duAn}
-        congViecCha={taskRoot}
+        maCongViec={congviec.maCongViec}
+        task={congviec}
+        phanCong={phancong}
       />
       {expanded && (
         <DetailTask

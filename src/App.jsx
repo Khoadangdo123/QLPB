@@ -29,9 +29,11 @@ function Layout() {
   console.log(authUser)
   const token=authUser.user.token;
   var payload = JSON.parse(atob(token.split('.')[1]));
+  console.log(payload)
   localStorage.setItem("userId",payload.MaTaiKhoan)
+  localStorage.setItem("permissionId",Number(payload.MaNhomQuyen))
+  console.log(localStorage.getItem("permissionId"))
   const location = useLocation();
-
   return authUser ? (
     <div className='w-full h-screen flex flex-col md:flex-row'>
       <div className='w-1/5 h-screen bg-white sticky top-0 hidden md:block'>

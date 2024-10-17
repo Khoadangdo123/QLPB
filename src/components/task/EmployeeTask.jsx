@@ -19,12 +19,11 @@ const EmployeeSelect = ({ selectedEmployees, setSelectedEmployees }) => {
         if (selectedEmployees.some(item => item.maNhanVien === maNhanVien)) {
             setSelectedEmployees(selectedEmployees.filter(item => item.maNhanVien !== maNhanVien));
         } else {
-            // Lưu cả tên nhân viên vào danh sách selectedEmployees
             setSelectedEmployees([
                 ...selectedEmployees,
                 {
                     maNhanVien,
-                    tenNhanVien: selectedEmployee.tenNhanVien,  // Thêm tên nhân viên
+                    tenNhanVien: selectedEmployee.tenNhanVien,
                     email: selectedEmployee.email,
                     vaiTro: ''
                 }

@@ -76,9 +76,9 @@ const DetailTask = ({
     // } else {
     //   console.error("Connection is not established.");
     // }
-    setLoading(true);
+    //setLoading(true);
     const messageContent = selectedFile ? `Uploaded file: ${selectedFile.name}` : newComment;
-
+	
     try {
       await connection.invoke("TraoDoiThongTin", maCongViec, localStorage.getItem("name"), messageContent);
       setNewComment("");
@@ -88,7 +88,7 @@ const DetailTask = ({
       console.error("Error sending message: ", err);
       setErrorMessage("Failed to send message.");
     } finally {
-      setLoading(false);
+      //setLoading(false);
     }
   };
   const onEmojiClick = (emoji) => {

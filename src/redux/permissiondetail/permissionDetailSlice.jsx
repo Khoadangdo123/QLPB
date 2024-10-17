@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { fetchPermissionDetails as fetchAPI, addPermissionDetail as addAPI, updatePermissionDetail as updateAPI,
-  deletePermissionDetail as deleteAPI
+  deletePermissionDetail as deleteAPI,checkPermission as checkPermissionAPI
  } from './permissionDetailAPI';
 
 export const fetchPermissionDetails = createAsyncThunk('permissionDetails/fetchPermissionDetails', async () => {
@@ -19,6 +19,10 @@ export const updatePermissionDetail = createAsyncThunk('permissionDetails/update
 });
 export const deletePermissionDetail = createAsyncThunk('permissionDetails/deletePermissionDetail', async (id) => {
   const response = await deleteAPI(id);
+  return response;
+});
+export const checkPermission = createAsyncThunk('permissionDetails/checkPermission', async (permissionDetail) => {
+  const response = await checkPermissionAPI(permissionDetail)
   return response;
 });
 const initialState = {

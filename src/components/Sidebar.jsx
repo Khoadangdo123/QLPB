@@ -14,13 +14,18 @@ import clsx from "clsx";
 import { addProject, fetchProjects } from "../redux/project/projectSlice";
 import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
 import RolePermission from "../pages/Permission";
+import { fetchFunctions } from "../redux/function/functionSlice";
+import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 const Sidebar = () => {
   const dispatch=useDispatch();
   const [connection, setConnection] = useState(null);
   const { user } = useSelector((state) => state.authen);
   const duans=useSelector((state)=>state.projects.list)
+  const chucnangs=useSelector((state)=>state.functions.list)
+  //const chitietquyen=useSelector((state)=>state.)
   useEffect(()=>{
     dispatch(fetchProjects({ search: '', page: 20 }))
+    dispatch(fetchFunctions({ search: '', page: 20 }))
   },[dispatch])
   useEffect(()=>{
     const newConnection = new HubConnectionBuilder()
@@ -30,6 +35,7 @@ const Sidebar = () => {
 
     setConnection(newConnection);
   },[])
+  console.log(chucnangs)
   useEffect(() => {
     if (connection && connection.state === "Disconnected") {
       connection.start()
@@ -123,7 +129,16 @@ const Sidebar = () => {
   const location = useLocation();
   const currentPath = location.pathname;
   //const sidebarLinks = user?.isAdmin ? linkData : linkData.slice(0, 5);
-  const sidebarLinks = linkData
+  console.log(linkData)
+  const hasPermission = (label) => {
+    return chucnangs.some((chucnang) => chucnang.tenChucNang === label);
+  };
+  const filteredLinkData = linkData.filter(item => hasPermission(item.label));
+  // chucnangs.map((item)=>{
+  //   console.log(dispatch(checkPermission({maChucNang:item.maChucNang,maNhomQuyen:Number(localStorage.getItem("permissionId")),hanhDong:"Xem"})).unwrap())
+  // })
+  //const sidebarLinks = linkData
+  const sidebarLinks=filteredLinkData
   const closeSidebar = () => {
     dispatch(setOpenSidebar(false));
   };
@@ -141,8 +156,8 @@ const Sidebar = () => {
     e.preventDefault();
 
     // Kiểm tra độ dài chuỗi
-    if (projectName.length < 3) {
-      setError("Tên dự án phải có ít nhất 3 ký tự!"); 
+    if (projectName.length < 1) {
+      setError("Tên dự án phải có ít nhất 1 ký tự!"); 
       return;
     }
 
