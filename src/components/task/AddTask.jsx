@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ModalWrapper from "../ModalWrapper";
 import { Dialog } from "@headlessui/react";
 import Textbox from "../Textbox";
@@ -7,7 +7,7 @@ import UserList from "./UserList";
 import SelectList from "../SelectList";
 import { BiImages } from "react-icons/bi";
 import Button from "../Button";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addTask } from "../../redux/task/taskSlice";
 import { fetchByIdProject } from "../../redux/project/projectSlice";
 import DepartmentSelect from "./DepartmentTask";
@@ -15,6 +15,7 @@ import EmployeeSelect from "./EmployeeTask";
 import { addAssignment } from "../../redux/assignment/assignmentSlice";
 import { sendGmail } from "../../redux/sendgmail/sendgmailSlice";
 import { addWorkDepartment } from "../../redux/workdepartment/workdepartmentSlice";
+import { addTaskHistory, fetchTaskHistories } from "../../redux/taskhistory/taskhistorySlice";
 const LISTS = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const PRIORITY = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 
@@ -37,7 +38,7 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
   );
   const [assets, setAssets] = useState([]);
   const [uploading, setUploading] = useState(false);
-
+  const lichSuCongViec=useSelector((state)=>state.taskhistories.list)
   const submitHandler =async (data) => {
     console.log(congViecCha,duAn)
     let CongViec={
@@ -50,6 +51,7 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
       trangThaiCongViec: false,
       mucDoHoanThanh: 0
     }
+    console.log(selectedEmployees)
     console.log(selectedDepartment)
     console.log(CongViec.tenCongViec)
     try{
@@ -60,12 +62,16 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
             maCongViec: result.maCongViec,
             maPhongBan: Number(department.maPhongBan)
           }))
-  
           await dispatch(addAssignment({
             maCongViec: result.maCongViec,
             maNhanVien: Number(department.maTruongPhong),
             vaiTro: "Người Chịu Trách Nhiệm"
           }));
+          await dispatch(addTaskHistory({
+            maCongViec:result.maCongViec,
+            ngayCapNhat:new Date().toISOString(),
+            noiDung:`${new Date().toISOString()}: Phòng ban ${department.tenPhongBan} phân công thực hiện công việc ${CongViec.tenCongViec} do trưởng phòng ${department.responsiblePerson} chịu trách nhiệm`
+          }))
           // await dispatch(sendGmail({
           //   name: department.responsiblePerson,
           //   toGmail: department.email,
@@ -83,12 +89,17 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
             maNhanVien: Number(employee.maNhanVien),
             vaiTro: employee.vaiTro,
           }));
-          await dispatch(sendGmail({
-            name: employee.tenNhanVien,
-            toGmail: employee.email,
-            subject: "Thông Tin Phân Công Dự Án",
-            body: generateEmailTemplate(employee,CongViec)
-          }));
+          await dispatch(addTaskHistory({
+            maCongViec:result.maCongViec,
+            ngayCapNhat:new Date().toISOString(),
+            noiDung:`${new Date().toISOString()}: Nhân viên ${employee.tenNhanVien} được phân công vào công việc ${CongViec.tenCongViec} với vai trò ${employee.vaiTro}`
+          }))
+          // await dispatch(sendGmail({
+          //   name: employee.tenNhanVien,
+          //   toGmail: employee.email,
+          //   subject: "Thông Tin Phân Công Dự Án",
+          //   body: generateEmailTemplate(employee,CongViec)
+          // }));
         });
         await Promise.all(employeePromises);
       }
@@ -165,6 +176,7 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
                   error={errors.date ? errors.date.message : ""}
                 />
               </div>
+              
             </div>
 
             <div className='bg-gray-50 py-6 sm:flex sm:flex-row-reverse gap-4'>

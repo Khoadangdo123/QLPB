@@ -9,6 +9,7 @@ import DetailTask from "../task/DetailTask";
 import { BGS, formatDate } from "../../utils";
 import { updateAssignment } from "../../redux/assignment/assignmentSlice";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { addTaskHistory } from "../../redux/taskhistory/taskhistorySlice";
 const TaskAssignmentList = ({ congviec }) => {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -133,6 +134,11 @@ const TaskAssignmentList = ({ congviec }) => {
         await dispatch(
           updateAssignment({ id: maPhanCong, assignment: PhanCong })
         );
+        await dispatch(addTaskHistory({
+          maCongViec:PhanCong.maCongViec,
+          ngayCapNhat:new Date().toISOString(),
+          noiDung:`${new Date().toISOString()}: Nhân Viên ${localStorage.getItem("name")} đã hoàn thành nhiệm vụ được giao của công việc ${phancong.tenCongViec}`
+        }))
         console.log("Updateeeeee");
         //await dispatch(fetchByIdTask(maCongViec))
       } catch (e) {

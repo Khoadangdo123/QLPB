@@ -78,7 +78,7 @@ const DetailTask = ({
     // }
     //setLoading(true);
     const messageContent = selectedFile ? `Uploaded file: ${selectedFile.name}` : newComment;
-	
+
     try {
       await connection.invoke("TraoDoiThongTin", maCongViec, localStorage.getItem("name"), messageContent);
       setNewComment("");
@@ -146,25 +146,6 @@ const DetailTask = ({
             </span>
           </div>
         </div>
-
-        {/* Project Section */}
-        {/* <div className="mb-4 px-6">
-					<div className="flex items-center">
-						<span className="bg-pink-600 text-white px-3 py-1 rounded-full text-sm">
-							.NET
-						</span>
-						<span className="ml-3 text-gray-600">Untitled section</span>
-					</div>
-				</div> */}
-
-        {/* Dependencies */}
-        {/* <div className="mb-4 px-6">
-					<p className="text-gray-700 font-medium">Dependencies</p>
-					<button className="bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 mt-2 rounded-full focus:outline-none">
-						Add dependencies
-					</button>
-				</div> */}
-        {/* Description */}
         <div className="mb-6 px-6">
           <p className="text-gray-700 font-medium">Mô Tả</p>
           <textarea
@@ -224,9 +205,9 @@ const DetailTask = ({
               <input
                 type="file"
                 onChange={handleFileChange}
-                className="hidden" // Ẩn input file thực sự
+                className="hidden"
                 onClick={(e) => {
-                  e.stopPropagation(); // Ngăn chặn sự kiện click
+                  e.stopPropagation();
                 }}
               />
             </label>

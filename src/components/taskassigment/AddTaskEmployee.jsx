@@ -6,10 +6,11 @@ import Button from "../Button";
 import { useDispatch } from "react-redux";
 import EmployeeSelectDepartment from "./EmployeeSelectDepartment";
 import { addAssignment } from "../../redux/assignment/assignmentSlice";
+import { addTaskHistory } from "../../redux/taskhistory/taskhistorySlice";
 const LISTS = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const PRIORITY = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const uploadedFileURLs = [];
-const AddTaskEmployee = ({ open, setOpen,maCongViec,maPhongBan}) => {
+const AddTaskEmployee = ({ open, setOpen,maCongViec,maPhongBan,tenCongViec}) => {
   const task = "";
   const {
     register,
@@ -23,6 +24,7 @@ const AddTaskEmployee = ({ open, setOpen,maCongViec,maPhongBan}) => {
   const [selectedDepartment, setSelectedDepartment] = useState([]);
   const [assets, setAssets] = useState([]);
   const [uploading, setUploading] = useState(false);
+  console.log(selectedEmployees)
   const submitHandler =async (data) => {
     try{
       //await dispatch(fetchByIdProject(Number(duAn)))
@@ -38,6 +40,11 @@ const AddTaskEmployee = ({ open, setOpen,maCongViec,maPhongBan}) => {
               maNhanVien: Number(employee.maNhanVien),
               vaiTro: employee.vaiTro,
             }));
+            await dispatch(addTaskHistory({
+              maCongViec:maCongViec,
+              ngayCapNhat:new Date().toISOString(),
+              noiDung:`${new Date().toISOString()}: Nhân Viên ${employee.tenNhanVien} được phân công việc ${tenCongViec}`
+            }))
             // await dispatch(sendGmail({
             //   name: employee.tenNhanVien,
             //   toGmail: employee.email,

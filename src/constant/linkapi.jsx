@@ -13,7 +13,8 @@ const API_ENDPOINTS = {
     PHANDUAN:`${API_URL}/PhanDuAn`,
     PHANCONG:`${API_URL}/PhanCong`,
     AUTH:`${API_URL}/Authentication/`,
-    SENDGMAIL:`${API_URL}/SendGmail`
+    SENDGMAIL:`${API_URL}/SendGmail`,
+    LICHSUCONGVIEC:`${API_URL}/LichSuCongViec`
     
 };
   

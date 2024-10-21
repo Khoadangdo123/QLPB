@@ -6,13 +6,14 @@ import clsx from "clsx";
 import Button from "../Button";
 import AddTask from "./AddTask";
 import { useEffect, useState } from "react";
-import { IoMdAdd, IoMdCreate, IoMdTrash } from "react-icons/io";
+import { IoMdAdd, IoMdCreate, IoMdSwap, IoMdTrash } from "react-icons/io";
 import DetailTask from "./DetailTask";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchByIdTask } from "../../redux/task/taskSlice";
 import EmployeeInfo from "../EmployeeInfo";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import UpdateTask from "./UpdateTask";
+import AddTaskTransfer from "../tasktransfer/AddTaskTransfer";
 const priorities = [
   { id: "low", name: "Thấp" },
   { id: "medium", name: "Trung Bình" },
@@ -28,6 +29,7 @@ const stages = [
 const TaskListItem = ({ congviec, duAn }) => {
   const [open, setOpen] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
+  const [openTransfer, setOpenTransfer] = useState(false);
   const [taskRoot, setTaskRoot] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [subTasks, setSubTasks] = useState([]);
@@ -114,12 +116,12 @@ const TaskListItem = ({ congviec, duAn }) => {
         return "text-gray-500";
     }
   };
-
   const itemClass = isParentTask(congviec)
     ? hasSubTasks(congviec)
       ? "font-bold text-blue-600 bg-blue-100"
       : "font-bold bg-blue-200"
     : "pl-6 bg-gray-100";
+    //console.log(completionPercent)
   return (
     <div
       className={`w-full flex items-center px-4 ${
@@ -250,6 +252,17 @@ const TaskListItem = ({ congviec, duAn }) => {
             icon={<IoMdTrash className="text-lg" />}
             className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
           />
+          <Button
+            onClick={() => {
+              //setTaskRoot(congviec.maCongViec);
+              //setOpenUpdate(true);
+              setOpenTransfer(true)
+              
+            }}
+            //label="Xóa CV" // Rút ngắn văn bản nếu cần
+            icon={<IoMdSwap className="text-lg" />}
+            className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
+          />
         </div>
       </div>
       <AddTask
@@ -267,6 +280,14 @@ const TaskListItem = ({ congviec, duAn }) => {
         maCongViec={congviec.maCongViec}
         task={congviec}
         phanCong={phancong}
+      />
+      <AddTaskTransfer
+      openTransfer={openTransfer}
+      setOpenTransfer={setOpenTransfer}
+      maCongViec={maCongViec}
+      tenCongViec={congviec.tenCongViec}
+      maPhongBan={null}
+      currentEmployee={phancong?.phanCongs}
       />
       {expanded && (
         <DetailTask
