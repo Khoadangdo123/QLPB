@@ -28,8 +28,8 @@ const UserPermissions = ({ role, onClose }) => {
     const fetchPermissions = async () => {
       if (!permissionsByRole || !permissionsByRole.chiTietQuyens) return;
   
-      console.log("Fetched permissionsByRole:", permissionsByRole);
-      console.log(permissionsByRole.chiTietQuyens)
+      //console.log("Fetched permissionsByRole:", permissionsByRole);
+      //console.log(permissionsByRole.chiTietQuyens)
       const updatedPermissions = functions.map((func) => {
         const actions = ["Xem", "Thêm", "Sửa", "Xóa"].map((action, index) => {
           const chiTietQuyen = permissionsByRole.chiTietQuyens.find(
@@ -38,9 +38,9 @@ const UserPermissions = ({ role, onClose }) => {
               && perm.hanhDong === action
               && perm.maNhomQuyen === maQuyen
           );
-          console.log(chiTietQuyen)
+          //console.log(chiTietQuyen)
           const allowed = !!chiTietQuyen;
-          console.log(allowed)
+          //console.log(allowed)
           return {
             id: index + 1,
             action,
@@ -68,9 +68,9 @@ const UserPermissions = ({ role, onClose }) => {
     const maChucNang = permission.functionId;
     const maQuyen = role.maQuyen;
     const isChecked = permission.actions.every((action) => action.allowed);
-    console.log("maQuyen:", maQuyen);
-    console.log("maChucNang:", maChucNang);
-    console.log("Chọn toàn bộ hành động:", !isChecked);
+    // console.log("maQuyen:", maQuyen);
+    // console.log("maChucNang:", maChucNang);
+    // console.log("Chọn toàn bộ hành động:", !isChecked);
     const status=!isChecked
     setPermissions((prevPermissions) =>
       prevPermissions.map((perm) =>
@@ -99,7 +99,7 @@ const UserPermissions = ({ role, onClose }) => {
     }
   };
   async function save(chiTietQuyen){
-    console.log("CTQ: ",chiTietQuyen)
+    //console.log("CTQ: ",chiTietQuyen)
     try{
       let model={
         maNhomQuyen:chiTietQuyen.maQuyen,
@@ -147,7 +147,7 @@ const UserPermissions = ({ role, onClose }) => {
       console.log(result)
       }
       await dispatch(fetchPermissionById(maQuyen))
-      console.log(permissionsByRole)
+      //console.log(permissionsByRole)
       return true
     }catch(e){
       console.log(e)

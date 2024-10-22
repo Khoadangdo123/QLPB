@@ -10,6 +10,8 @@ import { BGS, formatDate } from "../../utils";
 import { updateAssignment } from "../../redux/assignment/assignmentSlice";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { addTaskHistory } from "../../redux/taskhistory/taskhistorySlice";
+import FileUpload from "./FileUpload";
+import { IoMdCloudUpload, IoMdImage } from "react-icons/io";
 const TaskAssignmentList = ({ congviec }) => {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -117,6 +119,10 @@ const TaskAssignmentList = ({ congviec }) => {
   const handleToggleDetail = () => {
     setExpanded(!expanded);
   };
+  const handleFileSubmit = (files) => {
+    console.log("Files submitted:", files);
+  };
+
   const handleCheckboxChange = async (event) => {
     const isConfirmed = window.confirm(
       "Bạn có chắc chắn muốn đánh dấu công việc đã hoàn thành?"
@@ -222,6 +228,17 @@ const TaskAssignmentList = ({ congviec }) => {
             checked={completed}
             onChange={handleCheckboxChange}
             className="w-6 h-6"
+          />
+        </div>
+        <div className="flex-1 w-1/12 px-4 text-center">
+         {/* <FileUpload/> */}
+         <Button
+            onClick={() => {
+              alert("Upload file")
+            }}
+            //label="Tạo CV" // Rút ngắn văn bản nếu cần
+            icon={<IoMdCloudUpload className="text-lg" />}
+            className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
           />
         </div>
       </div>

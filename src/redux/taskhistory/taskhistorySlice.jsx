@@ -62,12 +62,21 @@ const taskHistorySlice = createSlice({
             .addCase(fetchTaskHistoryById.pending, (state) => {
                 state.loading = true;
                 state.status = 'loading';
-            })
-            .addCase(fetchTaskHistoryById.fulfilled, (state, action) => {
+            }).addCase(fetchTaskHistoryById.fulfilled, (state, action) => {
                 state.loading = false;
                 state.status = 'succeeded';
-                state.currentTaskHistory = action.payload;
+                const index = state.list.findIndex((taskHistory) => taskHistory.maCongViec === action.payload.maCongViec);
+                if (index !== -1) {
+                    state.list[index] = action.payload;
+                } else {
+                    state.list.push(action.payload);
+                }
             })
+            // .addCase(fetchTaskHistoryById.fulfilled, (state, action) => {
+            //     state.loading = false;
+            //     state.status = 'succeeded';
+            //     state.currentTaskHistory = action.payload;
+            // })
             .addCase(fetchTaskHistoryById.rejected, (state, action) => {
                 state.loading = false;
                 state.status = 'failed';

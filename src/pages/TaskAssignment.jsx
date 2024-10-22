@@ -83,6 +83,7 @@ const TaskAssignment=()=>{
                 <div className="flex-1 w-2/12 border-l px-4 ">Chịu Trách Nhiệm</div>
                 <div className="flex-1 w-2/12 border-l px-4 ">Nhóm</div>
                 <div className="flex-1 w-1/12 border-l px-4 ">Trình Trạng</div>
+                <div className="flex-1 w-1/12 border-l px-4 "></div>
             </div>
             <div className="w-full bg-transparent border-b-1">
                 <div className="p-4 w-full flex items-center justify-between font-semibold bg-white text-gray-600 mb-2 mt-4 shadow-sm border-y text-sm"></div>
