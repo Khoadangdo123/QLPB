@@ -12,6 +12,12 @@ export const addSection = async (section) => {
 };
 
 export const updateSection = async (id, section) => {
+    console.log("Section API: ", section)
     const response = await axios.put(API_ENDPOINTS.PHANDUAN + "/" + id, section);
+    return response.data;
+};
+
+export const deleteSection = async (id) => {
+    const response = await axios.delete(API_ENDPOINTS.PHANDUAN + "/" + id);
     return response.data;
 };

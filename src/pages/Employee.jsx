@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-//import Title from "../components/Title";
 import Button from "../components/Button";
 import { IoMdAdd } from "react-icons/io";
 import { getInitials } from "../utils";
@@ -12,6 +11,7 @@ import { fetchEmployees } from "../redux/employees/employeeSlice";
 import AddEmployee from "../components/employee/AddEmployee";
 import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
 import UpdateEmployee from "../components/employee/UpdateEmployee";
+
 const Employees = () => {
   const [pageSize, setPageSize] = useState(10);
   const employees = useSelector((state) => state.employees.list);
@@ -23,9 +23,11 @@ const Employees = () => {
   const [selectedEmployee, setSelectedEmployee] = useState(null);
   const [connection, setConnection] = useState(null);
   const dispatch=useDispatch()
+
   useEffect(() => {
     dispatch(fetchEmployees({ search: '', page: pageSize }));
   }, [dispatch, pageSize]);
+
   useEffect(()=>{
     const newConnection = new HubConnectionBuilder()
       .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
@@ -34,6 +36,7 @@ const Employees = () => {
 
     setConnection(newConnection);
   },[])
+
   useEffect(()=>{
     if (connection && connection.state === "Disconnected") {
         connection.start()
@@ -47,6 +50,7 @@ const Employees = () => {
           .catch((error) => console.error("Connection failed: ", error));
       }
   },[dispatch,pageSize,connection])
+  
   const employeeActionHandler = () => {};
   const deleteHandler = () => {};
 

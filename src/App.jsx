@@ -16,6 +16,7 @@ import Departments from "./pages/Department";
 import Dashboard from "./pages/dashboard";
 import { setOpenSidebar } from "./redux/slices/authSlice";
 import Employees from "./pages/Employee";
+import Sections from "./pages/Section";
 import Accounts from "./pages/Account";
 import * as signalR from '@microsoft/signalr';
 import RolePermission from "./pages/Permission";
@@ -118,6 +119,7 @@ function App() {
           <Route path='/team' element={<Users />} />
           <Route path='/department' element={<Departments/>} />
           <Route path='/employee' element={<Employees/>} />
+          <Route path='/section' element={<Sections/>} />
           <Route path='/account' element={<Accounts/>} />
           <Route path='/permission' element={<RolePermission/>} />
           <Route path='/trashed' element={<Trash />} />

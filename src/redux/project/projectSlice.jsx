@@ -24,7 +24,8 @@ const initialState = {
   list: [],
   loading: false,
   error: null,
-  status: "All"
+  status: "All",
+  current: null,
 };
 
 const projectSlice = createSlice({
@@ -58,6 +59,7 @@ const projectSlice = createSlice({
       }).addCase(fetchByIdProject.fulfilled, (state, action) => {
         state.loading = false;
         state.status = 'succeeded';
+        state.current = action.payload;
         const index = state.list.findIndex((project) => project.maDuAn === action.payload.maDuAn);
         if (index === -1) {
           state.list.push(action.payload);
@@ -69,6 +71,7 @@ const projectSlice = createSlice({
         state.loading = false;
         state.status = 'failed';
         state.error = action.error.message;
+        state.current = null;
       });
   },
 });

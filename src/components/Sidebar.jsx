@@ -99,9 +99,15 @@ const Sidebar = () => {
       label: "Phòng Ban",
       link: "/department",
       icon: <FaUsers />,
-    },{
+    },
+    {
       label: "Nhân Viên",
       link: "/employee",
+      icon: <FaUsers />,
+    },
+    {
+      label: "Phần dự án",
+      link: "/section",
       icon: <FaUsers />,
     },
     {

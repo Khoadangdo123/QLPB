@@ -1,9 +1,14 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchSections as fetchAPI, addSection as addAPI, updateSection as updateAPI } from './sectionAPI';
+import { fetchSections as fetchAPI, addSection as addAPI, updateSection as updateAPI, deleteSection as deleteAPI } from './sectionAPI';
 
 export const fetchSections = createAsyncThunk('sections/fetchSections', async ({ search, page }) => {
   const response = await fetchAPI(search, page);
   return response;
+});
+
+export const deleteSection = createAsyncThunk('sections/deleteSection', async (id) => {
+  const response = await deleteAPI(id);
+  return id;
 });
 
 export const addSection = createAsyncThunk('sections/addSection', async (section) => {
@@ -55,6 +60,9 @@ const sectionSlice = createSlice({
         if (index !== -1) {
           state.list[index] = action.payload;
         }
+      })
+      .addCase(deleteSection.fulfilled, (state, action) => {
+        state.list = state.list.filter((section) => section.maPhanDuAn !== action.payload);
       });
   },
 });
