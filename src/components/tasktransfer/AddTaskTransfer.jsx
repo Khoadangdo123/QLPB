@@ -60,8 +60,8 @@ const AddTaskTransfer = ({
     //   console.log(e);
     // }
   };
-  console.log(selectedCurrentEmployee);
-  console.log(selectedEmployees);
+  // console.log(selectedCurrentEmployee);
+  // console.log(selectedEmployees);
   return (
     <ModalWrapper open={openTransfer} setOpen={setOpenTransfer}>
       <div className="max-h-screen overflow-y-auto">

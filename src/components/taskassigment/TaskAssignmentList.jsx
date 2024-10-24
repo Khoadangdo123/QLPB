@@ -12,7 +12,9 @@ import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { addTaskHistory } from "../../redux/taskhistory/taskhistorySlice";
 import FileUpload from "./FileUpload";
 import { IoMdCloudUpload, IoMdImage } from "react-icons/io";
+import FileUploadModal from "./FileUploadModal";
 const TaskAssignmentList = ({ congviec }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -234,7 +236,7 @@ const TaskAssignmentList = ({ congviec }) => {
          {/* <FileUpload/> */}
          <Button
             onClick={() => {
-              alert("Upload file")
+              setIsModalOpen(true)
             }}
             //label="Tạo CV" // Rút ngắn văn bản nếu cần
             icon={<IoMdCloudUpload className="text-lg" />}
@@ -253,6 +255,8 @@ const TaskAssignmentList = ({ congviec }) => {
           userTeam={thucHien}
         />
       )}
+      <FileUpload isOpen={isModalOpen} 
+        onRequestClose={() => setIsModalOpen(false)} />
     </div>
   );
 };

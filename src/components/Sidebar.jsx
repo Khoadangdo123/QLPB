@@ -6,7 +6,7 @@ import {
   MdSettings,
   MdTaskAlt,
 } from "react-icons/md";
-import { FaTasks, FaTrashAlt, FaUsers, FaPlus, FaRProject, FaProjectDiagram, FaUser } from "react-icons/fa";
+import { FaTasks, FaTrashAlt, FaUsers, FaPlus, FaRProject, FaProjectDiagram, FaUser, FaExchangeAlt } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 import { setOpenSidebar } from "../redux/slices/authSlice";
@@ -18,6 +18,7 @@ import { fetchFunctions } from "../redux/function/functionSlice";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 import { fetchPermissionById } from "../redux/permission/permissionSlice";
 import { FaDiagramProject, FaUserGroup } from "react-icons/fa6";
+import {GoProject} from "react-icons/go"
 const Sidebar = () => {
   const dispatch = useDispatch();
   const [connection, setConnection] = useState(null);
@@ -72,7 +73,7 @@ const Sidebar = () => {
     {
       label: "Dự Án",
       //link: "/tasks",
-      icon: <FaDiagramProject/>,
+      icon: <GoProject/>,
       subMenu: taskSubMenu,
     },
     {
@@ -90,21 +91,6 @@ const Sidebar = () => {
       link: "/taskassignment",
       icon: <FaTasks />,
     },
-    // {
-    //   label: "Đã Hoàn Thành",
-    //   link: "/completed/completed",
-    //   icon: <MdTaskAlt />,
-    // },
-    // {
-    //   label: "Đang Thực Hiện",
-    //   link: "/in-progress/in-progress",
-    //   icon: <MdOutlinePendingActions />,
-    // },
-    // {
-    //   label: "Cần Làm",
-    //   link: "/todo/todo",
-    //   icon: <MdOutlinePendingActions />,
-    // },
     {
       label: "Công Việc Phòng Ban",
       link: "/assignmentdepartment",
@@ -113,7 +99,7 @@ const Sidebar = () => {
     {
       label: "Chuyển Giao Công Việc",
       link: "/tasktransfer",
-      icon: <FaTasks />,
+      icon: <FaExchangeAlt />,
     },
     {
       label: "Nhóm",

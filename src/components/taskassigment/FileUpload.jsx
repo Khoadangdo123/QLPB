@@ -1,123 +1,33 @@
-// import { useState } from "react";
-// import Button from "../Button"; // Import Button component
-
-// const FileUpload = ({ onSubmit }) => {
-//   const [fileList, setFileList] = useState([]);
-//   const [uploadProgress, setUploadProgress] = useState([]);
-//   const [errorMessage, setErrorMessage] = useState("");
-
-//   // Handle file selection
-//   const handleFileChange = (e) => {
-//     const selectedFiles = Array.from(e.target.files);
-//     const validFiles = selectedFiles.filter(file => {
-//       if (file.size > 100 * 1024) { // Check if file size exceeds 100KB
-//         setErrorMessage(`File ${file.name} vượt quá kích thước 100KB`);
-//         return false;
-//       }
-//       return true;
-//     });
-    
-//     if (validFiles.length) {
-//       setFileList((prevFiles) => [...prevFiles, ...validFiles]);
-//       setErrorMessage(""); // Clear any previous error message
-//       setUploadProgress((prevProgress) => [
-//         ...prevProgress,
-//         ...validFiles.map(() => 0), // Initialize progress for valid files
-//       ]);
-//     }
-//   };
-
-//   // Handle file removal
-//   const handleRemoveFile = (index) => {
-//     setFileList((prevFiles) => {
-//       const updatedFiles = prevFiles.filter((_, idx) => idx !== index);
-//       const updatedProgress = uploadProgress.filter((_, idx) => idx !== index);
-//       console.log("Updated file list after removal:", updatedFiles);
-//       setUploadProgress(updatedProgress); // Update progress state
-//       return updatedFiles;
-//     });
-//   };
-
-//   // Handle file submission
-//   const handleSubmitFiles = () => {
-//     if (onSubmit) {
-//       onSubmit(fileList);
-//       // Simulate file upload progress (optional)
-//       const interval = setInterval(() => {
-//         setUploadProgress((prevProgress) =>
-//           prevProgress.map((progress, index) =>
-//             progress < 100 ? progress + 10 : progress
-//           )
-//         );
-//       }, 100); // Increase progress by 10% every 100ms
-
-//       setTimeout(() => {
-//         clearInterval(interval);
-//         alert("Nộp file thành công!");
-//       }, 1000); // Stop after 1 second
-//     }
-//   };
-
-//   return (
-//     <div className="mt-4 w-full">
-//       <input
-//         type="file"
-//         multiple
-//         onChange={handleFileChange}
-//         className="mb-2 border border-gray-300 rounded px-1 py-1 w-auto"
-//       />
-
-//       {/* Display error message */}
-//       {errorMessage && <p className="text-red-500">{errorMessage}</p>}
-
-//       {/* Display selected files */}
-//       {fileList.length > 0 && (
-//         <ul className="mb-4">
-//           {fileList.map((file, index) => (
-//             <li key={index} className="flex justify-between items-center truncate">
-//               <span className="overflow-hidden whitespace-nowrap text-ellipsis max-w-xs">
-//                 {file.name}
-//               </span>
-//               <div className="flex items-center">
-//                 {uploadProgress[index] !== undefined && (
-//                   <span className="text-sm mr-2">
-//                     {uploadProgress[index]}%
-//                   </span>
-//                 )}
-//                 <button
-//                   onClick={() => handleRemoveFile(index)}
-//                   className="text-red-500 ml-2"
-//                 >
-//                   Gỡ file
-//                 </button>
-//               </div>
-//             </li>
-//           ))}
-//         </ul>
-//       )}
-
-//       {/* Submit button */}
-//       <Button onClick={handleSubmitFiles} className="bg-blue-500 text-white">
-//         Xác nhận nộp
-//       </Button>
-//     </div>
-//   );
-// };
-
-// export default FileUpload;
 import React, { useRef, useState } from "react";
 import axios from "axios";
+import ModalWrapper from "../ModalWrapper";
+import { Icon } from "@mui/material";
+import { BiX } from "react-icons/bi";
 
-const FileUpload = ({}) => {
+const FileUpload = ({ isOpen, onRequestClose }) => {
   const inputRef = useRef();
+  const dropRef = useRef();
 
-  const [selectedFile, setSelectedFile] = useState(null);
-  const [progress, setProgress] = useState(0);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [progress, setProgress] = useState([]);
   const [uploadStatus, setUploadStatus] = useState("select");
+  const [previewFile, setPreviewFile] = useState(null);
+  const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
   const handleFileChange = (event) => {
     if (event.target.files && event.target.files.length > 0) {
-      setSelectedFile(event.target.files[0]);
+      const filesArray = Array.from(event.target.files);
+      const validFiles = filesArray.filter(
+        (file) => file.size <= MAX_FILE_SIZE
+      );
+
+      if (validFiles.length < filesArray.length) {
+        alert(
+          "Một số tệp vượt quá kích thước cho phép (10 MB) và đã bị loại bỏ."
+        );
+      }
+
+      setSelectedFiles((prev) => [...prev, ...validFiles]);
     }
   };
 
@@ -127,8 +37,8 @@ const FileUpload = ({}) => {
 
   const clearFileInput = () => {
     inputRef.current.value = "";
-    setSelectedFile(null);
-    setProgress(0);
+    setSelectedFiles([]);
+    setProgress([]);
     setUploadStatus("select");
   };
 
@@ -140,164 +50,229 @@ const FileUpload = ({}) => {
 
     try {
       setUploadStatus("uploading");
+      const newProgress = Array(selectedFiles.length).fill(0);
+      setProgress(newProgress);
 
-      const formData = new FormData();
-      formData.append("file", selectedFile);
+      const uploadPromises = selectedFiles.map((file, index) => {
+        const formData = new FormData();
+        formData.append("file", file);
 
-      const response = await axios.post(
-        "http://localhost:8000/api/upload",
-        formData,
-        {
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round(
-              (progressEvent.loaded * 100) / progressEvent.total
-            );
-            setProgress(percentCompleted);
-          },
-        }
-      );
+        return axios.post(
+          "https://localhost:7131/api/FileUpload/Upload",
+          formData,
+          {
+            onUploadProgress: (progressEvent) => {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              newProgress[index] = percentCompleted;
+              setProgress([...newProgress]);
+            },
+          }
+        );
+      });
 
+      await Promise.all(uploadPromises);
       setUploadStatus("done");
     } catch (error) {
+      console.error(error);
       setUploadStatus("select");
     }
   };
 
-  const styles = {
-    fileBtn: {
-      display: "inline-block",
-      padding: "10px 20px",
-      backgroundColor: "#007bff",
-      color: "#fff",
-      border: "none",
-      cursor: "pointer",
-      borderRadius: "5px",
-      fontSize: "14px",
-      display: "flex",
-      alignItems: "center",
-      gap: "8px",
-    },
-    fileCard: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      border: "1px solid #ddd",
-      padding: "10px",
-      borderRadius: "5px",
-      marginTop: "10px",
-    },
-    fileInfo: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      flex: 1,
-    },
-    progressBg: {
-      width: "100%",
-      height: "5px",
-      backgroundColor: "#f1f1f1",
-      borderRadius: "5px",
-      overflow: "hidden",
-      marginTop: "8px",
-    },
-    progress: {
-      height: "100%",
-      backgroundColor: "#007bff",
-      transition: "width 0.4s ease",
-    },
-    uploadBtn: {
-      marginTop: "10px",
-      padding: "8px 15px",
-      backgroundColor: "#007bff",
-      color: "#fff",
-      border: "none",
-      cursor: "pointer",
-      borderRadius: "5px",
-    },
-    checkCircle: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      width: "30px",
-      height: "30px",
-      borderRadius: "50%",
-      backgroundColor: "#28a745",
-      color: "#fff",
-    },
-    closeIcon: {
-      cursor: "pointer",
-      color: "#ff0000",
-    },
-    icon: {
-      fontSize: "20px",
-      marginRight: "8px",
-    },
+  const handleDrop = (event) => {
+    event.preventDefault();
+    const files = event.dataTransfer.files;
+    if (files && files.length > 0) {
+      const filesArray = Array.from(files);
+      setSelectedFiles((prev) => [...prev, ...filesArray]);
+    }
+  };
+
+  const handleDragOver = (event) => {
+    event.preventDefault();
+  };
+  const [fileUrl, setFileUrl] = useState("");
+  const handlePreviewFile = (file) => {
+    const fileReader = new FileReader();
+    fileReader.onload = (e) => {
+      setPreviewFile({
+        name: file.name,
+        content: e.target.result,
+        type: file.type,
+      });
+    };
+
+    if (file.type.includes("text")) {
+      fileReader.readAsText(file); // Read text files as text
+    } else {
+      fileReader.readAsDataURL(file); // Read other types as URL for preview
+    }
+  };
+
+  const getFileIcon = (fileName) => {
+    const extension = fileName.split(".").pop().toLowerCase();
+    switch (extension) {
+      case "pdf":
+        return "picture_as_pdf";
+      case "doc":
+      case "docx":
+        return "description";
+      case "jpg":
+      case "jpeg":
+      case "png":
+        return "image";
+      case "txt":
+        return "text_snippet";
+      default:
+        return "insert_drive_file";
+    }
   };
 
   return (
-    <div>
-      <input
-        ref={inputRef}
-        type="file"
-        onChange={handleFileChange}
-        style={{ display: "none" }}
-      />
-
-      {!selectedFile && (
-        <button style={styles.fileBtn} onClick={onChooseFile}>
-          <span className="material-symbols-outlined">upload</span> Upload File
+    <ModalWrapper open={isOpen} setOpen={onRequestClose}>
+      <div
+        className="relative p-2 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('url')" }}
+      >
+        <button
+          onClick={onRequestClose}
+          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
+        >
+          <BiX />
         </button>
-      )}
 
-      {selectedFile && (
-        <>
-          <div style={styles.fileCard}>
-            <span className="material-symbols-outlined" style={styles.icon}>
-              description
-            </span>
+        <input
+          ref={inputRef}
+          type="file"
+          onChange={handleFileChange}
+          style={{ display: "none" }}
+          multiple
+        />
+        <div
+          ref={dropRef}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          className="border-2 border-dashed border-gray-400 p-4 rounded-md text-center mb-4 bg-white/75"
+        >
+          <p className="mb-2">Drag & Drop your files here</p>
+          <button
+            onClick={onChooseFile}
+            className="inline-flex items-center px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700"
+          >
+            <span className="material-symbols-outlined mr-2">upload</span>
+            Choose Files
+          </button>
+        </div>
 
-            <div style={styles.fileInfo}>
-              <div style={{ flex: 1 }}>
-                <h6>{selectedFile?.name}</h6>
-
-                <div style={styles.progressBg}>
-                  <div style={{ ...styles.progress, width: `${progress}%` }} />
-                </div>
-              </div>
-
-              {uploadStatus === "select" ? (
-                <button onClick={clearFileInput}>
-                  <span
-                    className="material-symbols-outlined"
-                    style={styles.closeIcon}
-                  >
-                    close
+        {selectedFiles.length > 0 && (
+          <div className="mt-4">
+            {selectedFiles.map((file, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-between p-2 border border-gray-300 rounded-md mb-2"
+              >
+                <div className="flex items-center flex-1">
+                  <span className="material-symbols-outlined mr-2">
+                    {getFileIcon(file.name)}
                   </span>
-                </button>
-              ) : (
-                <div style={styles.checkCircle}>
-                  {uploadStatus === "uploading" ? (
-                    `${progress}%`
-                  ) : uploadStatus === "done" ? (
-                    <span
-                      className="material-symbols-outlined"
-                      style={{ fontSize: "20px" }}
+                  <div className="flex-1 overflow-hidden">
+                    <h6
+                      className="font-semibold cursor-pointer whitespace-nowrap overflow-hidden text-ellipsis"
+                      onClick={() => handlePreviewFile(file)}
                     >
-                      check
-                    </span>
-                  ) : null}
+                      {file.name}
+                    </h6>
+                    <div className="w-full h-1 bg-gray-200 rounded mt-1">
+                      <div
+                        className="h-full bg-blue-600 rounded"
+                        style={{ width: `${progress[index] || 0}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
+
+                {uploadStatus === "select" ? (
+                  <button
+                    onClick={() => {
+                      setSelectedFiles((prev) =>
+                        prev.filter((_, i) => i !== index)
+                      );
+                      setProgress((prev) => prev.filter((_, i) => i !== index));
+                    }}
+                  >
+                    <BiX />
+                  </button>
+                ) : (
+                  <div className="flex items-center justify-center w-8 h-8 text-black rounded-full">
+                    {uploadStatus === "uploading" ? (
+                      `${progress[index] || 0}%`
+                    ) : uploadStatus === "done" ? (
+                      <span className="material-symbols-outlined">check</span>
+                    ) : null}
+                  </div>
+                )}
+              </div>
+            ))}
+
+            <button
+              onClick={handleUpload}
+              className={`mt-2 px-4 py-2 rounded text-white ${
+                uploadStatus === "uploading"
+                  ? "bg-gray-500"
+                  : "bg-blue-600 hover:bg-blue-700"
+              }`}
+              disabled={uploadStatus === "uploading"}
+            >
+              {uploadStatus === "select" || uploadStatus === "uploading"
+                ? "Upload"
+                : "Done"}
+            </button>
+          </div>
+        )}
+
+        {previewFile && (
+          <ModalWrapper
+            open={!!previewFile}
+            setOpen={() => setPreviewFile(null)}
+          >
+            <div className="relative p-4 bg-white rounded shadow-md w-full max-w-7xl max-h-[90vh] overflow-y-auto">
+              <button
+                onClick={() => setPreviewFile(null)}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                <BiX />
+              </button>
+
+              <h2 className="text-lg font-semibold mb-4">{previewFile.name}</h2>
+              {previewFile.type.includes("image") ? (
+                <img
+                  src={previewFile.content}
+                  alt={previewFile.name}
+                  className="max-w-full h-auto"
+                />
+              ) : previewFile.type.includes("pdf") ? (
+                <iframe
+                  src={previewFile.content}
+                  //className="w-full h-96"
+                  className="w-full h-[80vh]"
+                  title="PDF Preview"
+                />
+              ) : previewFile.type.includes("text") ? (
+                // <pre className="whitespace-pre-wrap max-h-96 overflow-y-auto">
+                //   {previewFile.content}
+                // </pre>
+                <pre className="whitespace-pre-wrap max-h-[80vh] overflow-y-auto">
+                  {previewFile.content}
+                </pre>
+              ) : (
+                <p>Cannot preview this file type</p>
               )}
             </div>
-          </div>
-          <button style={styles.uploadBtn} onClick={handleUpload}>
-            {uploadStatus === "select" || uploadStatus === "uploading"
-              ? "Upload"
-              : "Done"}
-          </button>
-        </>
-      )}
-    </div>
+          </ModalWrapper>
+        )}
+      </div>
+    </ModalWrapper>
   );
 };
 
