@@ -25,6 +25,8 @@ import Milestones from "./components/task/Milestones";
 import ProjectTimeline from "./components/task/Milestones";
 import ChatBox from "./components/task/Milestones";
 import Tasktransfer from "./pages/TaskTransfer";
+import GanttApp from "./components/task/Gant";
+// import Gant from "./components/task/Gant";
 function Layout() {
   const dispatch=useDispatch();
   const authUser = useSelector((state) => state.authen);
@@ -133,7 +135,11 @@ function App() {
           <Route path='/task/:id' element={<TaskDetails />} />
           <Route path='/milestones' element={<ChatBox />} />
           <Route path='/tasktransfer' element={<Tasktransfer/>}/>
+          {/* <Route path='/gantchart' element={<GanttChart/>}/> */}
+          <Route path="/gant" element={<GanttApp/>}/>
           <Route path="*" element={<Navigate to="/dashboard" />} />
+
+          //GanttChart
         </Route>
         <Route path='/log-in' element={<Login />} />
       </Routes>

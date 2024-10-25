@@ -18,6 +18,7 @@ const TaskAssignmentList = ({ congviec }) => {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   const [completed, setCompleted] = useState(congviec.trangThaiCongViec);
   const [connection, setConnection] = useState(null);
   const dispatch = useDispatch();
@@ -121,8 +122,13 @@ const TaskAssignmentList = ({ congviec }) => {
   const handleToggleDetail = () => {
     setExpanded(!expanded);
   };
-  const handleFileSubmit = (files) => {
-    console.log("Files submitted:", files);
+  // const handleFileSubmit = (files) => {
+  //   console.log("Files submitted:", files);
+  // };
+  const handleRemoveFile = (fileName) => {
+    setUploadedFiles((prevFiles) =>
+      prevFiles.filter((file) => file.name !== fileName)
+    );
   };
 
   const handleCheckboxChange = async (event) => {
@@ -142,11 +148,17 @@ const TaskAssignmentList = ({ congviec }) => {
         await dispatch(
           updateAssignment({ id: maPhanCong, assignment: PhanCong })
         );
-        await dispatch(addTaskHistory({
-          maCongViec:PhanCong.maCongViec,
-          ngayCapNhat:new Date().toISOString(),
-          noiDung:`${new Date().toISOString()}: Nhân Viên ${localStorage.getItem("name")} đã hoàn thành nhiệm vụ được giao của công việc ${phancong.tenCongViec}`
-        }))
+        await dispatch(
+          addTaskHistory({
+            maCongViec: PhanCong.maCongViec,
+            ngayCapNhat: new Date().toISOString(),
+            noiDung: `${new Date().toISOString()}: Nhân Viên ${localStorage.getItem(
+              "name"
+            )} đã hoàn thành nhiệm vụ được giao của công việc ${
+              phancong.tenCongViec
+            }`,
+          })
+        );
         console.log("Updateeeeee");
         //await dispatch(fetchByIdTask(maCongViec))
       } catch (e) {
@@ -172,9 +184,9 @@ const TaskAssignmentList = ({ congviec }) => {
         >
           <span className="line-clamp-2">{phancong.tenCongViec}</span>
         </div>
-        <div className="flex-1 w-2/12 px-4 text-left">
+        {/* <div className="flex-1 w-2/12 px-4 text-left">
           <span>{phancong.moTa}</span>
-        </div>
+        </div> */}
         <div className="flex-1 w-1/12 px-4 text-center">
           <span>{phancong.mucDoUuTien}</span>
         </div>
@@ -232,16 +244,39 @@ const TaskAssignmentList = ({ congviec }) => {
             className="w-6 h-6"
           />
         </div>
-        <div className="flex-1 w-1/12 px-4 text-center">
-         {/* <FileUpload/> */}
-         <Button
+        {/* <div className="flex-1 w-1/12 px-4 text-center">
+          <Button
             onClick={() => {
-              setIsModalOpen(true)
+              setIsModalOpen(true);
             }}
-            //label="Tạo CV" // Rút ngắn văn bản nếu cần
             icon={<IoMdCloudUpload className="text-lg" />}
-            className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
+            className="flex flex-row justify-center items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5"
           />
+        </div> */}
+        <div className="flex-1 w-1/12 px-4 text-center">
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            icon={<IoMdCloudUpload className="text-lg" />}
+            className="flex flex-row-reverse items-center bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+          >
+            Tải lên
+          </Button>
+          {uploadedFiles.length > 0 && (
+            <div className="mt-2">
+              <span className="font-semibold">File đã tải lên:</span>
+              {uploadedFiles.map((file, index) => (
+                <div key={index} className="flex items-center mt-1">
+                  <span className="truncate w-40">{file.name}</span>
+                  <button
+                    onClick={() => handleRemoveFile(file)}
+                    className="ml-2 text-red-500"
+                  >
+                    Xóa
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
       {expanded && (
@@ -255,8 +290,10 @@ const TaskAssignmentList = ({ congviec }) => {
           userTeam={thucHien}
         />
       )}
-      <FileUpload isOpen={isModalOpen} 
-        onRequestClose={() => setIsModalOpen(false)} />
+      <FileUpload
+        isOpen={isModalOpen}
+        onRequestClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 };

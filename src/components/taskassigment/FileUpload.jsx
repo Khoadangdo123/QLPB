@@ -3,10 +3,19 @@ import axios from "axios";
 import ModalWrapper from "../ModalWrapper";
 import { Icon } from "@mui/material";
 import { BiX } from "react-icons/bi";
-
+import { FaRegCheckCircle } from "react-icons/fa";
+import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
+import DescriptionIcon from "@mui/icons-material/Description";
+import SlideshowIcon from "@mui/icons-material/Slideshow";
+import ImageIcon from "@mui/icons-material/Image";
+import TextSnippetIcon from "@mui/icons-material/TextSnippet";
+import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
+import { useDispatch } from "react-redux";
+import { addFile } from "../../redux/file/fileSlice";
 const FileUpload = ({ isOpen, onRequestClose }) => {
   const inputRef = useRef();
   const dropRef = useRef();
+  const dispatch=useDispatch();
 
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [progress, setProgress] = useState([]);
@@ -34,7 +43,13 @@ const FileUpload = ({ isOpen, onRequestClose }) => {
   const onChooseFile = () => {
     inputRef.current.click();
   };
-
+  const formatFileSize = (size) => {
+    if (size === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    const i = Math.floor(Math.log(size) / Math.log(k));
+    return parseFloat((size / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
   const clearFileInput = () => {
     inputRef.current.value = "";
     setSelectedFiles([]);
@@ -52,27 +67,44 @@ const FileUpload = ({ isOpen, onRequestClose }) => {
       setUploadStatus("uploading");
       const newProgress = Array(selectedFiles.length).fill(0);
       setProgress(newProgress);
-
+      const responses = [];
       const uploadPromises = selectedFiles.map((file, index) => {
         const formData = new FormData();
         formData.append("file", file);
 
-        return axios.post(
-          "https://localhost:7131/api/FileUpload/Upload",
-          formData,
-          {
+        return axios
+          .post("https://localhost:7131/api/FileUpload/Upload", formData, {
             onUploadProgress: (progressEvent) => {
               const percentCompleted = Math.round(
                 (progressEvent.loaded * 100) / progressEvent.total
               );
-              newProgress[index] = percentCompleted;
-              setProgress([...newProgress]);
+              // newProgress[index] = percentCompleted;
+              // setProgress([...newProgress]);
+              setTimeout(() => {
+                newProgress[index] = percentCompleted;
+                setProgress([...newProgress]);
+              }, 200);
             },
-          }
-        );
+          })
+          .then((response) => {
+            responses.push({
+              name: file.name,
+              url: response.data.url,
+              extension: file.name.split(".").pop(),
+              size: formatFileSize(file.size),
+            });
+          });
       });
-
       await Promise.all(uploadPromises);
+      console.log(responses);
+      for (const file of responses) {
+        await dispatch(addFile({
+          tenFile: file.name,
+          duongDan: file.url,
+          loaiFile: file.extension,
+          kichThuocFile: file.size
+        }));
+    }
       setUploadStatus("done");
     } catch (error) {
       console.error(error);
@@ -94,38 +126,80 @@ const FileUpload = ({ isOpen, onRequestClose }) => {
   };
   const [fileUrl, setFileUrl] = useState("");
   const handlePreviewFile = (file) => {
+    // const fileReader = new FileReader();
+    // fileReader.onload = (e) => {
+    //   setPreviewFile({
+    //     name: file.name,
+    //     content: e.target.result,
+    //     type: file.type,
+    //   });
+    // };
+
+    // if (file.type.includes("text")) {
+    //   fileReader.readAsText(file); // Read text files as text
+    // } else {
+    //   fileReader.readAsDataURL(file); // Read other types as URL for preview
+    // }
     const fileReader = new FileReader();
-    fileReader.onload = (e) => {
+
+    // Check if it's a PDF, DOC, XLS, or PPT type
+    if (
+      file.type.includes("pdf") ||
+      file.type.includes("txt") ||
+      file.type.includes("word") ||
+      file.type.includes("excel") ||
+      file.type.includes("powerpoint")
+    ) {
+      // For Word, Excel, PowerPoint, use Google Docs Viewer
+      const url = URL.createObjectURL(file);
       setPreviewFile({
         name: file.name,
-        content: e.target.result,
+        content: `https://docs.google.com/gview?url=${url}&embedded=true`,
         type: file.type,
       });
-    };
-
-    if (file.type.includes("text")) {
-      fileReader.readAsText(file); // Read text files as text
+    } else if (file.type.includes("text")) {
+      // Text file
+      fileReader.onload = (e) => {
+        setPreviewFile({
+          name: file.name,
+          content: e.target.result,
+          type: file.type,
+        });
+      };
+      fileReader.readAsText(file);
     } else {
-      fileReader.readAsDataURL(file); // Read other types as URL for preview
+      // Image files or other types
+      fileReader.onload = (e) => {
+        setPreviewFile({
+          name: file.name,
+          content: e.target.result,
+          type: file.type,
+        });
+      };
+      fileReader.readAsDataURL(file);
     }
   };
-
   const getFileIcon = (fileName) => {
     const extension = fileName.split(".").pop().toLowerCase();
+    const iconStyle = { color: "blue", fontSize: "24px" }; // Thay đổi màu và kích thước tại đây
+
     switch (extension) {
       case "pdf":
-        return "picture_as_pdf";
+        return <PictureAsPdfIcon style={iconStyle} />;
       case "doc":
       case "docx":
-        return "description";
+        return <DescriptionIcon style={iconStyle} />;
+      case "ppt":
+      case "pptx":
+        return <SlideshowIcon style={iconStyle} />;
       case "jpg":
       case "jpeg":
       case "png":
-        return "image";
+        return <ImageIcon style={iconStyle} />;
       case "txt":
-        return "text_snippet";
+        return <TextSnippetIcon style={iconStyle} />;
       default:
-        return "insert_drive_file";
+        return <InsertDriveFileIcon style={iconStyle} />;
     }
   };
 
@@ -208,7 +282,9 @@ const FileUpload = ({ isOpen, onRequestClose }) => {
                     {uploadStatus === "uploading" ? (
                       `${progress[index] || 0}%`
                     ) : uploadStatus === "done" ? (
-                      <span className="material-symbols-outlined">check</span>
+                      <span className="material-symbols-outlined">
+                        <FaRegCheckCircle />
+                      </span>
                     ) : null}
                   </div>
                 )}
@@ -231,6 +307,46 @@ const FileUpload = ({ isOpen, onRequestClose }) => {
           </div>
         )}
 
+        {/* {previewFile && (
+          <ModalWrapper
+            open={!!previewFile}
+            setOpen={() => setPreviewFile(null)}
+          >
+            <div className="relative p-4 bg-white rounded shadow-md w-full max-w-7xl max-h-[90vh] overflow-y-auto">
+              <button
+                onClick={() => setPreviewFile(null)}
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
+              >
+                <BiX />
+              </button>
+
+              <h2 className="text-lg font-semibold mb-4">{previewFile.name}</h2>
+              {previewFile.type.includes("image") ? (
+                <imgA
+                  src={previewFile.content}
+                  alt={previewFile.name}
+                  className="max-w-full h-auto"
+                />
+              ) : previewFile.type.includes("pdf") ? (
+                <iframe
+                  src={previewFile.content}
+                  //className="w-full h-96"
+                  className="w-full h-[80vh]"
+                  title="PDF Preview"
+                />
+              ) : previewFile.type.includes("text") ? (
+                // <pre className="whitespace-pre-wrap max-h-96 overflow-y-auto">
+                //   {previewFile.content}
+                // </pre>
+                <pre className="whitespace-pre-wrap max-h-[80vh] overflow-y-auto">
+                  {previewFile.content}
+                </pre>
+              ) : (
+                <p>Cannot preview this file type</p>
+              )}
+            </div>
+          </ModalWrapper>
+        )} */}
         {previewFile && (
           <ModalWrapper
             open={!!previewFile}
@@ -251,17 +367,16 @@ const FileUpload = ({ isOpen, onRequestClose }) => {
                   alt={previewFile.name}
                   className="max-w-full h-auto"
                 />
-              ) : previewFile.type.includes("pdf") ? (
+              ) : previewFile.type.includes("pdf") ||
+                previewFile.type.includes("word") ||
+                previewFile.type.includes("excel") ||
+                previewFile.type.includes("powerpoint") ? (
                 <iframe
                   src={previewFile.content}
-                  //className="w-full h-96"
                   className="w-full h-[80vh]"
-                  title="PDF Preview"
+                  title="File Preview"
                 />
               ) : previewFile.type.includes("text") ? (
-                // <pre className="whitespace-pre-wrap max-h-96 overflow-y-auto">
-                //   {previewFile.content}
-                // </pre>
                 <pre className="whitespace-pre-wrap max-h-[80vh] overflow-y-auto">
                   {previewFile.content}
                 </pre>

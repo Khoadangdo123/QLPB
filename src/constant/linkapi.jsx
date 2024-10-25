@@ -14,7 +14,8 @@ const API_ENDPOINTS = {
     PHANCONG:`${API_URL}/PhanCong`,
     AUTH:`${API_URL}/Authentication/`,
     SENDGMAIL:`${API_URL}/SendGmail`,
-    LICHSUCONGVIEC:`${API_URL}/LichSuCongViec`
+    LICHSUCONGVIEC:`${API_URL}/LichSuCongViec`,
+    FILES:`${API_URL}/Files`
     
 };
   

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaList } from "react-icons/fa";
 import { MdGridView } from "react-icons/md";
-import { useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import Loading from "../components/Loader";
 import Title from "../components/Title";
 import Button from "../components/Button";
@@ -33,6 +33,7 @@ const Tasks = () => {
   const {id} = useParams();
   const dispatch=useDispatch()
   const [selected, setSelected] = useState(0);
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sections, setSections] = useState([]);
@@ -89,7 +90,9 @@ const Tasks = () => {
   const status = id || ""; 
   const toggleTimelineModal = () => {
     // setShowTimeline((prev) => !prev);
-    setTimelineModalOpen(!timelineModalOpen);
+    //setTimelineModalOpen(!timelineModalOpen);
+    navigate("/gant");
+    
   };
   return loading ? (
     <div className='py-10'>
@@ -110,7 +113,7 @@ const Tasks = () => {
             />
             <Button
               onClick={toggleTimelineModal} 
-              label="Hiển thị Timeline"
+              label="Sơ đồ gant"
               icon={<IoMdAdd className="text-lg" />}
               className="flex flex-row-reverse gap-1 items-center bg-green-600 text-white rounded-md py-2 2xl:py-2.5"
             />
