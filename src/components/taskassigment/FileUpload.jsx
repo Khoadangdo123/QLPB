@@ -15,7 +15,7 @@ import { addFile } from "../../redux/file/fileSlice";
 const FileUpload = ({ isOpen, onRequestClose }) => {
   const inputRef = useRef();
   const dropRef = useRef();
-  const dispatch=useDispatch();
+  const dispatch = useDispatch();
 
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [progress, setProgress] = useState([]);
@@ -97,14 +97,21 @@ const FileUpload = ({ isOpen, onRequestClose }) => {
       });
       await Promise.all(uploadPromises);
       console.log(responses);
-      for (const file of responses) {
-        await dispatch(addFile({
-          tenFile: file.name,
-          duongDan: file.url,
-          loaiFile: file.extension,
-          kichThuocFile: file.size
-        }));
-    }
+      try {
+        for (const file of responses) {
+          console.log(file);
+          await dispatch(
+            addFile({
+              tenFile: file.name,
+              duongDan: file.url,
+              loaiFile: file.extension,
+              kichThuocFile: file.size,
+            })
+          );
+        }
+      } catch (e) {
+        console.log(e);
+      }
       setUploadStatus("done");
     } catch (error) {
       console.error(error);
@@ -126,20 +133,6 @@ const FileUpload = ({ isOpen, onRequestClose }) => {
   };
   const [fileUrl, setFileUrl] = useState("");
   const handlePreviewFile = (file) => {
-    // const fileReader = new FileReader();
-    // fileReader.onload = (e) => {
-    //   setPreviewFile({
-    //     name: file.name,
-    //     content: e.target.result,
-    //     type: file.type,
-    //   });
-    // };
-
-    // if (file.type.includes("text")) {
-    //   fileReader.readAsText(file); // Read text files as text
-    // } else {
-    //   fileReader.readAsDataURL(file); // Read other types as URL for preview
-    // }
     const fileReader = new FileReader();
 
     // Check if it's a PDF, DOC, XLS, or PPT type

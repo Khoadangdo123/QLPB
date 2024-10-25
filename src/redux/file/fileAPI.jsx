@@ -1,6 +1,11 @@
 import axios from "axios";
 import API_ENDPOINTS from "../../constant/linkapi";
 
+export const fetchAllFile = async () => {
+    const response = await axios.get(API_ENDPOINTS.FILES);
+    return response.data;
+};
+
 // Fetch file data
 export const fetchFile = async (id) => {
     const response = await axios.get(`${API_ENDPOINTS.FILES}/${id}`);

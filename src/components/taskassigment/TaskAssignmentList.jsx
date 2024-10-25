@@ -13,6 +13,24 @@ import { addTaskHistory } from "../../redux/taskhistory/taskhistorySlice";
 import FileUpload from "./FileUpload";
 import { IoMdCloudUpload, IoMdImage } from "react-icons/io";
 import FileUploadModal from "./FileUploadModal";
+import { fetchAllFile } from "../../redux/file/fileSlice";
+import {
+  AiFillFile,
+  AiOutlineFileZip,
+  AiFillDelete,
+  AiOutlineDownload,
+} from "react-icons/ai";
+import {
+  FaFilePdf,
+  FaFileWord,
+  FaFileExcel,
+  FaFileImage,
+  FaFileArchive,
+  FaFileCode,
+  FaFileAlt,
+  FaFile,
+} from "react-icons/fa";
+import FileViewer from "./FileViewer";
 const TaskAssignmentList = ({ congviec }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -21,6 +39,8 @@ const TaskAssignmentList = ({ congviec }) => {
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [completed, setCompleted] = useState(congviec.trangThaiCongViec);
   const [connection, setConnection] = useState(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false);
+  const [selectedFileUrl, setSelectedFileUrl] = useState("");
   const dispatch = useDispatch();
   const maCongViec = congviec.maCongViec;
   const vaiTro = congviec.vaiTro;
@@ -28,11 +48,13 @@ const TaskAssignmentList = ({ congviec }) => {
   const phancong = useSelector((state) =>
     state.tasks.list.find((task) => task.maCongViec === maCongViec)
   );
+  const file = useSelector((state) => state.file.list);
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
         await dispatch(fetchByIdTask(maCongViec));
+        await dispatch(fetchAllFile());
       } catch (error) {
         console.error("Error fetching task:", error);
       } finally {
@@ -118,13 +140,32 @@ const TaskAssignmentList = ({ congviec }) => {
   if (!phancong) {
     return <p>not found</p>;
   }
-
   const handleToggleDetail = () => {
     setExpanded(!expanded);
   };
-  // const handleFileSubmit = (files) => {
-  //   console.log("Files submitted:", files);
-  // };
+  const handleDownloadFile = (filePath) => {
+    const link = document.createElement("a");
+    link.href = filePath;
+    link.download = filePath.split("/").pop();
+    link.click();
+  };
+  const handleViewFile = (filePath) => {
+    setSelectedFileUrl(filePath);
+    setIsViewerOpen(true);
+  };
+  const handleDeleteFile = async (fileId) => {
+    const isConfirmed = window.confirm("Bạn có chắc chắn muốn xóa file này?");
+    if (isConfirmed) {
+      try {
+        await dispatch(deleteFile(fileId));
+        await dispatch(fetchAllFile());
+        alert("Xóa file thành công");
+      } catch (error) {
+        console.error("Error deleting file:", error);
+        alert("Có lỗi xảy ra khi xóa file");
+      }
+    }
+  };
   const handleRemoveFile = (fileName) => {
     setUploadedFiles((prevFiles) =>
       prevFiles.filter((file) => file.name !== fileName)
@@ -160,7 +201,6 @@ const TaskAssignmentList = ({ congviec }) => {
           })
         );
         console.log("Updateeeeee");
-        //await dispatch(fetchByIdTask(maCongViec))
       } catch (e) {
         console.error("Error updating assignment:", error);
         alert("Có lỗi xảy ra trong quá trình cập nhật.");
@@ -217,7 +257,6 @@ const TaskAssignmentList = ({ congviec }) => {
                 BGS[index % BGS?.length]
               )}
             >
-              {/* <UserInfo user={m} /> */}
               <EmployeeInfo employee={m} />
             </div>
           ))}
@@ -231,7 +270,6 @@ const TaskAssignmentList = ({ congviec }) => {
                 BGS[index % BGS?.length]
               )}
             >
-              {/* <UserInfo user={m} /> */}
               <EmployeeInfo employee={m} />
             </div>
           ))}
@@ -244,15 +282,6 @@ const TaskAssignmentList = ({ congviec }) => {
             className="w-6 h-6"
           />
         </div>
-        {/* <div className="flex-1 w-1/12 px-4 text-center">
-          <Button
-            onClick={() => {
-              setIsModalOpen(true);
-            }}
-            icon={<IoMdCloudUpload className="text-lg" />}
-            className="flex flex-row justify-center items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5"
-          />
-        </div> */}
         <div className="flex-1 w-1/12 px-4 text-center">
           <Button
             onClick={() => setIsModalOpen(true)}
@@ -261,22 +290,44 @@ const TaskAssignmentList = ({ congviec }) => {
           >
             Tải lên
           </Button>
-          {uploadedFiles.length > 0 && (
-            <div className="mt-2">
-              <span className="font-semibold">File đã tải lên:</span>
-              {uploadedFiles.map((file, index) => (
-                <div key={index} className="flex items-center mt-1">
-                  <span className="truncate w-40">{file.name}</span>
-                  <button
-                    onClick={() => handleRemoveFile(file)}
-                    className="ml-2 text-red-500"
-                  >
-                    Xóa
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
+          <div className="flex flex-col w-full">
+            {file.length > 0 && (
+              <ul className="mt-2 ml-4 list-disc">
+                {file.map((file, index) => {
+                  const extension = file.loaiFile;
+                  const { icon, color } = getFileIcon(`.${extension}`);
+
+                  return (
+                    <li
+                      key={index}
+                      className="flex items-center gap-2 text-gray-700 text-sm"
+                    >
+                      <span className={`${color}`}>{icon}</span>{" "}
+                      <a
+                        href={file.duongDan}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="ml-2 w-48 overflow-hidden whitespace-nowrap text-ellipsis"
+                      >
+                        {file.tenFile}
+                      </a>
+                      <div className="absolute right-0 flex items-center ml-2">
+                        {" "}
+                        <AiOutlineDownload
+                          onClick={() => handleDownloadFile(item.filePath)}
+                          className="text-blue-500 cursor-pointer"
+                        />
+                        <AiFillDelete
+                          onClick={() => handleDeleteFile(item.id)}
+                          className="text-red-500 cursor-pointer ml-2"
+                        />
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
         </div>
       </div>
       {expanded && (
@@ -294,8 +345,47 @@ const TaskAssignmentList = ({ congviec }) => {
         isOpen={isModalOpen}
         onRequestClose={() => setIsModalOpen(false)}
       />
+      {/* <FileViewer
+        isOpen={isViewerOpen}
+        onClose={() => setIsViewerOpen(false)}
+        fileUrl={selectedFileUrl}
+      /> */}
     </div>
   );
+};
+const getFileIcon = (extension) => {
+  const iconSize = 24;
+  switch (extension.toLowerCase()) {
+    case ".pdf":
+      return { icon: <FaFilePdf size={iconSize} />, color: "text-red-500" };
+    case ".doc":
+    case ".docx":
+      return { icon: <FaFileWord size={iconSize} />, color: "text-blue-600" };
+    case ".xls":
+    case ".xlsx":
+      return { icon: <FaFileExcel size={iconSize} />, color: "text-green-500" };
+    case ".jpg":
+    case ".jpeg":
+    case ".png":
+      return {
+        icon: <FaFileImage size={iconSize} />,
+        color: "text-yellow-500",
+      };
+    case ".zip":
+    case ".rar":
+      return {
+        icon: <FaFileArchive size={iconSize} />,
+        color: "text-purple-500",
+      };
+    case ".txt":
+      return { icon: <FaFileAlt size={iconSize} />, color: "text-gray-500" };
+    case ".sql":
+      return { icon: <FaFileCode size={iconSize} />, color: "text-orange-500" };
+    case ".mpp":
+      return { icon: <FaFile size={iconSize} />, color: "text-blue-500" };
+    default:
+      return { icon: <AiFillFile size={iconSize} />, color: "text-gray-500" };
+  }
 };
 
 export default TaskAssignmentList;
