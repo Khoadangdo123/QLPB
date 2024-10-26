@@ -21,6 +21,7 @@ const DetailTask = ({
   const [newComment, setNewComment] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFiles, setSelectedFiles] = useState([]);
   const [showComments, setShowComment] = useState(true);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
@@ -62,27 +63,10 @@ const DetailTask = ({
   }, [maCongViec]);
   const handleSendComment = async () => {
     if (newComment.trim() === "") return;
-    // if (connection && connection.state === "Connected") {
-    //   connection
-    //     .invoke(
-    //       "TraoDoiThongTin",
-    //       maCongViec,
-    //       localStorage.getItem("name"),
-    //       newComment
-    //     )
-    //     .then(() => {
-    //       setNewComment("");
-    //       console.log("reconnection");
-    //     })
-    //     .catch((err) => console.error("Error sending message: ", err));
-    // } else {
-    //   console.error("Connection is not established.");
-    // }
-    //setLoading(true);
+    
     const messageContent = selectedFile
       ? `Uploaded file: ${selectedFile.name}`
       : newComment;
-
     try {
       await connection.invoke(
         "TraoDoiThongTin",
@@ -105,7 +89,8 @@ const DetailTask = ({
     setShowEmojiPicker(false);
   };
   const handleFileChange = (event) => {
-    setSelectedFile(event.target.files[0]);
+    //setSelectedFile(event.target.files[0]);
+    setSelectedFiles([...selectedFiles, ...event.target.files]);
   };
   return (
     <>
@@ -163,7 +148,7 @@ const DetailTask = ({
           <textarea
             className="w-full bg-gray-50 p-3 mt-2 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
             placeholder="What is this task about?"
-            rows="3"
+            rows="2"
             value={task.moTa}
             readOnly
           ></textarea>
@@ -317,6 +302,35 @@ const DetailTask = ({
       </div>
     </>
   );
+};
+const handleUpload = async () => {
+  try {
+    const newProgress = Array(selectedFiles.length).fill(0);
+    setProgress(newProgress);
+    const responses = [];
+
+    const uploadPromises = selectedFiles.map((file, index) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      return axios
+        .post("https://localhost:7131/api/FileUpload/Upload", formData)
+        .then((response) => {
+          responses.push({
+            name: file.name,
+            url: response.data.url,
+            extension: file.name.split(".").pop(),
+            size: formatFileSize(file.size),
+          });
+        });
+    });
+    await Promise.all(uploadPromises);
+    return responses; // Trả về kết quả upload
+  } catch (error) {
+    console.error(error);
+    setUploadStatus("select");
+    return [];
+  }
 };
 
 export default DetailTask;

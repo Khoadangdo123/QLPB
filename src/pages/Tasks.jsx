@@ -89,9 +89,7 @@ const Tasks = () => {
   }, [connection, id, dispatch]);
   const status = id || ""; 
   const toggleTimelineModal = () => {
-    // setShowTimeline((prev) => !prev);
-    //setTimelineModalOpen(!timelineModalOpen);
-    navigate("/gant");
+    navigate("/gant",{state:{duan}});
     
   };
   return loading ? (

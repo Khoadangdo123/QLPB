@@ -1,79 +1,48 @@
 import React from "react";
+import { useLocation } from "react-router-dom";
 
 export function initTasks() {
   const currentDate = new Date();
-  const tasks = [
-    {
-      start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
-      end: new Date(currentDate.getFullYear(), currentDate.getMonth(), 15),
-      name: "Some Project",
-      id: "ProjectSample",
-      type: "project",
-      hideChildren: false,
-    },
-    {
-      start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 1),
-      end: new Date(
-        currentDate.getFullYear(),
-        currentDate.getMonth(),
-        2,
-        12,
-        28
-      ),
-      name: "Idea",
-      id: "Task 0",
-      type: "task",
-      project: "ProjectSample",
-    },
-    {
-      start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 2),
-      end: new Date(currentDate.getFullYear(), currentDate.getMonth(), 4, 0, 0),
-      name: "Research",
-      id: "Task 1",
-      type: "task",
-      project: "ProjectSample",
-    },
-    {
-      start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 4),
-      end: new Date(currentDate.getFullYear(), currentDate.getMonth(), 8, 0, 0),
-      name: "Discussion with team",
-      id: "Task 2",
-      type: "task",
-      project: "ProjectSample",
-    },
-    {
-      start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 8),
-      end: new Date(currentDate.getFullYear(), currentDate.getMonth(), 9, 0, 0),
-      name: "Developing",
-      id: "Task 3",
-      type: "task",
-      project: "ProjectSample",
-    },
-    {
-      start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 8),
-      end: new Date(currentDate.getFullYear(), currentDate.getMonth(), 10),
-      name: "Review",
-      id: "Task 4",
-      type: "task",
-      project: "ProjectSample",
-    },
-    {
-      start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 15),
-      end: new Date(currentDate.getFullYear(), currentDate.getMonth(), 15),
-      name: "Release",
-      id: "Task 6",
-      type: "task",
-      project: "ProjectSample",
-    },
-    {
-      start: new Date(currentDate.getFullYear(), currentDate.getMonth(), 18),
-      end: new Date(currentDate.getFullYear(), currentDate.getMonth(), 19),
-      name: "Party Time",
-      id: "Task 9",
-      type: "task",
-      project: "ProjectSample",
-    },
-  ];
+  const location = useLocation();
+  const { duan } = location.state || {};
+  if (!duan || !duan.phanDuAn) {
+    console.error("Invalid project data");
+    return [];
+  }
+  console.log(duan);
+  const tasks = duan.phanDuAn.flatMap((item) => {
+    return item.congViecs
+      .map((i) => {
+        const startTime = new Date(
+          i.thoiGianBatDau.endsWith("Z")
+            ? i.thoiGianBatDau
+            : `${i.thoiGianBatDau}Z`
+        );
+        const endTime = new Date(
+          i.thoiGianKetThuc.endsWith("Z")
+            ? i.thoiGianKetThuc
+            : `${i.thoiGianKetThuc}Z`
+        );
+
+        if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) {
+          console.error(`Invalid times for task: ${JSON.stringify(i)}`);
+          return null;
+        }
+
+        return {
+          start: startTime,
+          end: endTime,
+          name: i.tenCongViec,
+          id: i.maCongViec,
+          type: "task",
+          project: duan.tenDuAn,
+          hideChildren: i.maCongViecCha === null ? false : true,
+          parentId: i.maPhanDuAn,          
+        };
+      })
+      .filter(Boolean); // Lọc bỏ các giá trị null
+  });
+  console.log(tasks);
   return tasks;
 }
 

@@ -143,11 +143,24 @@ const TaskAssignmentList = ({ congviec }) => {
   const handleToggleDetail = () => {
     setExpanded(!expanded);
   };
-  const handleDownloadFile = (filePath) => {
-    const link = document.createElement("a");
-    link.href = filePath;
-    link.download = filePath.split("/").pop();
-    link.click();
+  const handleDownloadFile =async (filePath,fileName) => {
+    try {
+      const response = await fetch(filePath);
+      
+      if (!response.ok) {
+          throw new Error("Network response was not ok");
+      }
+
+      const blob = await response.blob();
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  } catch (error) {
+      console.error("Error downloading file:", error);
+  }
   };
   const handleViewFile = (filePath) => {
     setSelectedFileUrl(filePath);
@@ -304,24 +317,23 @@ const TaskAssignmentList = ({ congviec }) => {
                     >
                       <span className={`${color}`}>{icon}</span>{" "}
                       <a
-                        href={file.duongDan}
-                        target="_blank"
-                        rel="noopener noreferrer"
+                        // href={file.duongDan}
+                        // target="_blank"
+                        // rel="noopener noreferrer"
                         className="ml-2 w-48 overflow-hidden whitespace-nowrap text-ellipsis"
                       >
                         {file.tenFile}
                       </a>
-                      <div className="absolute right-0 flex items-center ml-2">
-                        {" "}
-                        <AiOutlineDownload
-                          onClick={() => handleDownloadFile(item.filePath)}
-                          className="text-blue-500 cursor-pointer"
-                        />
-                        <AiFillDelete
-                          onClick={() => handleDeleteFile(item.id)}
+                      <AiFillDelete
+                          size={20}
+                          onClick={() => handleDeleteFile(file.id)}
                           className="text-red-500 cursor-pointer ml-2"
                         />
-                      </div>
+                        <AiOutlineDownload
+                        size={20}
+                          onClick={() => handleDownloadFile(file.duongDan,file.tenFile)}
+                          className="text-blue-500 cursor-pointer"
+                        />
                     </li>
                   );
                 })}
