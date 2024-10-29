@@ -252,6 +252,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
         setOpen={setOpen}
         maCongViec={congviec.maCongViec}
         maPhongBan={maPhongBan}
+        tenCongViec={congviec.tenCongViec}
       />
     </div>
   );

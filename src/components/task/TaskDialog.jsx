@@ -20,7 +20,6 @@ const TaskDialog = ({ task }) => {
   const duplicateHandler = () => {};
   const deleteClicks = () => {};
   const deleteHandler = () => {};
-
   const items = [
     {
       label: "Mở Công Việc",

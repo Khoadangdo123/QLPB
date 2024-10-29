@@ -6,47 +6,63 @@ import {
   MdSettings,
   MdTaskAlt,
 } from "react-icons/md";
-import { FaTasks, FaTrashAlt, FaUsers, FaPlus, FaList } from "react-icons/fa";
+import { FaTasks, FaTrashAlt, FaUsers, FaPlus, FaRProject, FaProjectDiagram, FaUser, FaExchangeAlt } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useLocation } from "react-router-dom";
 import { setOpenSidebar } from "../redux/slices/authSlice";
 import clsx from "clsx";
 import { addProject, fetchProjects } from "../redux/project/projectSlice";
-import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
+import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import RolePermission from "../pages/Permission";
+import { fetchFunctions } from "../redux/function/functionSlice";
+import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
+import { fetchPermissionById } from "../redux/permission/permissionSlice";
+import { FaDiagramProject, FaUserGroup } from "react-icons/fa6";
+import {GoProject} from "react-icons/go"
 const Sidebar = () => {
-  const dispatch=useDispatch();
+  const dispatch = useDispatch();
   const [connection, setConnection] = useState(null);
+  const [loadingProjects, setLoadingProjects] = useState(true);
+  const [loadingFunctions, setLoadingFunctions] = useState(true);
   const { user } = useSelector((state) => state.authen);
-  const duans=useSelector((state)=>state.projects.list)
-  useEffect(()=>{
-    dispatch(fetchProjects({ search: '', page: 20 }))
-  },[dispatch])
-  useEffect(()=>{
+  const duans = useSelector((state) => state.projects.list);
+  const chucnangs = useSelector((state) => state.functions.list);
+  const maquyen=Number(localStorage.getItem("permissionId"))
+  useEffect(() => {
+    dispatch(fetchProjects({ search: "", page: 20 })).then(() =>
+      setLoadingProjects(false)
+    );
+    dispatch(fetchFunctions({ search: "", page: 20 })).then(() =>
+      setLoadingFunctions(false)
+    );
+  }, [dispatch,maquyen]);
+  useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
+      .withUrl("https://localhost:7131/hub")
+      .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
 
     setConnection(newConnection);
-  },[])
+  }, []);
   useEffect(() => {
     if (connection && connection.state === "Disconnected") {
-      connection.start()
+      connection
+        .start()
         .then(() => {
           console.log("Connected!");
           connection.on("loadDuAn", () => {
-            dispatch(fetchProjects({ search: '', page: 20 }))
+            dispatch(fetchProjects({ search: "", page: 20 }));
           });
         })
         .catch((error) => console.error("Connection failed: ", error));
     }
-  }, [connection,dispatch]);
+  }, [connection, dispatch]);
   const taskSubMenu = duans.map((duan) => ({
     label: duan.tenDuAn,
     link: `/project/${duan.maDuAn}`,
     color: "bg-blue-500",
-    key:duan.maDuAn
+    key: duan.maDuAn,
   }));
   const linkData = [
     {
@@ -57,7 +73,7 @@ const Sidebar = () => {
     {
       label: "Dự Án",
       //link: "/tasks",
-      icon: <FaTasks />,
+      icon: <GoProject/>,
       subMenu: taskSubMenu,
     },
     {
@@ -71,29 +87,24 @@ const Sidebar = () => {
       icon: <FaTasks />,
     },
     {
+      label: "Milestones",
+      link: "/milestones",
+      icon: <FaTasks />,
+    },
+    {
       label: "Công Việc",
       link: "/taskassignment",
       icon: <FaTasks />,
     },
-    // {
-    //   label: "Đã Hoàn Thành",
-    //   link: "/completed/completed",
-    //   icon: <MdTaskAlt />,
-    // },
-    // {
-    //   label: "Đang Thực Hiện",
-    //   link: "/in-progress/in-progress",
-    //   icon: <MdOutlinePendingActions />,
-    // },
-    // {
-    //   label: "Cần Làm",
-    //   link: "/todo/todo",
-    //   icon: <MdOutlinePendingActions />,
-    // },
     {
       label: "Công Việc Phòng Ban",
       link: "/assignmentdepartment",
-      icon: <FaUsers />,
+      icon: <FaUserGroup />,
+    },
+    {
+      label: "Chuyển Giao Công Việc",
+      link: "/tasktransfer",
+      icon: <FaExchangeAlt />,
     },
     {
       label: "Nhóm",
@@ -104,10 +115,11 @@ const Sidebar = () => {
       label: "Phòng Ban",
       link: "/department",
       icon: <FaUsers />,
-    },{
+    },
+    {
       label: "Nhân Viên",
       link: "/employee",
-      icon: <FaUsers />,
+      icon: <FaUser />,
     },
     {
       label: "Tài Khoản",
@@ -123,7 +135,17 @@ const Sidebar = () => {
   const location = useLocation();
   const currentPath = location.pathname;
   //const sidebarLinks = user?.isAdmin ? linkData : linkData.slice(0, 5);
-  const sidebarLinks = linkData
+  // const hasPermission = (label) => {
+  //   return chucnangs.some((chucnang) => chucnang.tenChucNang === label);
+  // };
+  const hasPermission = (label) => {
+    return chucnangs.some((chucnang) => chucnang.tenChucNang === label);
+  };
+  const filteredLinkData = linkData.filter((item) => hasPermission(item.label));
+  // chucnangs.map((item)=>{
+  //   console.log(dispatch(checkPermission({maChucNang:item.maChucNang,maNhomQuyen:Number(localStorage.getItem("permissionId")),hanhDong:"Xem"})).unwrap())
+  // })
+  const sidebarLinks = filteredLinkData;
   const closeSidebar = () => {
     dispatch(setOpenSidebar(false));
   };
@@ -137,29 +159,38 @@ const Sidebar = () => {
       input?.focus();
     }
   }, [isModalOpen]);
-  const handleProjectSubmit =async (e) => {
+  if (loadingProjects || loadingFunctions) {
+    return (
+      <div className="flex justify-center items-center h-24">
+        <div className="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
+  const handleProjectSubmit = async (e) => {
     e.preventDefault();
 
     // Kiểm tra độ dài chuỗi
-    if (projectName.length < 3) {
-      setError("Tên dự án phải có ít nhất 3 ký tự!"); 
+    if (projectName.length < 1) {
+      setError("Tên dự án phải có ít nhất 1 ký tự!");
       return;
     }
 
     if (projectName.length === 0) {
-      setError("Tên dự án không được để trống!"); 
+      setError("Tên dự án không được để trống!");
       return;
     }
     setError("");
-    try{
-      await dispatch(addProject({
-        tenDuAn:projectName
-      }))
+    try {
+      await dispatch(
+        addProject({
+          tenDuAn: projectName,
+        })
+      );
       console.log("Dự án được tạo:", projectName);
-    setProjectName("");
-    setModalOpen(false);
-    }catch(e){
-      console.log(e)
+      setProjectName("");
+      setModalOpen(false);
+    } catch (e) {
+      console.log(e);
     }
   };
 
@@ -173,22 +204,26 @@ const Sidebar = () => {
           onClick={() => {
             closeSidebar();
             if (hasSubMenu) {
-              setExpandedSubMenu(el.label === expandedSubMenu ? null : el.label);
+              setExpandedSubMenu(
+                el.label === expandedSubMenu ? null : el.label
+              );
             } else {
               setExpandedSubMenu(null);
             }
           }}
           className={clsx(
             "w-full flex gap-3 px-4 py-3 rounded-lg items-center text-gray-800 text-base cursor-pointer transition-all duration-200",
-            currentPath.startsWith(el.link) ? "bg-blue-600 text-white" : "hover:bg-gray-100"
+            currentPath.startsWith(el.link)
+              ? "bg-blue-600 text-white"
+              : "hover:bg-gray-100"
           )}
         >
           {el.icon}
-          <span className='font-medium'>{el.label}</span>
+          <span className="font-medium">{el.label}</span>
           {hasSubMenu && (
             <span
               className={clsx("ml-auto transition-transform duration-200", {
-                "rotate-180": expandedSubMenu === el.label
+                "rotate-180": expandedSubMenu === el.label,
               })}
               onClick={(e) => {
                 e.preventDefault();
@@ -231,11 +266,11 @@ const Sidebar = () => {
   const Modal = ({ isOpen, onClose }) => {
     const inputRef = useRef(null); // Tạo ref cho input
 
-     useEffect(() => {
-    if (isOpen && inputRef.current) {
-      inputRef.current.focus(); // Focus vào input khi modal mở
-    }
-  }, [isOpen]); // Chỉ chạy khi modal mở
+    useEffect(() => {
+      if (isOpen && inputRef.current) {
+        inputRef.current.focus(); // Focus vào input khi modal mở
+      }
+    }, [isOpen]); // Chỉ chạy khi modal mở
     if (!isOpen) return null;
     return (
       <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
@@ -245,7 +280,7 @@ const Sidebar = () => {
             <input
               type="text"
               ref={inputRef}
-              onChange={(e)=>setProjectName(e.target.value)}
+              onChange={(e) => setProjectName(e.target.value)}
               placeholder="Tên dự án"
               value={projectName}
               className={clsx(
@@ -281,23 +316,25 @@ const Sidebar = () => {
   };
 
   return (
-    <div className='w-full h-full flex flex-col gap-6 p-5 bg-white shadow-lg rounded-xl'>
-      <h1 className='flex gap-2 items-center'>
-        <p className='bg-blue-600 p-3 rounded-full'>
-          <MdOutlineAddTask className='text-white text-2xl' />
+    <div className="w-full h-full flex flex-col gap-6 p-5 bg-white shadow-lg rounded-xl">
+      <h1 className="flex gap-2 items-center">
+        <p className="bg-blue-600 p-3 rounded-full">
+          <MdOutlineAddTask className="text-white text-2xl" />
         </p>
-        <span className='text-2xl font-bold text-gray-900'>Quản lý công việc</span>
+        <span className="text-2xl font-bold text-gray-900">
+          Quản lý công việc
+        </span>
       </h1>
 
-      <div className='flex-1 flex flex-col gap-y-5 overflow-y-auto'>
+      <div className="flex-1 flex flex-col gap-y-5 overflow-y-auto">
         {sidebarLinks.map((link) => (
           <NavLink el={link} key={link.label} />
         ))}
       </div>
 
-      <div className='pt-4'>
+      <div className="pt-4">
         <button
-          className='w-full flex gap-2 p-3 items-center text-lg text-gray-800 hover:bg-gray-100 rounded-lg transition'
+          className="w-full flex gap-2 p-3 items-center text-lg text-gray-800 hover:bg-gray-100 rounded-lg transition"
           onClick={() => setModalOpen(true)}
         >
           <MdSettings />

@@ -19,12 +19,11 @@ const EmployeeSelectDepartment = ({ selectedEmployees, setSelectedEmployees,maPh
         if (selectedEmployees.some(item => item.maNhanVien === maNhanVien)) {
             setSelectedEmployees(selectedEmployees.filter(item => item.maNhanVien !== maNhanVien));
         } else {
-            // Lưu cả tên nhân viên vào danh sách selectedEmployees
             setSelectedEmployees([
                 ...selectedEmployees,
                 {
                     maNhanVien,
-                    tenNhanVien: selectedEmployee.tenNhanVien,  // Thêm tên nhân viên
+                    tenNhanVien: selectedEmployee.tenNhanVien,
                     email: selectedEmployee.email,
                     vaiTro: ''
                 }
@@ -51,7 +50,7 @@ const EmployeeSelectDepartment = ({ selectedEmployees, setSelectedEmployees,maPh
             >
                 <option value="">Chọn nhân viên</option>
                 {nhanviens
-                    .filter(item => item.maPhongBan === maPhongBan)
+                    .filter(item => item.maPhongBan === maPhongBan && item.tenChucVu!=='Trưởng Phòng')
                     .map((item) => (
                         <option key={item.maNhanVien} value={item.maNhanVien}>
                             {item.tenNhanVien}

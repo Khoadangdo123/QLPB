@@ -74,9 +74,6 @@ const projectSlice = createSlice({
         state.status = 'failed';
         state.error = action.error.message;
       })
-      .addCase(deleteProjectById.fulfilled, (state, action) => {
-        state.list = state.list.filter((project) => project.maDuAn !== action.payload.maDuAn);
-      });
   },
 });
 

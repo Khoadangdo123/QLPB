@@ -21,15 +21,24 @@ import * as signalR from '@microsoft/signalr';
 import RolePermission from "./pages/Permission";
 import TaskAssignment from "./pages/TaskAssignment";
 import DepartmentAssignment from "./pages/DepartmentAssignment";
+import Milestones from "./components/task/Milestones";
+import ProjectTimeline from "./components/task/Milestones";
+import ChatBox from "./components/task/Milestones";
+import Tasktransfer from "./pages/TaskTransfer";
+import GanttApp from "./components/task/Gant";
+// import Gant from "./components/task/Gant";
 import Projects from "./pages/Project";
 function Layout() {
+  const dispatch=useDispatch();
   const authUser = useSelector((state) => state.authen);
   console.log(authUser)
   const token=authUser.user.token;
   var payload = JSON.parse(atob(token.split('.')[1]));
+  console.log(payload)
   localStorage.setItem("userId",payload.MaTaiKhoan)
+  localStorage.setItem("permissionId",Number(payload.MaNhomQuyen))
+  console.log(localStorage.getItem("permissionId"))
   const location = useLocation();
-
   return authUser ? (
     <div className='w-full h-screen flex flex-col md:flex-row'>
       <div className='w-1/5 h-screen bg-white sticky top-0 hidden md:block'>
@@ -126,6 +135,13 @@ function App() {
           <Route path='/taskassignment' element={<TaskAssignment/>} />
           <Route path='/assignmentdepartment' element={<DepartmentAssignment/>} />
           <Route path='/task/:id' element={<TaskDetails />} />
+          <Route path='/milestones' element={<ChatBox />} />
+          <Route path='/tasktransfer' element={<Tasktransfer/>}/>
+          {/* <Route path='/gantchart' element={<GanttChart/>}/> */}
+          <Route path="/gant" element={<GanttApp/>}/>
+          <Route path="*" element={<Navigate to="/dashboard" />} />
+
+          //GanttChart
         </Route>
         <Route path='/log-in' element={<Login />} />
       </Routes>

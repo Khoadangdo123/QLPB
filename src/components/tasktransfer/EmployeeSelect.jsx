@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchEmployees } from '../../redux/employees/employeeSlice';
 
-const EmployeeSelect = ({ selectedEmployees, setSelectedEmployees }) => {
+const EmployeeSelectTransfer = ({ selectedEmployees, setSelectedEmployees,maPhongBan }) => {
     const dispatch = useDispatch();
     const nhanviens = useSelector((state) => state.employees.list);
 
@@ -49,11 +49,13 @@ const EmployeeSelect = ({ selectedEmployees, setSelectedEmployees }) => {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             >
                 <option value="">Chọn nhân viên</option>
-                {nhanviens.map((item) => (
-                    <option key={item.maNhanVien} value={item.maNhanVien}>
-                        {item.tenNhanVien}
-                    </option>
-                ))}
+                {nhanviens
+                    
+                    .map((item) => (
+                        <option key={item.maNhanVien} value={item.maNhanVien}>
+                            {item.tenNhanVien}
+                        </option>
+                    ))}
             </select>
             <div className="mt-4">
                 {selectedEmployees.length > 0 && (
@@ -88,4 +90,4 @@ const EmployeeSelect = ({ selectedEmployees, setSelectedEmployees }) => {
     );
 };
 
-export default EmployeeSelect;
+export default EmployeeSelectTransfer;

@@ -52,7 +52,6 @@ const Permission = () => {
         .catch((error) => console.error("Connection failed: ", error));
     }
   }, [dispatch, pageSize, connection]);
-  console.log(roles);
   const roleActionHandler = () => {};
   const deleteHandler = () => {};
 
@@ -174,7 +173,11 @@ const Permission = () => {
       {/* Nội dung modal */}
       <UserPermissions
         role={selectedRolePermissions}
-        onClose={() => setOpenPermissionModal(false)}
+        onClose={() => {
+          setOpenPermissionModal(false);
+          dispatch(fetchPermissions({ search: "", page: pageSize }));
+          //dispatch(fetchPermissionById(selectedRolePermissions.maQuyen));
+        }}
       />
     </div>
   </div>

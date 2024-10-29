@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FaList } from "react-icons/fa";
 import { MdGridView } from "react-icons/md";
-import { useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import Loading from "../components/Loader";
 import Title from "../components/Title";
 import Button from "../components/Button";
@@ -17,6 +17,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchByIdProject} from "../redux/project/projectSlice";
 import AddSection from "../components/section/AddSection";
 import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
+import Timeline from "../components/task/TimeLine";
+import ModalWrapper from "../components/ModalWrapper";
 const TABS = [
   { title: "Chế độ Bảng", icon: <MdGridView /> },
   { title: "Chế độ Danh sách", icon: <FaList /> },  
@@ -31,6 +33,7 @@ const Tasks = () => {
   const {id} = useParams();
   const dispatch=useDispatch()
   const [selected, setSelected] = useState(0);
+  const navigate = useNavigate();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sections, setSections] = useState([]);
@@ -86,7 +89,8 @@ const Tasks = () => {
   }, [connection, id, dispatch]);
   const status = id || ""; 
   const toggleTimelineModal = () => {
-    setTimelineModalOpen(!timelineModalOpen);
+    navigate("/gant",{state:{duan}});
+    
   };
   return loading ? (
     <div className='py-10'>
@@ -107,7 +111,7 @@ const Tasks = () => {
             />
             <Button
               onClick={toggleTimelineModal} 
-              label="Hiển thị Timeline"
+              label="Sơ đồ gant"
               icon={<IoMdAdd className="text-lg" />}
               className="flex flex-row-reverse gap-1 items-center bg-green-600 text-white rounded-md py-2 2xl:py-2.5"
             />
@@ -124,6 +128,13 @@ const Tasks = () => {
       </Tabs>
       {/* <AddTask open={open} setOpen={setOpen} /> */}
       <AddSection open={open} setOpen={setOpen} duAn={id}></AddSection>
+      {/* {showTimeline && <Timeline />} */}
+      <ModalWrapper open={timelineModalOpen} setOpen={setTimelineModalOpen}>
+      <div className="w-full max-w-6xl h-full max-h-[80vh] bg-white rounded-lg p-4">
+    <h2 className="text-lg font-semibold mb-4">Timeline Dự án</h2>
+    <Timeline/>
+  </div>
+      </ModalWrapper>
     </div>
   );
 };
