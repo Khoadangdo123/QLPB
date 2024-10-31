@@ -25,7 +25,7 @@ import {
   FaFileAlt,
   FaFile,
 } from "react-icons/fa";
-import { fetchChiTietFileByPhanCong } from "../../redux/fileassignment/fileassignmentSlice";
+import { deleteChiTietFile, fetchChiTietFileByPhanCong } from "../../redux/fileassignment/fileassignmentSlice";
 import { useNavigate } from "react-router-dom";
 const TaskAssignmentList = ({ congviec }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -59,7 +59,18 @@ const TaskAssignmentList = ({ congviec }) => {
           const matchingFiles = files.filter((file) =>
             result.some((detail) => detail.maFile === file.maFile)
           );
-          setFilteredFiles(matchingFiles);
+          //setFilteredFiles(matchingFiles);
+          const filesWithDetails = matchingFiles.map((file) => {
+            const correspondingDetail = result.find(detail => detail.maFile === file.maFile);
+            const correspondingStatus = result.find(detail => detail.maFile === file.maFile)?.trangThai;
+            return {
+              ...file,
+              maChiTietFile: correspondingDetail ? correspondingDetail.maChiTietFile : null,
+              trangThaiFile:correspondingStatus
+            };
+          });
+
+          setFilteredFiles(filesWithDetails);
         })
         .catch((error) => {
           console.error("Error fetching task:", error);
@@ -109,7 +120,18 @@ const TaskAssignmentList = ({ congviec }) => {
                 const matchingFiles = files.filter((file) =>
                   result.some((detail) => detail.maFile === file.maFile)
                 );
-                setFilteredFiles(matchingFiles);
+                //setFilteredFiles(matchingFiles);
+                const filesWithDetails = matchingFiles.map((file) => {
+                  const correspondingDetail = result.find(detail => detail.maFile === file.maFile);
+                  const correspondingStatus = result.find(detail => detail.maFile === file.maFile)?.trangThai;
+                  return {
+                    ...file,
+                    maChiTietFile: correspondingDetail ? correspondingDetail.maChiTietFile : null,
+                    trangThaiFile:correspondingStatus
+                  };
+                });
+      
+                setFilteredFiles(filesWithDetails);
               })
               .catch((error) => {
                 console.error("Error fetching task:", error);
@@ -195,12 +217,12 @@ const TaskAssignmentList = ({ congviec }) => {
     setIsViewerOpen(true);
   };
   const handleDeleteFile = async (fileId) => {
-    const isConfirmed = window.confirm("Bạn có chắc chắn muốn xóa file này?");
+    const isConfirmed = window.confirm("Bạn có chắc chắn muốn xóa file này? "+fileId);
     if (isConfirmed) {
       try {
-        await dispatch(deleteFile(fileId));
-        await dispatch(fetchAllFile());
-        alert("Xóa file thành công");
+        await dispatch(deleteChiTietFile(fileId))
+        // await dispatch(fetchAllFile());
+        //alert("Xóa file thành công");
       } catch (error) {
         console.error("Error deleting file:", error);
         alert("Có lỗi xảy ra khi xóa file");
@@ -348,7 +370,7 @@ const TaskAssignmentList = ({ congviec }) => {
           <div className="flex flex-col w-full">
             {filteredFiles.length > 0 && (
               <ul className="mt-2 list-disc">
-                {filteredFiles.map((file, index) => {
+                {filteredFiles.filter(file => file.trangThaiFile !== false).map((file, index) => {
                   const extension = file.loaiFile;
                   const { icon, color } = getFileIcon(`.${extension}`);
 
@@ -360,9 +382,9 @@ const TaskAssignmentList = ({ congviec }) => {
                       <div className="flex items-center relative group">
                         <span className={`${color} relative`}>
                           {icon}
-                          <span className="absolute left-1/2 transform -translate-x-1/2 -translate-y-full mt-1 rounded bg-gray-700 text-white text-xs px-2 py-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                          {/* <span className="absolute left-1/2 transform -translate-x-1/2 -translate-y-full mt-1 rounded bg-gray-700 text-white text-xs px-2 py-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                             {file.tenFile} - {file.kichThuocFile}
-                          </span>
+                          </span> */}
                         </span>
                         <button>
                           <AiFillDelete

@@ -11,6 +11,6 @@ export const fetchChiTietFileByPhanCong = async (id) => {
   return response.data;
 };
 export const deleteChiTietFile=async(id)=>{
-  const response = await axios.delete(`${API_ENDPOINTS.CHITIETFILE}/${id}`);
+  const response = await axios.put(`${API_ENDPOINTS.CHITIETFILE}/${id}`);
   return response.data;
 }
