@@ -15,6 +15,8 @@ import assignmentReducer from "./assignment/assignmentSlice"
 import workdepartmentReducer from "./workdepartment/workdepartmentSlice"
 import taskhistoryReducer from "./taskhistory/taskhistorySlice"
 import fileReducer from "./file/fileSlice"
+import fileassignmentReducer from "./fileassignment/fileassignmentSlice"
+import reminderReducer from "./reminder/reminderSlice"
 const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
@@ -32,7 +34,9 @@ const store = configureStore({
     sendGmail:sendGmailReducer,
     workdepartments:workdepartmentReducer,
     taskhistories:taskhistoryReducer,
-    file:fileReducer
+    file:fileReducer,
+    fileassignment:fileassignmentReducer,
+    reminders:reminderReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(apiSlice.middleware),

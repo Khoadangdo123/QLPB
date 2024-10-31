@@ -90,7 +90,6 @@ const Tasks = () => {
   const status = id || ""; 
   const toggleTimelineModal = () => {
     navigate("/gant",{state:{duan}});
-    
   };
   return loading ? (
     <div className='py-10'>

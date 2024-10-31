@@ -1,13 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { FaSmile } from 'react-icons/fa';
 import EmojiPicker from 'emoji-picker-react';
 import Dropzone from 'react-dropzone';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchReminders } from '../../redux/reminder/reminderSlice';
 
 const ChatBox = () => {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
+  const dispacth=useDispatch()
+  const reminders=useSelector((state)=>state.reminders.list)
+  useEffect(()=>{
+    const fetchData=async ()=>{
+      await dispacth(fetchReminders())
+    }
+    fetchData()
+  },[dispacth])
+  console.log(reminders)
   const handleSend = () => {
     if (input.trim()) {
       setMessages([...messages, { text: input, file: null }]);

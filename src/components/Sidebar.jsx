@@ -140,7 +140,7 @@ const Sidebar = () => {
   // chucnangs.map((item)=>{
   //   console.log(dispatch(checkPermission({maChucNang:item.maChucNang,maNhomQuyen:Number(localStorage.getItem("permissionId")),hanhDong:"Xem"})).unwrap())
   // })
-  const sidebarLinks = filteredLinkData;
+  const sidebarLinks = linkData;
   const closeSidebar = () => {
     dispatch(setOpenSidebar(false));
   };

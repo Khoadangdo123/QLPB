@@ -38,18 +38,8 @@ const TaskAssignment = () => {
             setLoading(true);
             await dispatch(fetchEmployeeAssignment(maNhanVien));
             setLoading(false);
-            console.log("Mai Văn Tài");
           });
-          //
-          // connection.on("loadCongViec",async () => {
-          //     setLoading(true);
-          //     await dispatch(fetchEmployeeAssignment(maNhanVien));
-          //     setLoading(false);
-          //     console.log('Mai Văn Tài')
-          // });
-          //
           connection.on("task", async (message) => {
-            console.log("task");
             alert(message);
           });
         } catch (err) {
@@ -61,7 +51,7 @@ const TaskAssignment = () => {
     if (connection) {
       connection.off("task");
       connection.off("loadPhanCong");
-      //connection.off("loadCongViec");
+      connection.off("loadCongViec");
       startConnection();
     }
 
@@ -85,16 +75,8 @@ const TaskAssignment = () => {
           <div className="flex-1 px-2">Chịu Trách Nhiệm</div>
           <div className="flex-1 px-2">Nhóm</div>
           <div className="flex-1 px-2">Trình Trạng</div>
-          <div className="flex-1 px-2"></div>
+          <div className="flex-1 px-2">File</div>
         </div>
-        {/* <div className="w-full bg-transparent border-b-1">
-          <div className="p-4 w-full flex items-center justify-between font-semibold bg-white text-gray-600 mb-2 mt-4 shadow-sm border-y text-sm"></div>
-          <div className="bg-slate-50 shadow-md">
-            {phancongs.list.map((item, index) => (
-              <TaskAssignmentList congviec={item} key={index} />
-            ))}
-          </div>
-        </div> */}
         <div className="bg-slate-50 rounded-md shadow-md">
           {phancongs.list.map((item, index) => (
             <TaskAssignmentList congviec={item} key={index} />

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { BiCalendar, BiCheck, BiPlus } from "react-icons/bi";
+import { BiCalendar } from "react-icons/bi";
 import clsx from "clsx";
 import EmployeeInfo from "../EmployeeInfo";
+import { CiViewList } from "react-icons/ci";
 import Button from "../Button";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchByIdTask } from "../../redux/task/taskSlice";
@@ -11,15 +12,9 @@ import { updateAssignment } from "../../redux/assignment/assignmentSlice";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { addTaskHistory } from "../../redux/taskhistory/taskhistorySlice";
 import FileUpload from "./FileUpload";
-import { IoMdCloudUpload, IoMdImage } from "react-icons/io";
-import FileUploadModal from "./FileUploadModal";
+import { IoMdCloudUpload} from "react-icons/io";
 import { fetchAllFile } from "../../redux/file/fileSlice";
-import {
-  AiFillFile,
-  AiOutlineFileZip,
-  AiFillDelete,
-  AiOutlineDownload,
-} from "react-icons/ai";
+import { AiFillFile, AiFillDelete, AiOutlineDownload } from "react-icons/ai";
 import {
   FaFilePdf,
   FaFileWord,
@@ -30,7 +25,8 @@ import {
   FaFileAlt,
   FaFile,
 } from "react-icons/fa";
-import FileViewer from "./FileViewer";
+import { fetchChiTietFileByPhanCong } from "../../redux/fileassignment/fileassignmentSlice";
+import { useNavigate } from "react-router-dom";
 const TaskAssignmentList = ({ congviec }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -41,6 +37,9 @@ const TaskAssignmentList = ({ congviec }) => {
   const [connection, setConnection] = useState(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [selectedFileUrl, setSelectedFileUrl] = useState("");
+  const [filteredFiles, setFilteredFiles] = useState([]);
+  const [fileDetails, setFileDetails] = useState([]);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const maCongViec = congviec.maCongViec;
   const vaiTro = congviec.vaiTro;
@@ -48,18 +47,26 @@ const TaskAssignmentList = ({ congviec }) => {
   const phancong = useSelector((state) =>
     state.tasks.list.find((task) => task.maCongViec === maCongViec)
   );
-  const file = useSelector((state) => state.file.list);
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = () => {
       setLoading(true);
-      try {
-        await dispatch(fetchByIdTask(maCongViec));
-        await dispatch(fetchAllFile());
-      } catch (error) {
-        console.error("Error fetching task:", error);
-      } finally {
-        setLoading(false);
-      }
+      return Promise.all([
+        dispatch(fetchByIdTask(maCongViec)),
+        dispatch(fetchAllFile()).unwrap(),
+        dispatch(fetchChiTietFileByPhanCong(maPhanCong)).unwrap(),
+      ])
+        .then(([taskResponse, files, result]) => {
+          const matchingFiles = files.filter((file) =>
+            result.some((detail) => detail.maFile === file.maFile)
+          );
+          setFilteredFiles(matchingFiles);
+        })
+        .catch((error) => {
+          console.error("Error fetching task:", error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     };
 
     if (maCongViec) {
@@ -84,14 +91,32 @@ const TaskAssignmentList = ({ congviec }) => {
             setLoading(true);
             await dispatch(fetchByIdTask(maCongViec));
             setLoading(false);
-            console.log("Mai Văn Tài");
           });
           //
           connection.on("loadCongViec", async () => {
             setLoading(true);
             await dispatch(fetchByIdTask(maCongViec));
             setLoading(false);
-            console.log("Mai Văn Tài");
+          });
+          connection.on("loadFile", async () => {
+            setLoading(true);
+            return Promise.all([
+              dispatch(fetchByIdTask(maCongViec)),
+              dispatch(fetchAllFile()).unwrap(),
+              dispatch(fetchChiTietFileByPhanCong(maPhanCong)).unwrap(),
+            ])
+              .then(([taskResponse, files, result]) => {
+                const matchingFiles = files.filter((file) =>
+                  result.some((detail) => detail.maFile === file.maFile)
+                );
+                setFilteredFiles(matchingFiles);
+              })
+              .catch((error) => {
+                console.error("Error fetching task:", error);
+              })
+              .finally(() => {
+                setLoading(false);
+              });
           });
           //
           // connection.on("task",async (message)=>{
@@ -110,7 +135,9 @@ const TaskAssignmentList = ({ congviec }) => {
 
     return () => {
       if (connection) {
+        connection.off("loadFile");
         connection.off("loadCongViec");
+        connection.off("loadPhanCong");
       }
     };
   }, [connection, dispatch, maCongViec]);
@@ -140,15 +167,16 @@ const TaskAssignmentList = ({ congviec }) => {
   if (!phancong) {
     return <p>not found</p>;
   }
+  console.log(phancong);
   const handleToggleDetail = () => {
     setExpanded(!expanded);
   };
-  const handleDownloadFile =async (filePath,fileName) => {
+  const handleDownloadFile = async (filePath, fileName) => {
     try {
       const response = await fetch(filePath);
-      
+
       if (!response.ok) {
-          throw new Error("Network response was not ok");
+        throw new Error("Network response was not ok");
       }
 
       const blob = await response.blob();
@@ -158,9 +186,9 @@ const TaskAssignmentList = ({ congviec }) => {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-  } catch (error) {
+    } catch (error) {
       console.error("Error downloading file:", error);
-  }
+    }
   };
   const handleViewFile = (filePath) => {
     setSelectedFileUrl(filePath);
@@ -228,6 +256,7 @@ const TaskAssignmentList = ({ congviec }) => {
   const thucHien = phancong?.phanCongs?.filter(
     (m) => m.vaiTro === "Người Thực Hiện"
   );
+  console.log(filteredFiles)
   return (
     <div className="w-full flex items-center  px-4">
       <div className="w-full flex py-2 border-b text-sm">
@@ -296,44 +325,65 @@ const TaskAssignmentList = ({ congviec }) => {
           />
         </div>
         <div className="flex-1 w-1/12 px-4 text-center">
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            icon={<IoMdCloudUpload className="text-lg" />}
-            className="flex flex-row-reverse items-center bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
-          >
-            Tải lên
-          </Button>
+          <div className="flex space-x-2">
+            {" "}
+            <Button
+              onClick={() => setIsModalOpen(true)}
+              icon={<IoMdCloudUpload className="text-lg" />}
+              className="flex flex-row-reverse items-center bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+            >
+              Tải lên
+            </Button>
+            {(vaiTro === "Người Chịu Trách Nhiệm" ||
+              vaiTro === "Chịu Trách Nhiệm") && (
+              <Button
+                onClick={() =>
+                  navigate("/taskassignment/fileView/" + maCongViec)
+                }
+                icon={<CiViewList className="text-lg" />}
+                className="flex flex-row-reverse items-center bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+              ></Button>
+            )}
+          </div>
           <div className="flex flex-col w-full">
-            {file.length > 0 && (
-              <ul className="mt-2 ml-4 list-disc">
-                {file.map((file, index) => {
+            {filteredFiles.length > 0 && (
+              <ul className="mt-2 list-disc">
+                {filteredFiles.map((file, index) => {
                   const extension = file.loaiFile;
                   const { icon, color } = getFileIcon(`.${extension}`);
 
                   return (
                     <li
                       key={index}
-                      className="flex items-center gap-2 text-gray-700 text-sm"
+                      className="flex flex-col items-start gap-2 text-gray-700 text-sm"
                     >
-                      <span className={`${color}`}>{icon}</span>{" "}
-                      <a
-                        // href={file.duongDan}
-                        // target="_blank"
-                        // rel="noopener noreferrer"
-                        className="ml-2 w-48 overflow-hidden whitespace-nowrap text-ellipsis"
-                      >
+                      <div className="flex items-center relative group">
+                        <span className={`${color} relative`}>
+                          {icon}
+                          <span className="absolute left-1/2 transform -translate-x-1/2 -translate-y-full mt-1 rounded bg-gray-700 text-white text-xs px-2 py-1 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                            {file.tenFile} - {file.kichThuocFile}
+                          </span>
+                        </span>
+                        <button>
+                          <AiFillDelete
+                            size={20}
+                            onClick={() => handleDeleteFile(file.maChiTietFile)}
+                            className="text-red-500 cursor-pointer ml-2"
+                          />
+                        </button>
+                        <button>
+                          <AiOutlineDownload
+                            size={20}
+                            onClick={() =>
+                              handleDownloadFile(file.duongDan, file.tenFile)
+                            }
+                            className="text-blue-500 cursor-pointer"
+                          />
+                        </button>
+                      </div>
+                      <span className="w-full overflow-hidden truncate">
                         {file.tenFile}
-                      </a>
-                      <AiFillDelete
-                          size={20}
-                          onClick={() => handleDeleteFile(file.id)}
-                          className="text-red-500 cursor-pointer ml-2"
-                        />
-                        <AiOutlineDownload
-                        size={20}
-                          onClick={() => handleDownloadFile(file.duongDan,file.tenFile)}
-                          className="text-blue-500 cursor-pointer"
-                        />
+                      </span>
                     </li>
                   );
                 })}
@@ -356,12 +406,9 @@ const TaskAssignmentList = ({ congviec }) => {
       <FileUpload
         isOpen={isModalOpen}
         onRequestClose={() => setIsModalOpen(false)}
+        maPhanCong={maPhanCong}
+        maCongViec={maCongViec}
       />
-      {/* <FileViewer
-        isOpen={isViewerOpen}
-        onClose={() => setIsViewerOpen(false)}
-        fileUrl={selectedFileUrl}
-      /> */}
     </div>
   );
 };

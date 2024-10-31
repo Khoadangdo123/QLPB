@@ -2,50 +2,40 @@ import React, { useEffect, useState } from "react";
 import { ViewMode, Gantt } from "gantt-task-react";
 import { ViewSwitcher } from "./ViewSwitcher";
 import { getStartEndDateForProject, initTasks } from "./helper";
-
 const GanttApp = () => {
   const [view, setView] = useState(ViewMode.Day);
   const [tasks, setTasks] = useState(initTasks());
   const [isChecked, setIsChecked] = useState(true);
-  let columnWidth = 30;
 
+  let columnWidth = 30;
   if (view === ViewMode.Month) {
     columnWidth = 300;
   } else if (view === ViewMode.Week) {
     columnWidth = 250;
-  } else if (view === ViewMode.Day || view === ViewMode.HalfDay || view === ViewMode.QuarterDay) {
-    columnWidth = 100;
-  }
-  //
-  const groupedTasks = tasks.reduce((acc, task) => {
-    if (!acc[task.parentId]) {
-      acc[task.parentId] = [];
-    }
-    acc[task.parentId].push(task);
-    return acc;
-  }, {});
-
-  // Convert grouped tasks into an array for rendering
-  const tasksToDisplay = Object.values(groupedTasks).flat();
-  if (isNaN(columnWidth) || columnWidth <= 0) {
-    console.error("Invalid columnWidth value:", columnWidth);
+  } else if (
+    view === ViewMode.Day ||
+    view === ViewMode.HalfDay ||
+    view === ViewMode.QuarterDay
+  ) {
     columnWidth = 100;
   }
   const handleTaskChange = (task) => {
-    console.log("On date change Id:" + task.id);
     let newTasks = tasks.map((t) => (t.id === task.id ? task : t));
 
     if (task.project) {
       const [start, end] = getStartEndDateForProject(newTasks, task.project);
-      console.log([start, end]);
-      
       const project = newTasks.find((t) => t.id === task.project);
-      if (project && (project.start.getTime() !== start.getTime() || project.end.getTime() !== end.getTime())) {
+      if (
+        project &&
+        (project.start.getTime() !== start.getTime() ||
+          project.end.getTime() !== end.getTime())
+      ) {
         const changedProject = { ...project, start, end };
-        newTasks = newTasks.map((t) => (t.id === task.project ? changedProject : t));
+        newTasks = newTasks.map((t) =>
+          t.id === task.project ? changedProject : t
+        );
       }
     }
-    console.log(newTasks)
     setTasks(newTasks);
   };
 
@@ -59,36 +49,59 @@ const GanttApp = () => {
 
   const handleProgressChange = async (task) => {
     setTasks(tasks.map((t) => (t.id === task.id ? task : t)));
-    console.log("On progress change Id:" + task.id);
   };
 
-  const handleDblClick = (task) => {
-    alert("On Double Click event Id:" + task.id);
-  };
+  const exportToMSProject = () => {
+    const xmlHeader = '<?xml version="1.0" encoding="UTF-8"?>';
+    const projectHeader =
+      '<Project xmlns="http://schemas.microsoft.com/project">';
+    const projectFooter = "</Project>";
 
-  const handleSelect = (task, isSelected) => {
-    console.log(task.name + " has " + (isSelected ? "selected" : "unselected"));
-  };
+    const tasksXml = tasks
+  .map((task, index) => {
+    const startDate = new Date(task.start);
+    const endDate = new Date(task.end);
+    if (endDate <= startDate) {
+      endDate.setDate(startDate.getDate() + 1);
+    }
+    startDate.setHours(0, 0, 0, 0);
+    endDate.setHours(0, 0, 0, 0);
 
-  const handleExpanderClick = (task) => {
-    setTasks(tasks.map((t) => (t.id === task.id ? task : t)));
-    console.log("On expander click Id:" + task.id);
-  };
-  const customCellRender = (cell) => {
-    const colors = ['#FFDDC1', '#FFABAB', '#FFC3A0', '#D5AAFF', '#85E3FF', '#B9FBC0'];
-    const colorIndex = (cell.index % colors.length); // Cycle through colors
-    return (
-      <div style={{ backgroundColor: colors[colorIndex], width: columnWidth, height: '100%' }}>
-        {cell.value}
-      </div>
+    const durationDays = Math.ceil(
+      (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)
     );
+
+    return `
+      <Task>
+        <UID>${index + 1}</UID>
+        <Name>${task.name}</Name>
+        <Start>${startDate.toISOString()}</Start>
+        <Finish>${endDate.toISOString()}</Finish>
+        <PercentComplete>${task.progress || 0}</PercentComplete>
+        <Duration>${10} days</Duration>
+      </Task>
+    `;
+  })
+  .join('');
+
+    const xmlContent = `${xmlHeader}
+      ${projectHeader}
+      <Tasks>${tasksXml}</Tasks>
+      ${projectFooter}`;
+
+    const blob = new Blob([xmlContent], { type: "application/xml" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "ProjectTasks.xml";
+    link.click();
   };
-  const customTaskRender = (task) => {
-    return (
-      <div style={{ backgroundColor: task.color, height: '100%' }}>
-        {task.name}
-      </div>
-    );
+  const getTaskColor = (task) => {
+    const colors = {
+      "task1": "#ff9999",
+      "task2": "#99ff99",
+      "task3": "#9999ff",
+    };
+    return colors[task.id] || "#cccccc";
   };
   return (
     <div>
@@ -97,24 +110,18 @@ const GanttApp = () => {
         onViewListChange={setIsChecked}
         isChecked={isChecked}
       />
-      <h3>Gantt With Unlimited Height</h3>
+      <button onClick={exportToMSProject}>
+        <i className="fas fa-file-export"></i>
+        Export to Microsoft Project
+      </button>
       <Gantt
         tasks={tasks}
-        onDateChange={handleTaskChange}
-        onDelete={handleTaskDelete}
-        onProgressChange={handleProgressChange}
-        onDoubleClick={handleDblClick}
-        onSelect={handleSelect}
-        onExpanderClick={handleExpanderClick}
         listCellWidth={isChecked ? "155px" : ""}
         columnWidth={columnWidth}
-        barBackgroundColor="red"
-        barColor="blue"
+        barBackgroundColor="blue"
+        barColor="black"
         rowHeight={40}
         fontSize={14}
-        style={{ color: 'black', fontFamily: 'Arial, sans-serif' }}
-        taskBarRender={customTaskRender}
-
       />
     </div>
   );

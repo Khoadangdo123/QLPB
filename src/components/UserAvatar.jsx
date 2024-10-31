@@ -10,7 +10,7 @@ const UserAvatar = () => {
   const [open, setOpen] = useState(false); // Quản lý trạng thái mở của popup cho profile
   const [openPassword, setOpenPassword] = useState(false); // Quản lý trạng thái mở của popup cho thay đổi mật khẩu
   const user = useSelector((state) => state.authen.user);
-  console.log(user) // Lấy thông tin người dùng từ state Redux
+  localStorage.setItem("authToken",user.token) // Lấy thông tin người dùng từ state Redux
   const dispatch = useDispatch(); // Khởi tạo dispatch để gửi action
   const navigate = useNavigate(); // Khởi tạo hàm điều hướng
 

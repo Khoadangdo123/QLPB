@@ -15,8 +15,7 @@ const API_ENDPOINTS = {
     AUTH:`${API_URL}/Authentication/`,
     SENDGMAIL:`${API_URL}/SendGmail`,
     LICHSUCONGVIEC:`${API_URL}/LichSuCongViec`,
-    FILES:`${API_URL}/Files`
-    
+    FILES:`${API_URL}/Files`,
+    CHITIETFILE:`${API_URL}/ChiTietFile`
 };
-  
 export default API_ENDPOINTS;

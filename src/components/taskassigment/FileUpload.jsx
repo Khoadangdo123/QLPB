@@ -1,7 +1,6 @@
 import React, { useRef, useState } from "react";
 import axios from "axios";
 import ModalWrapper from "../ModalWrapper";
-import { Icon } from "@mui/material";
 import { BiX } from "react-icons/bi";
 import { FaRegCheckCircle } from "react-icons/fa";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
@@ -11,8 +10,9 @@ import ImageIcon from "@mui/icons-material/Image";
 import TextSnippetIcon from "@mui/icons-material/TextSnippet";
 import InsertDriveFileIcon from "@mui/icons-material/InsertDriveFile";
 import { useDispatch } from "react-redux";
-import { addFile } from "../../redux/file/fileSlice";
-const FileUpload = ({ isOpen, onRequestClose }) => {
+import { addFile} from "../../redux/file/fileSlice";
+import { createChiTietFile } from "../../redux/fileassignment/fileassignmentSlice";
+const FileUpload = ({ isOpen, onRequestClose, maPhanCong,maCongViec}) => {
   const inputRef = useRef();
   const dropRef = useRef();
   const dispatch = useDispatch();
@@ -22,7 +22,6 @@ const FileUpload = ({ isOpen, onRequestClose }) => {
   const [uploadStatus, setUploadStatus] = useState("select");
   const [previewFile, setPreviewFile] = useState(null);
   const MAX_FILE_SIZE = 10 * 1024 * 1024;
-
   const handleFileChange = (event) => {
     if (event.target.files && event.target.files.length > 0) {
       const filesArray = Array.from(event.target.files);
@@ -78,8 +77,6 @@ const FileUpload = ({ isOpen, onRequestClose }) => {
               const percentCompleted = Math.round(
                 (progressEvent.loaded * 100) / progressEvent.total
               );
-              // newProgress[index] = percentCompleted;
-              // setProgress([...newProgress]);
               setTimeout(() => {
                 newProgress[index] = percentCompleted;
                 setProgress([...newProgress]);
@@ -96,22 +93,28 @@ const FileUpload = ({ isOpen, onRequestClose }) => {
           });
       });
       await Promise.all(uploadPromises);
-      console.log(responses);
-      try {
-        for (const file of responses) {
-          console.log(file);
-          await dispatch(
-            addFile({
-              tenFile: file.name,
-              duongDan: file.url,
-              loaiFile: file.extension,
-              kichThuocFile: file.size,
-            })
-          );
-        }
-      } catch (e) {
-        console.log(e);
-      }
+      await Promise.all(
+        responses.map(async (file) => {
+          try {
+            const result = await dispatch(
+              addFile({
+                tenFile: file.name,
+                duongDan: file.url,
+                loaiFile: file.extension,
+                kichThuocFile: file.size,
+              })
+            ).unwrap();
+            await dispatch(
+              createChiTietFile({
+                maPhanCong: maPhanCong,
+                maFile: result.maFile,
+              })
+            );
+          } catch (e) {
+            console.error("Error adding file or file details:", e);
+          }
+        })
+      );
       setUploadStatus("done");
     } catch (error) {
       console.error(error);
@@ -174,7 +177,7 @@ const FileUpload = ({ isOpen, onRequestClose }) => {
   };
   const getFileIcon = (fileName) => {
     const extension = fileName.split(".").pop().toLowerCase();
-    const iconStyle = { color: "blue", fontSize: "24px" }; // Thay đổi màu và kích thước tại đây
+    const iconStyle = { color: "blue", fontSize: "24px" };
 
     switch (extension) {
       case "pdf":
@@ -222,7 +225,7 @@ const FileUpload = ({ isOpen, onRequestClose }) => {
           onDragOver={handleDragOver}
           className="border-2 border-dashed border-gray-400 p-4 rounded-md text-center mb-4 bg-white/75"
         >
-          <p className="mb-2">Drag & Drop your files here</p>
+          <p className="mb-2">Nộp File Vào Đây</p>
           <button
             onClick={onChooseFile}
             className="inline-flex items-center px-4 py-2 text-white bg-blue-600 rounded hover:bg-blue-700"
@@ -299,47 +302,6 @@ const FileUpload = ({ isOpen, onRequestClose }) => {
             </button>
           </div>
         )}
-
-        {/* {previewFile && (
-          <ModalWrapper
-            open={!!previewFile}
-            setOpen={() => setPreviewFile(null)}
-          >
-            <div className="relative p-4 bg-white rounded shadow-md w-full max-w-7xl max-h-[90vh] overflow-y-auto">
-              <button
-                onClick={() => setPreviewFile(null)}
-                className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-2xl"
-              >
-                <BiX />
-              </button>
-
-              <h2 className="text-lg font-semibold mb-4">{previewFile.name}</h2>
-              {previewFile.type.includes("image") ? (
-                <imgA
-                  src={previewFile.content}
-                  alt={previewFile.name}
-                  className="max-w-full h-auto"
-                />
-              ) : previewFile.type.includes("pdf") ? (
-                <iframe
-                  src={previewFile.content}
-                  //className="w-full h-96"
-                  className="w-full h-[80vh]"
-                  title="PDF Preview"
-                />
-              ) : previewFile.type.includes("text") ? (
-                // <pre className="whitespace-pre-wrap max-h-96 overflow-y-auto">
-                //   {previewFile.content}
-                // </pre>
-                <pre className="whitespace-pre-wrap max-h-[80vh] overflow-y-auto">
-                  {previewFile.content}
-                </pre>
-              ) : (
-                <p>Cannot preview this file type</p>
-              )}
-            </div>
-          </ModalWrapper>
-        )} */}
         {previewFile && (
           <ModalWrapper
             open={!!previewFile}

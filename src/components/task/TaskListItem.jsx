@@ -1,15 +1,20 @@
 import { BiCalendar, BiPlus } from "react-icons/bi";
 import { BGS, formatDate } from "../../utils";
 import Selection from "../Selection";
-import UserInfo from "../UserInfo";
 import clsx from "clsx";
 import Button from "../Button";
 import AddTask from "./AddTask";
 import { useEffect, useState } from "react";
-import { IoMdAdd, IoMdCreate, IoMdSwap, IoMdTime, IoMdTrash } from "react-icons/io";
+import {
+  IoMdAdd,
+  IoMdCreate,
+  IoMdSwap,
+  IoMdTime,
+  IoMdTrash,
+} from "react-icons/io";
 import DetailTask from "./DetailTask";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchByIdTask } from "../../redux/task/taskSlice";
+import { fetchByIdTask, updateCompleteTask } from "../../redux/task/taskSlice";
 import EmployeeInfo from "../EmployeeInfo";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import UpdateTask from "./UpdateTask";
@@ -38,6 +43,8 @@ const TaskListItem = ({ congviec, duAn }) => {
   const [connection, setConnection] = useState(null);
   const dispatch = useDispatch();
   const maCongViec = congviec.maCongViec;
+  const trangThaiCongViec=congviec.trangThaiCongViec
+  console.log(maCongViec)
   const phancong = useSelector((state) =>
     state.tasks.list.find((task) => task.maCongViec === maCongViec)
   );
@@ -86,7 +93,20 @@ const TaskListItem = ({ congviec, duAn }) => {
       .length ?? 0;
   const tongCongViec = phancong?.phanCongs?.length || 1;
   const completionPercent = (congViecHoanThanh / tongCongViec) * 100;
-  //
+  useEffect(() => {
+    if (completionPercent === 100 && trangThaiCongViec===false) {
+      try{
+        const result=dispatch(updateCompleteTask({
+          id: maCongViec,
+          task:true
+        })).unwrap()
+        console.log(result)
+      }catch(e){
+        console.log(e)
+      }
+    }
+  }, [completionPercent, trangThaiCongViec, maCongViec, dispatch]);
+  console.log(congviec.trangThaiCongViec)
   const handleAddSubTask = (newSubTask) => {
     setSubTasks([...subTasks, newSubTask]);
     setOpen(false);
@@ -123,7 +143,6 @@ const TaskListItem = ({ congviec, duAn }) => {
       ? "font-bold text-blue-600 bg-blue-100"
       : "font-bold bg-blue-200"
     : "pl-6 bg-gray-100";
-    //console.log(completionPercent)
   return (
     <div
       className={`w-full flex items-center px-4 ${
@@ -144,8 +163,6 @@ const TaskListItem = ({ congviec, duAn }) => {
           ) : (
             <span className="break-words">{congviec.tenCongViec}</span>
           )}
-          {/* Phần trăm tiến độ */}
-
           <div className="w-full bg-gray-200 rounded-full h-4 mt-2">
             <div
               className={`${getCompletionColor(
@@ -158,7 +175,6 @@ const TaskListItem = ({ congviec, duAn }) => {
             {completionPercent.toFixed(2)}% Hoàn thành
           </span>
         </div>
-
         <div className="flex-1 w-1/5 px-4 ">
           <span>{congviec.mucDoUuTien}</span>
         </div>
@@ -187,7 +203,6 @@ const TaskListItem = ({ congviec, duAn }) => {
                 BGS[index % BGS?.length]
               )}
             >
-              {/* <UserInfo user={m} /> */}
               <EmployeeInfo employee={m} />
             </div>
           ))}
@@ -209,7 +224,6 @@ const TaskListItem = ({ congviec, duAn }) => {
                 BGS[index % BGS?.length]
               )}
             >
-              {/* <UserInfo user={m} /> */}
               <EmployeeInfo employee={m} />
             </div>
           ))}
@@ -232,47 +246,33 @@ const TaskListItem = ({ congviec, duAn }) => {
               setTaskRoot(congviec.maCongViec);
               setOpen(true);
             }}
-            //label="Tạo CV" // Rút ngắn văn bản nếu cần
             icon={<IoMdAdd className="text-lg" />}
             className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
           />
           <Button
             onClick={() => {
-              //setTaskRoot(congviec.maCongViec);
               setOpenUpdate(true);
             }}
-            //label="Sửa CV" // Rút ngắn văn bản nếu cần
             icon={<IoMdCreate className="text-lg" />}
             className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
           />
           <Button
             onClick={() => {
-              //setTaskRoot(congviec.maCongViec);
-              //setOpenUpdate(true);
             }}
-            //label="Xóa CV" // Rút ngắn văn bản nếu cần
             icon={<IoMdTrash className="text-lg" />}
             className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
           />
           <Button
             onClick={() => {
-              //setTaskRoot(congviec.maCongViec);
-              //setOpenUpdate(true);
-              setOpenTransfer(true)
-              
+              setOpenTransfer(true);
             }}
-            //label="Xóa CV" // Rút ngắn văn bản nếu cần
             icon={<IoMdSwap className="text-lg" />}
             className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
           />
           <Button
             onClick={() => {
-              //setTaskRoot(congviec.maCongViec);
-              //setOpenUpdate(true);
-              setOpenTaskHistory(true)
-              
+              setOpenTaskHistory(true);
             }}
-            //label="Xóa CV" // Rút ngắn văn bản nếu cần
             icon={<IoMdTime className="text-lg" />}
             className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
           />
@@ -295,17 +295,17 @@ const TaskListItem = ({ congviec, duAn }) => {
         phanCong={phancong}
       />
       <AddTaskTransfer
-      openTransfer={openTransfer}
-      setOpenTransfer={setOpenTransfer}
-      maCongViec={maCongViec}
-      tenCongViec={congviec.tenCongViec}
-      maPhongBan={null}
-      currentEmployee={phancong?.phanCongs}
+        openTransfer={openTransfer}
+        setOpenTransfer={setOpenTransfer}
+        maCongViec={maCongViec}
+        tenCongViec={congviec.tenCongViec}
+        maPhongBan={null}
+        currentEmployee={phancong?.phanCongs}
       />
       <TaskHistory
-      openTaskHistory={openTaskHistory}
-      setOpenTaskHistory={setOpenTaskHistory}
-      maCongViec={maCongViec}
+        openTaskHistory={openTaskHistory}
+        setOpenTaskHistory={setOpenTaskHistory}
+        maCongViec={maCongViec}
       />
       {expanded && (
         <DetailTask

@@ -28,19 +28,18 @@ export function initTasks() {
           console.error(`Invalid times for task: ${JSON.stringify(i)}`);
           return null;
         }
-
+        
         return {
           start: startTime,
           end: endTime,
           name: i.tenCongViec,
           id: i.maCongViec,
           type: "task",
-          project: duan.tenDuAn,
-          hideChildren: i.maCongViecCha === null ? false : true,
-          parentId: i.maPhanDuAn,          
+          //project: duan.tenDuAn,
+          progress:80        
         };
       })
-      .filter(Boolean); // Lọc bỏ các giá trị null
+      .filter(Boolean);
   });
   console.log(tasks);
   return tasks;
