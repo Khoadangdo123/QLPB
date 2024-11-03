@@ -41,7 +41,7 @@ axiosInstance.interceptors.response.use(
         await refreshToken();
         const tmp = JSON.parse(localStorage.getItem("authUser"));
         const token = tmp.token;
-        originalRequest.headers["Authorization"] = `Bearer ${token}`;
+        originalRequest.headers.Authorization = `Bearer ${token}`;
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         window.location.href = "/log-in";
@@ -78,8 +78,6 @@ async function refreshToken() {
     }
   );
   if (response.status === 200) {
-    console.log(response);
-    localStorage.removeItem("authUser")
     localStorage.setItem("authUser", JSON.stringify(response.data));
   } else {
     throw new Error("Failed to refresh token");

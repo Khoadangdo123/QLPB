@@ -182,20 +182,6 @@ const DetailTask = ({
             </div>
           </div>
         </div>
-        {/* Footer Actions */}
-        {/* <div className="px-6 pb-6 flex justify-between items-center">
-          <button
-            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-full focus:outline-none"
-            onClick={() => setExpanded(false)}
-          >
-            Cancel
-          </button>
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-full focus:outline-none">
-            Mark Complete
-          </button>
-        </div> */}
-
-        {/* Comments and Histories Section */}
         <div className="mb-4 px-6 bg-gray-100">
           <div
             className=" rounded border-t-2"
@@ -232,10 +218,10 @@ const DetailTask = ({
                           {comment.user.slice(0, 2)}
                         </div>
                         <span className="ml-3 text-gray-700">
-                          {comment.user}
+                          {comment.user===localStorage.getItem("name")?"Bạn":comment.user}
                         </span>
                       </div>
-                      {/* <span className="text-sm text-gray-500">{comment.date}</span> */}
+                      <span className="text-sm text-gray-500">{new Date().toISOString()}</span>
                     </div>
                     <p className="ml-11 text-gray-600">{comment.message}</p>
                   </div>
@@ -325,7 +311,7 @@ const handleUpload = async () => {
         });
     });
     await Promise.all(uploadPromises);
-    return responses; // Trả về kết quả upload
+    return responses;
   } catch (error) {
     console.error(error);
     setUploadStatus("select");

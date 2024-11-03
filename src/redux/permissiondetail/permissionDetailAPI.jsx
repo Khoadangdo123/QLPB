@@ -22,8 +22,7 @@ export const deletePermissionDetail = async (id) => {
     const response = await axios.delete(`${API_ENDPOINTS.CHITIETQUYEN}/${id}`);
     return response.data;  
 };
-
-export const checkPermission=async (permissionDetail)=>{
-    const response = await axios.post(API_ENDPOINTS.CHITIETQUYEN+ "/CheckQuyen", permissionDetail);
-    return response.data;
-}
+export const checkPermission = async (permissionDetail) => {
+    const response = await axios.post(`${API_ENDPOINTS.CHITIETQUYEN}/KiemTraQuyen`,permissionDetail);
+    return response.data;  
+};

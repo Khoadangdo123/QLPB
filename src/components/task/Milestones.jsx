@@ -4,6 +4,7 @@ import EmojiPicker from 'emoji-picker-react';
 import Dropzone from 'react-dropzone';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchReminders } from '../../redux/reminder/reminderSlice';
+import { checkPermission } from '../../redux/permissiondetail/permissionDetailSlice';
 
 const ChatBox = () => {
   const [messages, setMessages] = useState([]);
@@ -11,9 +12,12 @@ const ChatBox = () => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const dispacth=useDispatch()
   const reminders=useSelector((state)=>state.reminders.list)
+  const [permissionAction,setpermissionAction]=useState([])
   useEffect(()=>{
     const fetchData=async ()=>{
       await dispacth(fetchReminders())
+      const result=await dispacth(checkPermission({maQuyen:3,tenChucNang:"Công Việc"})).unwrap()
+      setpermissionAction(result)
     }
     fetchData()
   },[dispacth])
@@ -36,7 +40,7 @@ const ChatBox = () => {
   const onEmojiClick = (event, emojiObject) => {
     setInput(input + emojiObject.emoji);
   };
-
+  console.log(permissionAction)
   return (
     <div className="chat-box">
       <div className="messages">
@@ -69,6 +73,9 @@ const ChatBox = () => {
             </div>
           )}
         </Dropzone>
+        {permissionAction.includes("Thêm") && <button>Thêm</button>}
+        {permissionAction.includes("Xóa") && <button>Xóa</button>}
+        {permissionAction.includes("Sửa") && <button>Sửa</button>}
       </div>
     </div>
   );

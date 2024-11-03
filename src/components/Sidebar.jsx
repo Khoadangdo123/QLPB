@@ -66,7 +66,7 @@ const Sidebar = () => {
   }));
   const linkData = [
     {
-      label: "Bảng Điều Khiển",
+      label: "Tổng quan",
       link: "/dashboard",
       icon: <MdDashboard />,
     },
@@ -137,9 +137,6 @@ const Sidebar = () => {
     return chucnangs.some((chucnang) => chucnang.tenChucNang === label);
   };
   const filteredLinkData = linkData.filter((item) => hasPermission(item.label));
-  // chucnangs.map((item)=>{
-  //   console.log(dispatch(checkPermission({maChucNang:item.maChucNang,maNhomQuyen:Number(localStorage.getItem("permissionId")),hanhDong:"Xem"})).unwrap())
-  // })
   const sidebarLinks = linkData;
   const closeSidebar = () => {
     dispatch(setOpenSidebar(false));
@@ -147,7 +144,7 @@ const Sidebar = () => {
   const [expandedSubMenu, setExpandedSubMenu] = useState(null);
   const [isModalOpen, setModalOpen] = useState(false);
   const [projectName, setProjectName] = useState("");
-  const [error, setError] = useState(""); // State to track error
+  const [error, setError] = useState("");
   useEffect(() => {
     if (isModalOpen) {
       const input = document.querySelector("input");
