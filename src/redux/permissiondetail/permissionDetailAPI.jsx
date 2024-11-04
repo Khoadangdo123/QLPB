@@ -1,28 +1,24 @@
-import axios from "axios";
-import API_ENDPOINTS from "../../constant/linkapi";
+import axiosInstance from "../../interceptors/AxiosInstance";
 
-// Fetch permission detail data
 export const fetchPermissionDetails = async () => {
-    const response = await axios.get(API_ENDPOINTS.CHITIETQUYEN);
+    const response = await axiosInstance.get("ChiTietQuyen");
     return response.data;
 };
 
-// Add a new permission detail
 export const addPermissionDetail = async (permissionDetail) => {
-    const response = await axios.post(API_ENDPOINTS.CHITIETQUYEN, permissionDetail);
+    const response = await axiosInstance.post("ChiTietQuyen", permissionDetail);
     return response.data;  
 };
 
-// Update an existing permission detail
 export const updatePermissionDetail = async (id, permissionDetail) => {
-    const response = await axios.put(API_ENDPOINTS.CHITIETQUYEN + "/" + id, permissionDetail);
+    const response = await axiosInstance.put("ChiTietQuyen" + "/" + id, permissionDetail);
     return response.data;
 };
 export const deletePermissionDetail = async (id) => {
-    const response = await axios.delete(`${API_ENDPOINTS.CHITIETQUYEN}/${id}`);
+    const response = await axiosInstance.delete(`${"ChiTietQuyen"}/${id}`);
     return response.data;  
 };
 export const checkPermission = async (permissionDetail) => {
-    const response = await axios.post(`${API_ENDPOINTS.CHITIETQUYEN}/KiemTraQuyen`,permissionDetail);
+    const response = await axiosInstance.post(`${"ChiTietQuyen"}/KiemTraQuyen`,permissionDetail);
     return response.data;  
 };

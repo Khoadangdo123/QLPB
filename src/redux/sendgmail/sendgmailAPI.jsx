@@ -1,7 +1,5 @@
-import axios from "axios";
-import API_ENDPOINTS from "../../constant/linkapi";
-
+import axiosInstance from "../../interceptors/AxiosInstance";
 export const sendGmail = async (gmail) => {
-    const response = await axios.post(API_ENDPOINTS.SENDGMAIL, gmail);
+    const response = await axiosInstance.post("SendGmail", gmail);
     return response.data;
 };

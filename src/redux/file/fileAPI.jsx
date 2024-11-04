@@ -1,24 +1,20 @@
-import axios from "axios";
-import API_ENDPOINTS from "../../constant/linkapi";
 
+import axiosInstance from "../../interceptors/AxiosInstance";
 export const fetchAllFile = async () => {
-    const response = await axios.get(API_ENDPOINTS.FILES);
+    const response = await axiosInstance.get("Files");
     return response.data;
 };
 
-// Fetch file data
 export const fetchFile = async (id) => {
-    const response = await axios.get(`${API_ENDPOINTS.FILES}/${id}`);
+    const response = await axiosInstance.get(`${"Files"}/${id}`);
     return response.data;
 };
 
-// Add a new file
 export const addFile = async (file) => {
-    const response = await axios.post(API_ENDPOINTS.FILES, file);
+    const response = await axiosInstance.post("Files", file);
     return response.data;
 };
 
-// Delete a file
 export const deleteFile = async (id) => {
-    await axios.delete(`${API_ENDPOINTS.FILES}/${id}`);
+    await axiosInstance.delete(`${"Files"}/${id}`);
 };

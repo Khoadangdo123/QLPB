@@ -1,30 +1,25 @@
-import axios from "axios";
-import API_ENDPOINTS from "../../constant/linkapi";
 
-// Fetch assignment data
+import axiosInstance from "../../interceptors/AxiosInstance";
 export const fetchAssignments = async (search = '', page = 1) => {
-    const response = await axios.get(API_ENDPOINTS.PHANCONG + `?search=${search}&page=${page}`);
+    const response = await axiosInstance.get("PhanCong" + `?search=${search}&page=${page}`);
     return response.data;
 };
 export const fetchEmployeeAssignment = async (id) => {
-    const response = await axios.get(API_ENDPOINTS.PHANCONG + `/GetPhanCongNhanVien?maNhanVien=${id}`);
+    const response = await axiosInstance.get("PhanCong" + `/GetPhanCongNhanVien?maNhanVien=${id}`);
     return response.data;
 };
 
-// Add a new assignment
 export const addAssignment = async (assignment) => {
-    const response = await axios.post(API_ENDPOINTS.PHANCONG, assignment);
+    const response = await axiosInstance.post("PhanCong", assignment);
     return response.data;
 };
 
-// Update an existing assignment
 export const updateAssignment = async (id, assignment) => {
-    const response = await axios.put(API_ENDPOINTS.PHANCONG + "/" + id, assignment);
+    const response = await axiosInstance.put("PhanCong" + "/" + id, assignment);
     return response.data;
 };
 
-// Delete an assignment
 export const deleteAssignment = async (id) => {
-    const response = await axios.delete(API_ENDPOINTS.PHANCONG + "/" + id);
+    const response = await axiosInstance.delete("PhanCong" + "/" + id);
     return response.data;
 };

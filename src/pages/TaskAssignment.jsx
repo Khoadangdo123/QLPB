@@ -16,7 +16,7 @@ const TaskAssignment = () => {
   const navigate=useNavigate()
   useEffect(() => {
     const loadData = async () => {
-      setLoading(true);
+      setLoading(true);   
       await dispatch(fetchEmployeeAssignment(maNhanVien));
       setLoading(false);
     };
