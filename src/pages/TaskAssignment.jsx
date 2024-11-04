@@ -7,6 +7,7 @@ import {
 import TaskAssignmentList from "../components/taskassigment/TaskAssignmentList";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { useNavigate } from "react-router-dom";
+import API_ENDPOINTS from "../constant/linkapi";
 const TaskAssignment = () => {
   const [connection, setConnection] = useState(null);
   const dispatch = useDispatch();
@@ -24,7 +25,7 @@ const TaskAssignment = () => {
   }, [maNhanVien, dispatch]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub")
+      .withUrl(API_ENDPOINTS.HUB_URL)
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();

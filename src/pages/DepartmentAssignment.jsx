@@ -3,6 +3,7 @@ import DepartmentAssignmentList from "../components/taskassigment/DepartmentAssi
 import { fetchManagerDepartment } from "../redux/departments/departmentSlice";
 import { useEffect, useState } from "react";
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import API_ENDPOINTS from "../constant/linkapi";
 const DepartmentAssignment=()=>{
     const [loading, setLoading] = useState(true);
     const [connection, setConnection] = useState(null);
@@ -20,7 +21,7 @@ const DepartmentAssignment=()=>{
     }, [maNhanVien, dispatch]);
     useEffect(() => {
         const newConnection = new HubConnectionBuilder()
-          .withUrl("https://localhost:7131/hub")
+          .withUrl(API_ENDPOINTS.HUB_URL)
           .withAutomaticReconnect()
           .configureLogging(LogLevel.Information)
           .build();

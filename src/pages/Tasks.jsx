@@ -20,6 +20,7 @@ import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
 import Timeline from "../components/task/TimeLine";
 import ModalWrapper from "../components/ModalWrapper";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
+import API_ENDPOINTS from "../constant/linkapi";
 const TABS = [
   { title: "Chế độ danh sách", icon: <MdGridView /> },
   { title: "Chế độ bảng", icon: <FaList /> },  
@@ -63,7 +64,7 @@ const Tasks = () => {
   }, [id, dispatch]);
   useEffect(()=>{
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
+      .withUrl(API_ENDPOINTS.HUB_URL).withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
 

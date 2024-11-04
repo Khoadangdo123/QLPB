@@ -16,6 +16,7 @@ const API_ENDPOINTS = {
     SENDGMAIL:`${API_URL}/SendGmail`,
     LICHSUCONGVIEC:`${API_URL}/LichSuCongViec`,
     FILES:`${API_URL}/Files`,
-    CHITIETFILE:`${API_URL}/ChiTietFile`
+    CHITIETFILE:`${API_URL}/ChiTietFile`,
+    HUB_URL:HUB_URL
 };
 export default API_ENDPOINTS;

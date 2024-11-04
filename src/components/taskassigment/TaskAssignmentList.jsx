@@ -28,6 +28,7 @@ import {
 import { deleteChiTietFile, fetchChiTietFileByPhanCong } from "../../redux/fileassignment/fileassignmentSlice";
 import { useNavigate } from "react-router-dom";
 import { checkPermission } from "../../redux/permissiondetail/permissionDetailSlice";
+import API_ENDPOINTS from "../../constant/linkapi";
 const TaskAssignmentList = ({ congviec }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -90,7 +91,7 @@ const TaskAssignmentList = ({ congviec }) => {
   }, [maCongViec, dispatch]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub")
+      .withUrl(API_ENDPOINTS.HUB_URL)
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();

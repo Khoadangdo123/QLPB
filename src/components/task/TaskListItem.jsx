@@ -22,6 +22,7 @@ import UpdateTask from "./UpdateTask";
 import AddTaskTransfer from "../tasktransfer/AddTaskTransfer";
 import TaskHistory from "./TaskHistory";
 import { checkPermission } from "../../redux/permissiondetail/permissionDetailSlice";
+import API_ENDPOINTS from "../../constant/linkapi";
 const priorities = [
   { id: "low", name: "Thấp" },
   { id: "medium", name: "Trung Bình" },
@@ -75,7 +76,7 @@ const TaskListItem = ({ congviec, duAn }) => {
   }, [maCongViec]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub")
+      .withUrl(API_ENDPOINTS.HUB_URL)
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();

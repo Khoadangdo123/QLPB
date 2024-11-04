@@ -14,6 +14,7 @@ import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import UpdateEmployee from "../components/employee/UpdateEmployee";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 import { useNavigate } from "react-router-dom";
+import API_ENDPOINTS from "../constant/linkapi";
 const Employees = () => {
   const [pageSize, setPageSize] = useState(10);
   const employees = useSelector((state) => state.employees.list);
@@ -41,7 +42,7 @@ const Employees = () => {
   }, [dispatch, pageSize]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub")
+      .withUrl(API_ENDPOINTS.HUB_URL)
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();

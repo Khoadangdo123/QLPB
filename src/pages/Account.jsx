@@ -10,6 +10,7 @@ import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
 import { fetchAccounts } from "../redux/accounts/accountSlice";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 import { useNavigate } from "react-router-dom";
+import API_ENDPOINTS from "../constant/linkapi";
 const Accounts = () => {
   const [pageSize, setPageSize] = useState(10);
   const accounts = useSelector((state) => state.accounts.list);
@@ -39,7 +40,7 @@ const Accounts = () => {
   }, [dispatch, pageSize]);
   useEffect(()=>{
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
+      .withUrl(API_ENDPOINTS.HUB_URL).withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
 

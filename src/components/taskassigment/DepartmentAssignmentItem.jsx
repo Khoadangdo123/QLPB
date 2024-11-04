@@ -13,6 +13,7 @@ import { IoMdAdd } from "react-icons/io";
 import AddTaskEmployee from "./AddTaskEmployee";
 import { useNavigate } from "react-router-dom";
 import { checkPermission } from "../../redux/permissiondetail/permissionDetailSlice";
+import API_ENDPOINTS from "../../constant/linkapi";
 const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -51,7 +52,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
   }, [maCongViec, dispatch]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub")
+      .withUrl(API_ENDPOINTS.HUB_URL)
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();

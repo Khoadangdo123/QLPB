@@ -9,6 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import PageSizeSelect from "../components/PageSizeSelect";
 import { fetchPermissions } from "../redux/permission/permissionSlice";
 import UserPermissions from "../components/permission/UserPermissions";
+import API_ENDPOINTS from "../constant/linkapi";
 
 const Permission = () => {
   const [pageSize, setPageSize] = useState(10);
@@ -35,7 +36,7 @@ const Permission = () => {
 
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub")
+      .withUrl(API_ENDPOINTS.HUB_URL)
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();

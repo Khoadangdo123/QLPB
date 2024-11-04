@@ -6,6 +6,7 @@ import TaskListItem from "./TaskListItem";
 import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
 import { useDispatch } from "react-redux";
 import { checkPermission } from "../../redux/permissiondetail/permissionDetailSlice";
+import API_ENDPOINTS from "../../constant/linkapi";
 
 const TaskGroup = ({ phanduan, duAn }) => {
   const [open, setOpen] = useState(false);
@@ -24,7 +25,7 @@ const TaskGroup = ({ phanduan, duAn }) => {
   },[dispatch])
   useEffect(()=>{
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
+      .withUrl(API_ENDPOINTS.HUB_URL).withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
 

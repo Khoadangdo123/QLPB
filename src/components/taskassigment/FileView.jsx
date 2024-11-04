@@ -18,6 +18,7 @@ import { fetchChiTietFileByPhanCong } from "../../redux/fileassignment/fileassig
 import { fetchAllFile } from "../../redux/file/fileSlice";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import PdfViewer from "./PdfViewer";
+import API_ENDPOINTS from "../../constant/linkapi";
 const FileView = () => {
   const { id } = useParams();
   const maCongViec = Number(id);
@@ -93,7 +94,7 @@ const FileView = () => {
   }, [maCongViec, dispatch]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub")
+      .withUrl(API_ENDPOINTS.HUB_URL)
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();

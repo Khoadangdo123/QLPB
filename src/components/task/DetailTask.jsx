@@ -5,6 +5,7 @@ import Picker from "emoji-picker-react";
 import { FaSmile } from "react-icons/fa";
 import { FaPaperclip } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
+import API_ENDPOINTS from "../../constant/linkapi";
 const DetailTask = ({
   expanded,
   setExpanded,
@@ -25,7 +26,7 @@ const DetailTask = ({
   const [showComments, setShowComment] = useState(true);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub")
+      .withUrl(API_ENDPOINTS.HUB_URL)
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();

@@ -14,6 +14,7 @@ import PageSizeSelect from "../components/PageSizeSelect";
 import UpdateDepartment from "../components/department/UpdateDepartment";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 import { useNavigate } from "react-router-dom";
+import API_ENDPOINTS from "../constant/linkapi";
 const Departments = () => {
   const [pageSize, setPageSize] = useState(10);
   const departments = useSelector((state) => state.departments.list);
@@ -42,7 +43,7 @@ const Departments = () => {
   }, [dispatch, pageSize]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub")
+      .withUrl(API_ENDPOINTS.HUB_URL)
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();

@@ -18,6 +18,7 @@ import { fetchFunctions } from "../redux/function/functionSlice";
 import { FaUserGroup } from "react-icons/fa6";
 import { GoProject } from "react-icons/go";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
+import API_ENDPOINTS from "../constant/linkapi";
 const Sidebar = () => {
   const dispatch = useDispatch();
   const [connection, setConnection] = useState(null);
@@ -108,7 +109,7 @@ const Sidebar = () => {
   }, [dispatch, maquyen]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub")
+      .withUrl(API_ENDPOINTS.HUB_URL)
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
