@@ -68,9 +68,6 @@ const UserPermissions = ({ role, onClose }) => {
     const maChucNang = permission.functionId;
     const maQuyen = role.maQuyen;
     const isChecked = permission.actions.every((action) => action.allowed);
-    // console.log("maQuyen:", maQuyen);
-    // console.log("maChucNang:", maChucNang);
-    // console.log("Chọn toàn bộ hành động:", !isChecked);
     const status=!isChecked
     setPermissions((prevPermissions) =>
       prevPermissions.map((perm) =>
@@ -99,7 +96,6 @@ const UserPermissions = ({ role, onClose }) => {
     }
   };
   async function save(chiTietQuyen){
-    //console.log("CTQ: ",chiTietQuyen)
     try{
       let model={
         maNhomQuyen:chiTietQuyen.maQuyen,

@@ -6,12 +6,14 @@ import {
 } from "../redux/assignment/assignmentSlice";
 import TaskAssignmentList from "../components/taskassigment/TaskAssignmentList";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { useNavigate } from "react-router-dom";
 const TaskAssignment = () => {
   const [connection, setConnection] = useState(null);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const maNhanVien = Number(localStorage.getItem("userId"));
   const phancongs = useSelector((state) => state.assignments);
+  const navigate=useNavigate()
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
@@ -47,19 +49,13 @@ const TaskAssignment = () => {
         }
       }
     };
-
-    if (connection) {
-      connection.off("task");
-      connection.off("loadPhanCong");
-      connection.off("loadCongViec");
-      startConnection();
-    }
-
+    startConnection();
     return () => {
       if (connection) {
         connection.off("task");
         connection.off("loadPhanCong");
         connection.off("loadCongViec");
+        connection.stop()
         //connection.off("loadCongViec");
       }
     };

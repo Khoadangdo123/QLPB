@@ -1,63 +1,34 @@
 import React, { useEffect, useRef, useState } from "react";
+import { MdDashboard, MdOutlineAddTask, MdSettings } from "react-icons/md";
 import {
-  MdDashboard,
-  MdOutlineAddTask,
-  MdOutlinePendingActions,
-  MdSettings,
-  MdTaskAlt,
-} from "react-icons/md";
-import { FaTasks, FaTrashAlt, FaUsers, FaPlus, FaRProject, FaProjectDiagram, FaUser, FaExchangeAlt } from "react-icons/fa";
+  FaTasks,
+  FaUsers,
+  FaPlus,
+  FaUser,
+  FaExchangeAlt,
+  FaHome,
+} from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { setOpenSidebar } from "../redux/slices/authSlice";
 import clsx from "clsx";
 import { addProject, fetchProjects } from "../redux/project/projectSlice";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
-import RolePermission from "../pages/Permission";
 import { fetchFunctions } from "../redux/function/functionSlice";
+import { FaUserGroup } from "react-icons/fa6";
+import { GoProject } from "react-icons/go";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
-import { fetchPermissionById } from "../redux/permission/permissionSlice";
-import { FaDiagramProject, FaUserGroup } from "react-icons/fa6";
-import {GoProject} from "react-icons/go"
 const Sidebar = () => {
   const dispatch = useDispatch();
   const [connection, setConnection] = useState(null);
   const [loadingProjects, setLoadingProjects] = useState(true);
-  const [loadingFunctions, setLoadingFunctions] = useState(true);
+
+  const [permissionAction, setpermissionAction] = useState([]);
+  const [viewFuntions, setViewFunction] = useState([]);
+  const navigate=useNavigate()
   const { user } = useSelector((state) => state.authen);
   const duans = useSelector((state) => state.projects.list);
-  const chucnangs = useSelector((state) => state.functions.list);
-  const maquyen=Number(localStorage.getItem("permissionId"))
-  useEffect(() => {
-    dispatch(fetchProjects({ search: "", page: 20 })).then(() =>
-      setLoadingProjects(false)
-    );
-    dispatch(fetchFunctions({ search: "", page: 20 })).then(() =>
-      setLoadingFunctions(false)
-    );
-  }, [dispatch,maquyen]);
-  useEffect(() => {
-    const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub")
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build();
-
-    setConnection(newConnection);
-  }, []);
-  useEffect(() => {
-    if (connection && connection.state === "Disconnected") {
-      connection
-        .start()
-        .then(() => {
-          console.log("Connected!");
-          connection.on("loadDuAn", () => {
-            dispatch(fetchProjects({ search: "", page: 20 }));
-          });
-        })
-        .catch((error) => console.error("Connection failed: ", error));
-    }
-  }, [connection, dispatch]);
+  const maquyen = Number(localStorage.getItem("permissionId"));
   const taskSubMenu = duans.map((duan) => ({
     label: duan.tenDuAn,
     link: `/project/${duan.maDuAn}`,
@@ -66,24 +37,18 @@ const Sidebar = () => {
   }));
   const linkData = [
     {
-      label: "Tổng quan",
+      label: "Tổng Quan",
       link: "/dashboard",
       icon: <MdDashboard />,
     },
     {
       label: "Dự Án",
-      //link: "/tasks",
-      icon: <GoProject/>,
+      icon: <GoProject />,
       subMenu: taskSubMenu,
     },
     {
       label: "Phân Quyền",
       link: "/permission",
-      icon: <FaTasks />,
-    },
-    {
-      label: "Milestones",
-      link: "/milestones",
       icon: <FaTasks />,
     },
     {
@@ -102,11 +67,6 @@ const Sidebar = () => {
       icon: <FaExchangeAlt />,
     },
     {
-      label: "Nhóm",
-      link: "/team",
-      icon: <FaUsers />,
-    },
-    {
       label: "Phòng Ban",
       link: "/department",
       icon: <FaUsers />,
@@ -121,23 +81,86 @@ const Sidebar = () => {
       link: "/account",
       icon: <FaUsers />,
     },
-    {
-      label: "Thùng Rác",
-      link: "/trashed",
-      icon: <FaTrashAlt />,
-    },
   ];
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoadingProjects(true);
+      await dispatch(fetchProjects({ search: "", page: 20 }));
+      setLoadingProjects(false);
+      const result = await dispatch(
+        checkPermission({ maQuyen: maquyen, tenChucNang: "Dự Án" })
+      ).unwrap();
+      setpermissionAction(result);
+      const visibleLinks = [];
+
+      for (const link of linkData) {
+        const result = await dispatch(
+          checkPermission({ maQuyen: maquyen, tenChucNang: link.label })
+        ).unwrap();
+        if (result.includes("Xem")) {
+          visibleLinks.push(link);
+        }
+      }
+      setViewFunction(visibleLinks);
+      setLoadingProjects(false);
+    };
+    fetchData();
+  }, [dispatch, maquyen]);
+  useEffect(() => {
+    const newConnection = new HubConnectionBuilder()
+      .withUrl("https://localhost:7131/hub")
+      .withAutomaticReconnect()
+      .configureLogging(LogLevel.Information)
+      .build();
+
+    setConnection(newConnection);
+  }, []);
+  useEffect(() => {
+    const startConnection = async () => {
+      if (connection && connection.state === "Disconnected") {
+        try {
+          await connection.start();
+          console.log("Connected!");
+
+          connection.on("loadDuAn", async () => {
+            await dispatch(fetchProjects({ search: "", page: 20 }));
+          });
+
+          connection.on("loadHanhDong", async () => {
+            const result = await dispatch(
+              checkPermission({ maQuyen: maquyen, tenChucNang: "Dự Án" })
+            ).unwrap();
+            setpermissionAction(result);
+            const visibleLinks = [];
+            for (const link of linkData) {
+              const result = await dispatch(
+                checkPermission({ maQuyen: maquyen, tenChucNang: link.label })
+              ).unwrap();
+              if (result.includes("Xem")) {
+                visibleLinks.push(link);
+              }
+            }
+            console.log(visibleLinks)
+            setViewFunction(visibleLinks);
+          });
+        } catch (error) {
+          console.error("Connection failed: ", error);
+        }
+      }
+    };
+    startConnection();
+    return () => {
+      if (connection) {
+        connection.off("loadDuAn");
+        connection.off("loadHanhDong");
+      }
+    };
+  }, [connection, dispatch]);
   const location = useLocation();
   const currentPath = location.pathname;
-  //const sidebarLinks = user?.isAdmin ? linkData : linkData.slice(0, 5);
-  // const hasPermission = (label) => {
-  //   return chucnangs.some((chucnang) => chucnang.tenChucNang === label);
-  // };
-  const hasPermission = (label) => {
-    return chucnangs.some((chucnang) => chucnang.tenChucNang === label);
-  };
-  const filteredLinkData = linkData.filter((item) => hasPermission(item.label));
-  const sidebarLinks = linkData;
+  const sidebarLinks = linkData.filter(link => 
+    viewFuntions.some(view => view.label === link.label)
+  );
   const closeSidebar = () => {
     dispatch(setOpenSidebar(false));
   };
@@ -151,7 +174,7 @@ const Sidebar = () => {
       input?.focus();
     }
   }, [isModalOpen]);
-  if (loadingProjects || loadingFunctions) {
+  if (loadingProjects) {
     return (
       <div className="flex justify-center items-center h-24">
         <div className="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
@@ -185,8 +208,6 @@ const Sidebar = () => {
       console.log(e);
     }
   };
-
-  // Component cho các đường dẫn trong Sidebar
   const NavLink = ({ el }) => {
     const hasSubMenu = !!el.subMenu;
     return (
@@ -228,7 +249,7 @@ const Sidebar = () => {
                 }
               }}
             >
-              <FaPlus />
+              {permissionAction.includes("Thêm") && <FaPlus />}
             </span>
           )}
         </Link>
@@ -254,15 +275,14 @@ const Sidebar = () => {
     );
   };
 
-  // Modal component để nhập tên dự án
   const Modal = ({ isOpen, onClose }) => {
-    const inputRef = useRef(null); // Tạo ref cho input
+    const inputRef = useRef(null);
 
     useEffect(() => {
       if (isOpen && inputRef.current) {
-        inputRef.current.focus(); // Focus vào input khi modal mở
+        inputRef.current.focus();
       }
-    }, [isOpen]); // Chỉ chạy khi modal mở
+    }, [isOpen]);
     if (!isOpen) return null;
     return (
       <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
@@ -317,14 +337,22 @@ const Sidebar = () => {
           Quản lý công việc
         </span>
       </h1>
-
+      <div className="pt-4">
+        <button
+          className="w-full flex gap-2 p-3 items-center text-lg text-gray-800 hover:bg-gray-100 rounded-lg transition"
+          onClick={() => navigate('/home')}
+        >
+          <FaHome />
+          <span>Home</span>
+        </button>
+      </div>
       <div className="flex-1 flex flex-col gap-y-5 overflow-y-auto">
         {sidebarLinks.map((link) => (
           <NavLink el={link} key={link.label} />
         ))}
       </div>
 
-      <div className="pt-4">
+      {/* <div className="pt-4">
         <button
           className="w-full flex gap-2 p-3 items-center text-lg text-gray-800 hover:bg-gray-100 rounded-lg transition"
           onClick={() => setModalOpen(true)}
@@ -332,7 +360,7 @@ const Sidebar = () => {
           <MdSettings />
           <span>Chỉnh Sửa</span>
         </button>
-      </div>
+      </div> */}
 
       <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)} />
     </div>

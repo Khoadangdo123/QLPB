@@ -27,6 +27,8 @@ import ChatBox from "./components/task/Milestones";
 import Tasktransfer from "./pages/TaskTransfer";
 import GanttApp from "./components/task/Gant";
 import FileView from "./components/taskassigment/FileView";
+import Home from "./pages/HomePage";
+
 // import Gant from "./components/task/Gant";
 function Layout() {
   const dispatch=useDispatch();
@@ -119,10 +121,9 @@ function App() {
     <main className='w-full min-h-screen bg-[#f3f4f6] position-fixed'>
       <Routes>
         <Route element={<Layout />}>
-          <Route index path='/' element={<Navigate to='/dashboard' />} />
+          <Route index path='/' element={<Navigate to='/home' />} />
           <Route path='/dashboard' element={<Dashboard />} />
           <Route path='/project/:id' element={<Tasks />} />
-          {/* <Route path='/completed/:status' element={<Tasks />} /> */}
           <Route path='/in-progress/:status' element={<Tasks />} />
           <Route path='/todo/:status' element={<Tasks />} />
           <Route path='/team' element={<Users />} />
@@ -136,7 +137,7 @@ function App() {
           <Route path='/task/:id' element={<TaskDetails />} />
           <Route path='/milestones' element={<ChatBox />} />
           <Route path='/tasktransfer' element={<Tasktransfer/>}/>
-          {/* <Route path='/gantchart' element={<GanttChart/>}/> */}
+          <Route path='/home' element={<Home/>}/>
           <Route path="/gant" element={<GanttApp/>}/>
           <Route path="/taskassignment/fileView/:id" element={<FileView/>}/>
           <Route path="*" element={<Navigate to="/dashboard" />} />

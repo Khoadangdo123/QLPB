@@ -19,9 +19,10 @@ import AddSection from "../components/section/AddSection";
 import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
 import Timeline from "../components/task/TimeLine";
 import ModalWrapper from "../components/ModalWrapper";
+import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 const TABS = [
-  { title: "Chế độ Bảng", icon: <MdGridView /> },
-  { title: "Chế độ Danh sách", icon: <FaList /> },  
+  { title: "Chế độ danh sách", icon: <MdGridView /> },
+  { title: "Chế độ bảng", icon: <FaList /> },  
 ];
 const TASK_TYPE = {
   todo: "bg-blue-600",
@@ -40,13 +41,25 @@ const Tasks = () => {
   const [connection, setConnection] = useState(null);
   const [showTimeline, setShowTimeline] = useState(false);
   const [timelineModalOpen, setTimelineModalOpen] = useState(false);
+  const maquyen=Number(localStorage.getItem("permissionId"))
+  const [permissionAction,setpermissionAction]=useState([])
   const duan=useSelector((state) =>
     state.projects.list.find((project) => project.maDuAn === Number(id))
   );
   useEffect(() => {
-    if (id) {
-      dispatch(fetchByIdProject(id))
-    }
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        if (id) await dispatch(fetchByIdProject(id));
+        const result=await dispatch(checkPermission({maQuyen:maquyen,tenChucNang:"Phần Dự Án"})).unwrap()
+        setpermissionAction(result)
+      } catch (error) {
+        console.error("Error fetching project data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
   }, [id, dispatch]);
   useEffect(()=>{
     const newConnection = new HubConnectionBuilder()
@@ -83,14 +96,28 @@ const Tasks = () => {
               console.log("Dự Án: "+id)
             }
           });
+          connection.on("loadHanhDong",async () => {
+            const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Phần Dự Án" })).unwrap();
+            setpermissionAction(result);
+          });
         })
         .catch((error) => console.error("Connection failed: ", error));
+        return () => {
+          if (connection) {
+            connection.off("loadDuAn");
+            connection.off("loadCongViec")
+            connection.off("loadPhanCong")
+            connection.off("updateCongViec");
+            connection.off("loadHanhDong");
+          }
+        };
     }
   }, [connection, id, dispatch]);
   const status = id || ""; 
   const toggleTimelineModal = () => {
     navigate("/gant",{state:{duan}});
   };
+  console.log(duan)
   return loading ? (
     <div className='py-10'>
       <Loading />
@@ -102,12 +129,14 @@ const Tasks = () => {
 
         {status && (
           <div className="flex gap-4">
+            {permissionAction.includes("Thêm") && 
             <Button
               onClick={() => setOpen(true)}
               label="Tạo phần dự án"
               icon={<IoMdAdd className="text-lg" />}
               className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 2xl:py-2.5"
             />
+            }
             <Button
               onClick={toggleTimelineModal} 
               label="Sơ đồ gant"
@@ -119,10 +148,15 @@ const Tasks = () => {
       </div>
 
       <Tabs tabs={TABS} setSelected={setSelected}>
-        {selected !== 1 ? (
+        {selected !== 0 ? (
           <BoardView tasks={tasks} />
         ) : (
-          <ListView phanDuAn={duan.phanDuAn} duAn={id}/>
+          // <ListView phanDuAn={duan.phanDuAn} duAn={id}/>
+          duan ? (
+            <ListView phanDuAn={duan.phanDuAn} duAn={id} />
+          ) : (
+            <div>Không có dữ liệu</div>
+          )
         )}
       </Tabs>
       {/* <AddTask open={open} setOpen={setOpen} /> */}

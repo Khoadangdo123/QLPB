@@ -1,15 +1,53 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Button from "../Button";
 import AddTask from "./AddTask";
 import TaskListItem from "./TaskListItem";
+import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
+import { useDispatch } from "react-redux";
+import { checkPermission } from "../../redux/permissiondetail/permissionDetailSlice";
 
 const TaskGroup = ({ phanduan, duAn }) => {
   const [open, setOpen] = useState(false);
+  const [connection, setConnection] = useState(null);
   const [taskRoot, setTaskRoot] = useState(false);
+  const [permissionAction,setpermissionAction]=useState([])
+  const maquyen=Number(localStorage.getItem("permissionId"))
+  const dispatch=useDispatch();
   const { id } = useParams();
+  useEffect(()=>{
+    const fetchData=async ()=>{
+      const result=await dispatch(checkPermission({maQuyen:maquyen,tenChucNang:"Công Việc"})).unwrap()
+      setpermissionAction(result)
+    }
+    fetchData();
+  },[dispatch])
+  useEffect(()=>{
+    const newConnection = new HubConnectionBuilder()
+      .withUrl("https://localhost:7131/hub").withAutomaticReconnect()
+      .configureLogging(LogLevel.Information)
+      .build();
 
-  // Kiểm tra nếu phanduan.congViecs là null hoặc undefined, đặt giá trị mặc định là mảng rỗng
+    setConnection(newConnection);
+  },[])
+  useEffect(()=>{
+    if (connection && connection.state === "Disconnected") {
+        connection.start()
+          .then(() => {
+            console.log("Connected!");
+            connection.on("loadHanhDong",async () => {
+              const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })).unwrap();
+              setpermissionAction(result);
+            });
+          })
+          .catch((error) => console.error("Connection failed: ", error));
+      }
+      return () => {
+        if (connection) {
+          connection.off("loadHanhDong");
+        }
+      };
+  },[dispatch,connection])
   const groupedTasks = (phanduan.congViecs || []).reduce((acc, task) => {
     const parentId = task.maCongViecCha || 'root'; 
     if (!acc[parentId]) {
@@ -36,11 +74,12 @@ const TaskGroup = ({ phanduan, duAn }) => {
     <div className="w-full bg-transparent border-b-1">
       <div className="p-4 w-full flex items-center justify-between font-semibold bg-white text-gray-600 mb-2 mt-4 shadow-sm border-y text-sm">
         <span>{phanduan.tenPhan}</span>
+        {permissionAction.includes("Thêm") &&
         <Button
           onClick={() => setOpen(true)}
           label="Tạo công việc"
           className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 px-3 text-xs"
-        />
+        />}
       </div>
       
       <div className="bg-slate-50 shadow-md">

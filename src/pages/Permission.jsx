@@ -24,9 +24,13 @@ const Permission = () => {
   const [connection, setConnection] = useState(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [roleCode, setRoleCode] = useState("Admin");
+  const [permissionAction,setpermissionAction]=useState([])
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(fetchPermissions({ search: "", page: pageSize }));
+    const fetchData = async () => {
+      await dispatch(fetchPermissions({ search: "", page: pageSize }));
+    };
+    fetchData();
   }, [dispatch, pageSize]);
 
   useEffect(() => {

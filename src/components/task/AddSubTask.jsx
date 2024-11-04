@@ -10,9 +10,6 @@ const AddSubTask = ({ open, setOpen, id }) => {
     handleSubmit,
     formState: { errors },
   } = useForm();
-
-  // const [addSbTask] = useCreateSubTaskMutation();
-
   const handleOnSubmit = async (data) => {
     // try {
     //   const res = await addSbTask({ data, id }).unwrap();

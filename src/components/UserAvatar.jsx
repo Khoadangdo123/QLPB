@@ -1,21 +1,22 @@
-import { Menu, Transition } from "@headlessui/react"; // Nhập các component Menu và Transition từ thư viện Headless UI
-import { Fragment, useState } from "react"; // Nhập Fragment và useState từ React
-import { FaUser, FaUserLock } from "react-icons/fa"; // Nhập các biểu tượng từ react-icons
-import { IoLogOutOutline } from "react-icons/io5"; // Nhập biểu tượng logout
-import { useDispatch, useSelector } from "react-redux"; // Nhập các hook để quản lý state từ Redux
-import { useNavigate } from "react-router-dom"; // Nhập hook để điều hướng
-import { getInitials } from "../utils"; // Nhập hàm lấy chữ cái đầu tiên của tên
+import { Menu, Transition } from "@headlessui/react";
+import { Fragment, useState } from "react"; 
+import { FaUser, FaUserLock } from "react-icons/fa";
+import { IoLogOutOutline } from "react-icons/io5";
+import { useDispatch, useSelector } from "react-redux"; 
+import { useNavigate } from "react-router-dom";
+import { getInitials } from "../utils"; 
 
 const UserAvatar = () => {
-  const [open, setOpen] = useState(false); // Quản lý trạng thái mở của popup cho profile
-  const [openPassword, setOpenPassword] = useState(false); // Quản lý trạng thái mở của popup cho thay đổi mật khẩu
+  const [open, setOpen] = useState(false); 
+  const [openPassword, setOpenPassword] = useState(false); 
   const user = useSelector((state) => state.authen.user);
-  localStorage.setItem("authToken",user.token) // Lấy thông tin người dùng từ state Redux
-  const dispatch = useDispatch(); // Khởi tạo dispatch để gửi action
-  const navigate = useNavigate(); // Khởi tạo hàm điều hướng
+  localStorage.setItem("authToken",user.token)
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const logoutHandler = () => {
-    console.log("logout"); // Hàm xử lý đăng xuất (chưa có logic thực sự)
+    localStorage.clear()
+    navigate("/log-in")
   };
 
   return (
@@ -25,7 +26,7 @@ const UserAvatar = () => {
           <div>
             <Menu.Button className='w-10 h-10 2xl:w-12 2xl:h-12 items-center justify-center rounded-full bg-blue-600'>
               <span className='text-white font-semibold'>
-                {getInitials(user?.refreshToken)} {/* Hiển thị chữ cái đầu của tên người dùng */}
+                {getInitials(user?.refreshToken)}
               </span>
             </Menu.Button>
           </div>
@@ -44,11 +45,11 @@ const UserAvatar = () => {
                 <Menu.Item>
                   {({ active }) => (
                     <button
-                      onClick={() => setOpen(true)} // Mở popup profile
+                      onClick={() => setOpen(true)}
                       className='text-gray-700 group flex w-full items-center rounded-md px-2 py-2 text-base'
                     >
                       <FaUser className='mr-2' aria-hidden='true' />
-                      Thông tin {/* Thông cá nhân */}
+                      Thông tin
                     </button>
                   )}
                 </Menu.Item>
@@ -56,11 +57,11 @@ const UserAvatar = () => {
                 <Menu.Item>
                   {({ active }) => (
                     <button
-                      onClick={() => setOpenPassword(true)} // Mở popup thay đổi mật khẩu
+                      onClick={() => setOpenPassword(true)}
                       className={`text-gray-700 group flex w-full items-center rounded-md px-2 py-2 text-base`}
                     >
                       <FaUserLock className='mr-2' aria-hidden='true' />
-                      Thay đổi mật khẩu {/* Thay đổi mật khẩu */}
+                      Thay đổi mật khẩu
                     </button>
                   )}
                 </Menu.Item>
@@ -68,11 +69,11 @@ const UserAvatar = () => {
                 <Menu.Item>
                   {({ active }) => (
                     <button
-                      onClick={logoutHandler} // Gọi hàm đăng xuất
+                      onClick={logoutHandler}
                       className={`text-red-600 group flex w-full items-center rounded-md px-2 py-2 text-base`}
                     >
                       <IoLogOutOutline className='mr-2' aria-hidden='true' />
-                      Đăng xuất {/* Đăng xuất */}
+                      Đăng xuất
                     </button>
                   )}
                 </Menu.Item>

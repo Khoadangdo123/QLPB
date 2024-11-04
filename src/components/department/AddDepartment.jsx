@@ -36,7 +36,7 @@ const AddDepartment = ({ open, setOpen, employeeData }) => {
         tenPhongBan:data.tenPhongBan,
         maTruongPhong:Number(data.maTruongPhong)
     })); 
-      //await dispatch(fetchDepartments({ search: '', page: 1 }));
+      // await dispatch(fetchDepartments({ search: '', page: 10 }));
       setOpen(false);
     } catch (error) {
       console.error("Failed to add department: ", error);
