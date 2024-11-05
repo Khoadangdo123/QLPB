@@ -57,7 +57,6 @@ const TaskAssignment = () => {
         connection.off("loadPhanCong");
         connection.off("loadCongViec");
         connection.stop()
-        //connection.off("loadCongViec");
       }
     };
   }, [connection, dispatch, maNhanVien]);

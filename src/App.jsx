@@ -135,7 +135,7 @@ function App() {
           <Route path='/taskassignment' element={<TaskAssignment/>} />
           <Route path='/assignmentdepartment' element={<DepartmentAssignment/>} />
           <Route path='/task/:id' element={<TaskDetails />} />
-          <Route path='/milestones' element={<ChatBox />} />
+          <Route path='/milestones' element={<ChatBox />} /> 
           <Route path='/tasktransfer' element={<Tasktransfer/>}/>
           <Route path='/home' element={<Home/>}/>
           <Route path="/gant" element={<GanttApp/>}/>

@@ -3,9 +3,7 @@ import ModalWrapper from "../ModalWrapper";
 import { Dialog } from "@headlessui/react";
 import Textbox from "../Textbox";
 import { useForm } from "react-hook-form";
-import UserList from "./UserList";
 import SelectList from "../SelectList";
-import { BiImages } from "react-icons/bi";
 import Button from "../Button";
 import { useDispatch, useSelector } from "react-redux";
 import { addTask } from "../../redux/task/taskSlice";
@@ -15,13 +13,16 @@ import EmployeeSelect from "./EmployeeTask";
 import { addAssignment } from "../../redux/assignment/assignmentSlice";
 import { sendGmail } from "../../redux/sendgmail/sendgmailSlice";
 import { addWorkDepartment } from "../../redux/workdepartment/workdepartmentSlice";
-import { addTaskHistory, fetchTaskHistories } from "../../redux/taskhistory/taskhistorySlice";
+import {
+  addTaskHistory,
+  fetchTaskHistories,
+} from "../../redux/taskhistory/taskhistorySlice";
 const LISTS = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const PRIORITY = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 
 const uploadedFileURLs = [];
 
-const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
+const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
   const task = "";
   const {
     register,
@@ -29,7 +30,7 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
     formState: { errors },
   } = useForm();
   const [team, setTeam] = useState(task?.team || []);
-  const dispatch=useDispatch();
+  const dispatch = useDispatch();
   const [selectedEmployees, setSelectedEmployees] = useState([]);
   const [stage, setStage] = useState(task?.stage?.toUpperCase() || LISTS[0]);
   const [selectedDepartment, setSelectedDepartment] = useState([]);
@@ -38,75 +39,100 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
   );
   const [assets, setAssets] = useState([]);
   const [uploading, setUploading] = useState(false);
-  const lichSuCongViec=useSelector((state)=>state.taskhistories.list)
-  const submitHandler =async (data) => {
-    console.log(congViecCha,duAn)
-    let CongViec={
+  const lichSuCongViec = useSelector((state) => state.taskhistories.list);
+  const submitHandler = async (data) => {
+    console.log(congViecCha, duAn);
+    let CongViec = {
       maPhanDuAn: Number(phanDuAn),
-      maCongViecCha: congViecCha===false?null:congViecCha,
+      maCongViecCha: congViecCha === false ? null : congViecCha,
       tenCongViec: data.tenCongViec,
       moTa: data.moTa,
       mucDoUuTien: stage,
       thoiGianKetThuc: data.thoiGianKetThuc,
       trangThaiCongViec: false,
-      mucDoHoanThanh: 0
-    }
-    console.log(selectedEmployees)
-    console.log(selectedDepartment)
-    console.log(CongViec.tenCongViec)
-    try{
-      const result=await dispatch(addTask(CongViec)).unwrap();
+      mucDoHoanThanh: 0,
+    };
+    console.log(selectedEmployees);
+    console.log(selectedDepartment);
+    console.log(CongViec.tenCongViec);
+    try {
+      const result = await dispatch(addTask(CongViec)).unwrap();
       if (Array.isArray(selectedDepartment) && selectedDepartment.length > 0) {
-        const departmentPromises = selectedDepartment.map(async (department) => {
-          await dispatch(addWorkDepartment({
-            maCongViec: result.maCongViec,
-            maPhongBan: Number(department.maPhongBan)
-          }))
-          await dispatch(addAssignment({
-            maCongViec: result.maCongViec,
-            maNhanVien: Number(department.maTruongPhong),
-            vaiTro: "Người Chịu Trách Nhiệm"
-          }));
-          await dispatch(addTaskHistory({
-            maCongViec:result.maCongViec,
-            ngayCapNhat:new Date().toISOString(),
-            noiDung:`${new Date().toISOString()}: Phòng ban ${department.tenPhongBan} phân công thực hiện công việc ${CongViec.tenCongViec} do trưởng phòng ${department.responsiblePerson} chịu trách nhiệm`
-          }))
-          // await dispatch(sendGmail({
-          //   name: department.responsiblePerson,
-          //   toGmail: department.email,
-          //   subject: "Thông Tin Phân Công Dự Án",
-          //   body: generateEmailTemplateForManager(department,CongViec)
-          // }));
-          
-        });
+        const departmentPromises = selectedDepartment.map(
+          async (department) => {
+            await dispatch(
+              addAssignment({
+                maCongViec: result.maCongViec,
+                maNhanVien: Number(department.maTruongPhong),
+                vaiTro: "Người Chịu Trách Nhiệm",
+              })
+            );
+            await dispatch(
+              addWorkDepartment({
+                maCongViec: result.maCongViec,
+                maPhongBan: Number(department.maPhongBan),
+              })
+            );
+            await dispatch(
+              addTaskHistory({
+                maCongViec: result.maCongViec,
+                ngayCapNhat: new Date().toISOString(),
+                noiDung: `${new Date().toISOString()}: Phòng ban ${
+                  department.tenPhongBan
+                } phân công thực hiện công việc ${
+                  CongViec.tenCongViec
+                } do trưởng phòng ${
+                  department.responsiblePerson
+                } chịu trách nhiệm`,
+              })
+            );
+            await dispatch(
+              sendGmail({
+                name: department.responsiblePerson,
+                toGmail: department.email,
+                subject: "Thông Tin Phân Công Dự Án",
+                body: generateEmailTemplateForManager(department, CongViec),
+              })
+            );
+          }
+        );
         await Promise.all(departmentPromises);
       }
       if (Array.isArray(selectedEmployees) && selectedEmployees.length > 0) {
         const employeePromises = selectedEmployees.map(async (employee) => {
-          await dispatch(addAssignment({
-            maCongViec: result.maCongViec,
-            maNhanVien: Number(employee.maNhanVien),
-            vaiTro: employee.vaiTro,
-          }));
-          await dispatch(addTaskHistory({
-            maCongViec:result.maCongViec,
-            ngayCapNhat:new Date().toISOString(),
-            noiDung:`${new Date().toISOString()}: Nhân viên ${employee.tenNhanVien} được phân công vào công việc ${CongViec.tenCongViec} với vai trò ${employee.vaiTro}`
-          }))
-          // await dispatch(sendGmail({
-          //   name: employee.tenNhanVien,
-          //   toGmail: employee.email,
-          //   subject: "Thông Tin Phân Công Dự Án",
-          //   body: generateEmailTemplate(employee,CongViec)
-          // }));
+          await dispatch(
+            addAssignment({
+              maCongViec: result.maCongViec,
+              maNhanVien: Number(employee.maNhanVien),
+              vaiTro: employee.vaiTro,
+            })
+          );
+          await dispatch(
+            addTaskHistory({
+              maCongViec: result.maCongViec,
+              ngayCapNhat: new Date().toISOString(),
+              noiDung: `${new Date().toISOString()}: Nhân viên ${
+                employee.tenNhanVien
+              } được phân công vào công việc ${
+                CongViec.tenCongViec
+              } với vai trò ${employee.vaiTro}`,
+            })
+          );
+          await dispatch(
+            sendGmail({
+              name: employee.tenNhanVien,
+              toGmail: employee.email,
+              subject: "Thông Tin Phân Công Dự Án",
+              body: generateEmailTemplate(employee, CongViec),
+            })
+          );
         });
         await Promise.all(employeePromises);
       }
-      await dispatch(fetchByIdProject(Number(duAn)))
-      setOpen(false)
-    }catch(e){
-      console.log(e)
+      await dispatch(fetchByIdProject(Number(duAn)));
+      setOpen(false);
+    } catch (e) {
+      console.log(e);
     }
   };
 
@@ -118,91 +144,94 @@ const AddTask = ({ open, setOpen,phanDuAn,congViecCha,duAn }) => {
     <>
       <ModalWrapper open={open} setOpen={setOpen}>
         <div className="max-h-screen overflow-y-auto">
-        <form onSubmit={handleSubmit(submitHandler)}>
-          <Dialog.Title
-            as='h2'
-            className='text-base font-bold leading-6 text-gray-900 mb-4'
-          >
-            THÊM CÔNG VIỆC
-          </Dialog.Title>
+          <form onSubmit={handleSubmit(submitHandler)}>
+            <Dialog.Title
+              as="h2"
+              className="text-base font-bold leading-6 text-gray-900 mb-4"
+            >
+              THÊM CÔNG VIỆC
+            </Dialog.Title>
 
-          <div className='mt-2 flex flex-col gap-6'>
-            <Textbox
-              placeholder='Tên công việc'
-              type='text'
-              name='title'
-              label='Tên công việc'
-              className='w-full rounded'
-              register={register("tenCongViec", { required: "Tên công việc là bắt buộc" })}
-              error={errors.tenCongViec ? errors.tenCongViec.message : ""}
-            />
-             <Textbox
-              placeholder='Mô tả'
-              type='text'
-              name='title'
-              label='Mô tả'
-              className='w-full rounded'
-              register={register("moTa", { required: "Mô tả công việc là bắt buộc" })}
-              error={errors.moTa ? errors.moTa.message : ""}
-            />
-
-            {/* <UserList setTeam={setTeam} team={team} /> */}
-            <EmployeeSelect
-            selectedEmployees={selectedEmployees}
-            setSelectedEmployees={setSelectedEmployees}
-          />
-            <DepartmentSelect
-              selected={selectedDepartment}
-              setSelected={setSelectedDepartment}
-            />
-            <div className='flex gap-4'>
-              <SelectList
-                label='Mức Độ Ưu Tiên'
-                lists={LISTS}
-                selected={stage}
-                setSelected={setStage}
+            <div className="mt-2 flex flex-col gap-6">
+              <Textbox
+                placeholder="Tên công việc"
+                type="text"
+                name="title"
+                label="Tên công việc"
+                className="w-full rounded"
+                register={register("tenCongViec", {
+                  required: "Tên công việc là bắt buộc",
+                })}
+                error={errors.tenCongViec ? errors.tenCongViec.message : ""}
+              />
+              <Textbox
+                placeholder="Mô tả"
+                type="text"
+                name="title"
+                label="Mô tả"
+                className="w-full rounded"
+                register={register("moTa", {
+                  required: "Mô tả công việc là bắt buộc",
+                })}
+                error={errors.moTa ? errors.moTa.message : ""}
               />
 
-              <div className='w-full'>
-                <Textbox
-                  placeholder='Ngày'
-                  type='datetime-local'
-                  name='date'
-                  label='Ngày hoàn thành'
-                  className='w-full rounded'
-                  register={register("thoiGianKetThuc", {
-                    required: "Ngày là bắt buộc!",
-                  })}
-                  error={errors.date ? errors.date.message : ""}
+              {/* <UserList setTeam={setTeam} team={team} /> */}
+              <EmployeeSelect
+                selectedEmployees={selectedEmployees}
+                setSelectedEmployees={setSelectedEmployees}
+              />
+              <DepartmentSelect
+                selected={selectedDepartment}
+                setSelected={setSelectedDepartment}
+              />
+              <div className="flex gap-4">
+                <SelectList
+                  label="Mức Độ Ưu Tiên"
+                  lists={LISTS}
+                  selected={stage}
+                  setSelected={setStage}
+                />
+
+                <div className="w-full">
+                  <Textbox
+                    placeholder="Ngày"
+                    type="datetime-local"
+                    name="date"
+                    label="Ngày hoàn thành"
+                    className="w-full rounded"
+                    register={register("thoiGianKetThuc", {
+                      required: "Ngày là bắt buộc!",
+                    })}
+                    error={errors.date ? errors.date.message : ""}
+                  />
+                </div>
+              </div>
+
+              <div className="bg-gray-50 py-6 sm:flex sm:flex-row-reverse gap-4">
+                {uploading ? (
+                  <span className="text-sm py-2 text-red-500">
+                    Đang tải tài liệu
+                  </span>
+                ) : (
+                  <Button
+                    label="Gửi"
+                    type="submit"
+                    className="bg-blue-600 px-8 text-sm font-semibold text-white hover:bg-blue-700  sm:w-auto"
+                  />
+                )}
+
+                <Button
+                  type="button"
+                  className="bg-white px-5 text-sm font-semibold text-gray-900 sm:w-auto"
+                  onClick={() => setOpen(false)}
+                  label="Hủy"
                 />
               </div>
-              
             </div>
-
-            <div className='bg-gray-50 py-6 sm:flex sm:flex-row-reverse gap-4'>
-              {uploading ? (
-                <span className='text-sm py-2 text-red-500'>
-                  Đang tải tài liệu
-                </span>
-              ) : (
-                <Button
-                  label='Gửi'
-                  type='submit'
-                  className='bg-blue-600 px-8 text-sm font-semibold text-white hover:bg-blue-700  sm:w-auto'
-                />
-              )}
-
-              <Button
-                type='button'
-                className='bg-white px-5 text-sm font-semibold text-gray-900 sm:w-auto'
-                onClick={() => setOpen(false)}
-                label='Hủy'
-              />
-            </div>
-          </div>
-        </form>
+          </form>
         </div>
-      </ModalWrapper> 
+      </ModalWrapper>
     </>
   );
 };
@@ -244,11 +273,19 @@ const generateEmailTemplate = (employee, CongViec) => {
         </head>
         <body>
             <div class="email-container">
-                <div class="email-header">Xin chào ${employee.tenNhanVien},</div>
+                <div class="email-header">Xin chào ${
+                  employee.tenNhanVien
+                },</div>
                 <div class="email-body">
-                    <p>Bạn đã được giao công việc <span class="highlight">${CongViec.tenCongViec}</span> trong dự án.</p>
-                    <p>Vai trò của bạn: <span class="highlight">${employee.vaiTro}</span></p>
-                    <p>Ngày kết thúc công việc: <span class="highlight">${new Date(CongViec.thoiGianKetThuc).toLocaleDateString()}</span></p>
+                    <p>Bạn đã được giao công việc <span class="highlight">${
+                      CongViec.tenCongViec
+                    }</span> trong dự án.</p>
+                    <p>Vai trò của bạn: <span class="highlight">${
+                      employee.vaiTro
+                    }</span></p>
+                    <p>Ngày kết thúc công việc: <span class="highlight">${new Date(
+                      CongViec.thoiGianKetThuc
+                    ).toLocaleDateString()}</span></p>
                     <p>Vui lòng kiểm tra lại chi tiết trong hệ thống quản lý công việc của chúng tôi.</p>
                     <p>Trân trọng,</p>
                     <p>Đội ngũ quản lý dự án</p>
@@ -261,7 +298,6 @@ const generateEmailTemplate = (employee, CongViec) => {
     </html>
   `;
 };
-
 
 const generateEmailTemplateForManager = (department, CongViec) => {
   return `
@@ -301,10 +337,16 @@ const generateEmailTemplateForManager = (department, CongViec) => {
         </head>
         <body>
             <div class="email-container">
-                <div class="email-header">Xin chào ${department.responsiblePerson},</div>
+                <div class="email-header">Xin chào ${
+                  department.responsiblePerson
+                },</div>
                 <div class="email-body">
-                    <p>Phòng ban của bạn đã được giao công việc <span class="highlight">${CongViec.tenCongViec}</span> trong dự án.</p>
-                    <p>Ngày hoàn thành dự kiến: <span class="highlight">${new Date(CongViec.thoiGianKetThuc).toLocaleDateString()}</span></p>
+                    <p>Phòng ban của bạn đã được giao công việc <span class="highlight">${
+                      CongViec.tenCongViec
+                    }</span> trong dự án.</p>
+                    <p>Ngày hoàn thành dự kiến: <span class="highlight">${new Date(
+                      CongViec.thoiGianKetThuc
+                    ).toLocaleDateString()}</span></p>
                     <p>Vui lòng kiểm tra lại chi tiết trong hệ thống quản lý công việc của chúng tôi.</p>
                     <p>Trân trọng,</p>
                     <p>Đội ngũ quản lý dự án</p>

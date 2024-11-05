@@ -14,7 +14,6 @@ axiosInstance.interceptors.request.use(
     const token = tmp.token;
     const decoded = parseJwt(token);
     const expiration = decoded.exp;
-    console.log(tmp);
     if (token) {
       config.headers["Authorization"] = `Bearer ${token}`;
     }

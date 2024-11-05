@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchEmployees } from '../../redux/employees/employeeSlice';
 
-const EmployeeSelectTransfer = ({ selectedEmployees, setSelectedEmployees,maPhongBan }) => {
+const EmployeeSelectTransfer = ({ selectedEmployees, setSelectedEmployees,maPhongBan, employees }) => {
     const dispatch = useDispatch();
     const nhanviens = useSelector((state) => state.employees.list);
 
@@ -30,7 +30,7 @@ const EmployeeSelectTransfer = ({ selectedEmployees, setSelectedEmployees,maPhon
             ]);
         }
     };
-
+    console.log(employees)
     const handleRemoveEmployee = (maNhanVien) => {
         setSelectedEmployees(selectedEmployees.filter(item => item.maNhanVien !== maNhanVien));
     };
@@ -40,7 +40,9 @@ const EmployeeSelectTransfer = ({ selectedEmployees, setSelectedEmployees,maPhon
             item.maNhanVien === maNhanVien ? { ...item, vaiTro } : item
         ));
     };
-
+    const validNhanvien = nhanviens.filter(
+        (nv) => !employees.some((emp) => emp.maNhanVien === nv.maNhanVien)
+    );
     return (
         <div className='flex flex-col'>
             <label className="block text-sm font-medium text-gray-700">Nhân Viên</label>
@@ -49,7 +51,7 @@ const EmployeeSelectTransfer = ({ selectedEmployees, setSelectedEmployees,maPhon
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             >
                 <option value="">Chọn nhân viên</option>
-                {nhanviens
+                {validNhanvien
                     
                     .map((item) => (
                         <option key={item.maNhanVien} value={item.maNhanVien}>

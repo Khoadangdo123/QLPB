@@ -69,9 +69,7 @@ const Departments = () => {
               checkPermission({ maQuyen: maquyen, tenChucNang: "Phòng Ban" })
             ).unwrap();
             setpermissionAction(result);
-            if(!permissionAction.includes("Xem")){
-              navigate("/")
-            }
+            
           });
         })
         .catch((error) => console.error("Connection failed: ", error));

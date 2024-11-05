@@ -87,7 +87,6 @@ const Sidebar = () => {
     const fetchData = async () => {
       setLoadingProjects(true);
       await dispatch(fetchProjects({ search: "", page: 20 }));
-      setLoadingProjects(false);
       const result = await dispatch(
         checkPermission({ maQuyen: maquyen, tenChucNang: "Dự Án" })
       ).unwrap();

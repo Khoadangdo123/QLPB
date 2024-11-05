@@ -371,7 +371,7 @@ const TaskAssignmentList = ({ congviec }) => {
               ></Button>
             )}
           </div>
-          <div className="flex flex-col w-full">
+          {permissionAction.includes("Thêm") &&<div className="flex flex-col w-full">
             {filteredFiles.length > 0 && (
               <ul className="mt-2 list-disc">
                 {filteredFiles.filter(file => file.trangThaiFile !== false).map((file, index) => {
@@ -413,7 +413,7 @@ const TaskAssignmentList = ({ congviec }) => {
                 })}
               </ul>
             )}
-          </div>
+          </div>}
         </div>
       </div>
       {expanded && (

@@ -15,9 +15,9 @@ import AddUser from "../components/AddUser";
 import ConfirmatioDialog from "../components/Dialogs";
 
 const ICONS = {
-  high: <MdKeyboardDoubleArrowUp />, // Biểu tượng cho mức ưu tiên cao
-  medium: <MdKeyboardArrowUp />, // Biểu tượng cho mức ưu tiên trung bình
-  low: <MdKeyboardArrowDown />, // Biểu tượng cho mức ưu tiên thấp
+  high: <MdKeyboardDoubleArrowUp />,
+  medium: <MdKeyboardArrowUp />,
+  low: <MdKeyboardArrowDown />,
 };
 
 const Trash = () => {

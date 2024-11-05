@@ -61,9 +61,7 @@ const Employees = () => {
           connection.on("loadHanhDong",async () => {
             const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Nhân Viên" })).unwrap();
             setpermissionAction(result);
-            if(!permissionAction.includes("Xem")){
-              navigate("/")
-            }
+           
           });
         })
         .catch((error) => console.error("Connection failed: ", error));
