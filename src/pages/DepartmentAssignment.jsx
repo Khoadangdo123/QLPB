@@ -79,7 +79,6 @@ const DepartmentAssignment=()=>{
     if (!phongbans) {
         return <p>not found</p>
     }
-    console.log(phongbans)
     return(<div className="w-full bg-transparent">
         <div className="text-lg bg-transparent">
             <div className="w-full flex border-y-2 py-2 px-4 font-bold -mb-2 bg-white shadow-sm text-sm">

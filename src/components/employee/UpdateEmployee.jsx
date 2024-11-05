@@ -11,7 +11,7 @@ import { addEmployee, fetchEmployees, updateEmployee } from "../../redux/employe
 import Employees from "../../pages/Employee";
 const UpdateEmployee = ({ open, setOpen, employeeData }) => {
   const defaultValues = employeeData ?? {};
-  const { user } = useSelector((state) => state.auth);
+  //const { user } = useSelector((state) => state.auth);
   const dispatch=useDispatch();
   const departments=useSelector((state)=>state.departments.list)
   useEffect(()=>{

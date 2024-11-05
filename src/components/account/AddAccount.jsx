@@ -11,7 +11,7 @@ import { fetchPermissions } from "../../redux/permission/permissionSlice";
 import { addAccount, fetchAccounts } from "../../redux/accounts/accountSlice";
 const AddAccount = ({ open, setOpen, accountData }) => {
   const defaultValues = accountData ?? {};
-  const { user } = useSelector((state) => state.auth);
+  //const { user } = useSelector((state) => state.auth);
   const dispatch=useDispatch();
   const employees=useSelector((state)=>state.employees.list)
   const nhomquyens=useSelector((state)=>state.permissions.list)

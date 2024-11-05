@@ -11,7 +11,7 @@ import { addDepartment, fetchDepartments } from "../../redux/departments/departm
 
 const AddDepartment = ({ open, setOpen, employeeData }) => {
   const defaultValues = employeeData ?? {};
-  const { user } = useSelector((state) => state.auth);
+  //const { user } = useSelector((state) => state.auth);
   const dispatch=useDispatch();
   const employee=useSelector((state)=>state.employees.list)
   useEffect(()=>{

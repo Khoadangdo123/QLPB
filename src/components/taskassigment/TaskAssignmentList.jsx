@@ -193,7 +193,6 @@ const TaskAssignmentList = ({ congviec }) => {
   if (!phancong) {
     return <p>not found</p>;
   }
-  console.log(phancong);
   const handleToggleDetail = () => {
     setExpanded(!expanded);
   };
@@ -280,7 +279,6 @@ const TaskAssignmentList = ({ congviec }) => {
   const thucHien = phancong?.phanCongs?.filter(
     (m) => m.vaiTro === "Người Thực Hiện"
   );
-  console.log(filteredFiles)
   return (
     <div className="w-full flex items-center  px-4">
       <div className="w-full flex py-2 border-b text-sm">

@@ -1,6 +1,6 @@
 import { Transition } from "@headlessui/react";
 import clsx from "clsx";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment,useRef, } from "react";
 import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
@@ -17,29 +17,26 @@ import Dashboard from "./pages/dashboard";
 import { setOpenSidebar } from "./redux/slices/authSlice";
 import Employees from "./pages/Employee";
 import Accounts from "./pages/Account";
-import * as signalR from '@microsoft/signalr';
 import RolePermission from "./pages/Permission";
 import TaskAssignment from "./pages/TaskAssignment";
 import DepartmentAssignment from "./pages/DepartmentAssignment";
-import Milestones from "./components/task/Milestones";
-import ProjectTimeline from "./components/task/Milestones";
 import ChatBox from "./components/task/Milestones";
 import Tasktransfer from "./pages/TaskTransfer";
 import GanttApp from "./components/task/Gant";
 import FileView from "./components/taskassigment/FileView";
 import Home from "./pages/HomePage";
-
-// import Gant from "./components/task/Gant";
 function Layout() {
   const dispatch=useDispatch();
   const authUser = useSelector((state) => state.authen);
   console.log(authUser)
+  if(authUser.user===null || localStorage.getItem("authUser")===null || localStorage.getItem("authUser")===undefined){
+    window.location.href = "/log-in";
+  }
   const token=authUser.user.token;
   var payload = JSON.parse(atob(token.split('.')[1]));
   console.log(payload)
   localStorage.setItem("userId",payload.MaTaiKhoan)
   localStorage.setItem("permissionId",Number(payload.MaNhomQuyen))
-  console.log(localStorage.getItem("permissionId"))
   const location = useLocation();
   return authUser ? (
     <div className='w-full h-screen flex flex-col md:flex-row'>
@@ -60,9 +57,6 @@ function Layout() {
   ) : (
     <Navigate to='/log-in' state={{ from: location }} replace />
   );
-  // return (
-  //   <Navigate to='/log-in' state={{ from: location }} replace />
-  // )
 }
 
 const MobileSidebar = () => {
@@ -73,7 +67,7 @@ const MobileSidebar = () => {
   const closeSidebar = () => {
     dispatch(setOpenSidebar(false));
   };
-
+  if(localStorage.getItem(""))
   return (
     <>
       <Transition
@@ -140,7 +134,7 @@ function App() {
           <Route path='/home' element={<Home/>}/>
           <Route path="/gant" element={<GanttApp/>}/>
           <Route path="/taskassignment/fileView/:id" element={<FileView/>}/>
-          <Route path="*" element={<Navigate to="/dashboard" />} />
+          <Route path="*" element={<Navigate to="/home" />} />
         </Route>
         <Route path='/log-in' element={<Login />} />
       </Routes>

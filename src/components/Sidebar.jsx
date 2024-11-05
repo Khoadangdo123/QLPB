@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { MdDashboard, MdOutlineAddTask, MdSettings } from "react-icons/md";
+import { MdDashboard, MdOutlineAddTask} from "react-icons/md";
 import {
   FaTasks,
   FaUsers,
@@ -14,7 +14,6 @@ import { setOpenSidebar } from "../redux/slices/authSlice";
 import clsx from "clsx";
 import { addProject, fetchProjects } from "../redux/project/projectSlice";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
-import { fetchFunctions } from "../redux/function/functionSlice";
 import { FaUserGroup } from "react-icons/fa6";
 import { GoProject } from "react-icons/go";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
@@ -27,7 +26,7 @@ const Sidebar = () => {
   const [permissionAction, setpermissionAction] = useState([]);
   const [viewFuntions, setViewFunction] = useState([]);
   const navigate=useNavigate()
-  const { user } = useSelector((state) => state.authen);
+  //const { user } = useSelector((state) => state.authen);
   const duans = useSelector((state) => state.projects.list);
   const maquyen = Number(localStorage.getItem("permissionId"));
   const taskSubMenu = duans.map((duan) => ({
@@ -102,6 +101,7 @@ const Sidebar = () => {
         }
       }
       setViewFunction(visibleLinks);
+      console.log(visibleLinks)
       setLoadingProjects(false);
     };
     fetchData();

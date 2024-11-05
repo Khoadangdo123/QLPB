@@ -5,7 +5,6 @@ export const Login = async (AuthRequest) => {
 };
 
 export const RefreshToken = async (RefreshTokenRequest) => {
-    console.log(RefreshTokenRequest);
     const response = await axiosInstance.put("Authentication/"+"RefreshToken",RefreshTokenRequest);
     return response.data;
 };

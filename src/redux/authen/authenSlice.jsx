@@ -4,11 +4,6 @@ export const AuthLogin = createAsyncThunk('auth/login', async (AuthRequest) => {
   localStorage.setItem("name",AuthRequest.tenTaiKhoan)
   const response = await LoginAPI(AuthRequest);
   localStorage.setItem("authUser",JSON.stringify(response))
-  var token = localStorage.getItem('token');
-  if (token) {
-      var payload = JSON.parse(atob(token.split('.')[1]));
-      console.log(payload)
-  }
   return response;
 });
 

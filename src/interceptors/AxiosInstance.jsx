@@ -1,5 +1,4 @@
 import axios from "axios";
-//import {store} from "../redux/store.js"
 
 const axiosInstance = axios.create({
   baseURL: `https://localhost:7131/api/`,
@@ -11,10 +10,10 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async (config) => {
     const tmp = JSON.parse(localStorage.getItem("authUser"));
-    const token = tmp.token;
-    const decoded = parseJwt(token);
-    const expiration = decoded.exp;
-    if (token) {
+    if (tmp && tmp.token) {
+      const token = tmp.token;
+      const decoded = parseJwt(token);
+      const expiration = decoded.exp;
       config.headers["Authorization"] = `Bearer ${token}`;
     }
     return config;

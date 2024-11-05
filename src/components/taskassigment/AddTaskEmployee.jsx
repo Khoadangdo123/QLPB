@@ -24,7 +24,6 @@ const AddTaskEmployee = ({ open, setOpen,maCongViec,maPhongBan,tenCongViec}) => 
   const [selectedDepartment, setSelectedDepartment] = useState([]);
   const [assets, setAssets] = useState([]);
   const [uploading, setUploading] = useState(false);
-  console.log(selectedEmployees)
   const submitHandler =async (data) => {
     try{
       //await dispatch(fetchByIdProject(Number(duAn)))

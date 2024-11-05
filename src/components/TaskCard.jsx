@@ -23,12 +23,12 @@ const ICONS = {
 };
 
 const TaskCard = ({ task }) => {
-  const { user } = useSelector((state) => state.auth);
+  //const { user } = useSelector((state) => state.auth);
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
 
   const searchByTitle = (title, users) => {
-    return users.filter((user) => user.title === title);
+    //return users.filter((user) => user.title === title);
   };
   const toggleExpanded = () => {
     setExpanded(prev => !prev); // Đảo ngược giá trị của expanded
@@ -57,7 +57,7 @@ const TaskCard = ({ task }) => {
               <span className='uppercase'>{task?.priority} Priority</span>
             </div>
 
-            {user?.isAdmin && <TaskDialog task={task} />}
+            {/* {user?.isAdmin && <TaskDialog task={task} />} */}
           </div>
 
           <>
@@ -93,7 +93,7 @@ const TaskCard = ({ task }) => {
           </div>
 
           <div className='flex flex-row-reverse'>
-            {task?.team?.map((m, index) => (
+            {/* {task?.team?.map((m, index) => (
               <div
                 key={index}
                 className={clsx(
@@ -103,7 +103,7 @@ const TaskCard = ({ task }) => {
               >
                 <UserInfo user={m} />
               </div>
-            ))}
+            ))} */}
           </div>
         </div>
 
@@ -135,7 +135,7 @@ const TaskCard = ({ task }) => {
         <div className='w-full pb-2'>
           <button
             onClick={() => setOpen(true)}
-            disabled={user.isAdmin ? false : true}
+            //disabled={user.isAdmin ? false : true}
             className='w-full flex gap-4 items-center text-sm text-gray-500 font-semibold disabled:cursor-not-allowed disabled::text-gray-300'
           >
             <IoMdAdd className='text-lg' />
@@ -152,7 +152,7 @@ const TaskCard = ({ task }) => {
           titleTask={task.title}
           date={formatDate(new Date(task?.date))}
           roleTeam={searchByTitle("Administrator", task.team)}
-          userTeam={task}
+          //userTeam={task}
         />
       )}
     </>

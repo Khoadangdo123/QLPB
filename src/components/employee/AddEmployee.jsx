@@ -10,7 +10,7 @@ import {fetchDepartments } from "../../redux/departments/departmentSlice";
 import { addEmployee, fetchEmployees } from "../../redux/employees/employeeSlice";
 const AddEmployee = ({ open, setOpen, departmentData }) => {
   const defaultValues = departmentData ?? {};
-  const { user } = useSelector((state) => state.auth);
+  //const { user } = useSelector((state) => state.auth);
   const dispatch=useDispatch();
   const departments=useSelector((state)=>state.departments.list)
   useEffect(()=>{

@@ -328,6 +328,16 @@ const generateEmailTemplateForManager = (department, CongViec) => {
                     color: #c0392b;
                     font-weight: bold;
                 }
+                    .cta-button {
+                    display: inline-block;
+                    margin-top: 20px;
+                    padding: 10px 20px;
+                    background-color: #2e86c1;
+                    color: #fff;
+                    text-decoration: none;
+                    border-radius: 5px;
+                    font-size: 16px;
+                }
                 .footer {
                     margin-top: 30px;
                     font-size: 14px;
@@ -348,6 +358,7 @@ const generateEmailTemplateForManager = (department, CongViec) => {
                       CongViec.thoiGianKetThuc
                     ).toLocaleDateString()}</span></p>
                     <p>Vui lòng kiểm tra lại chi tiết trong hệ thống quản lý công việc của chúng tôi.</p>
+                    <a href="http://localhost:3000/taskassignment" class="cta-button">Xem chi tiết công việc</a>
                     <p>Trân trọng,</p>
                     <p>Đội ngũ quản lý dự án</p>
                 </div>

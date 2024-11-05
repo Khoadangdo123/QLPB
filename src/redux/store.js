@@ -20,7 +20,7 @@ import reminderReducer from "./reminder/reminderSlice"
 const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
-    auth: authReducer,
+    //auth: authReducer,
     assignments:assignmentReducer,
     departments:departmetReducer,
     employees:employeeReducer,
@@ -38,8 +38,8 @@ const store = configureStore({
     fileassignment:fileassignmentReducer,
     reminders:reminderReducer
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiSlice.middleware),
+  // middleware: (getDefaultMiddleware) =>
+  //   getDefaultMiddleware().concat(apiSlice.middleware),
   devTools: true,
 });
 

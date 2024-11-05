@@ -122,6 +122,7 @@ const GanttApp = () => {
         barColor="black"
         rowHeight={40}
         fontSize={14}
+        
       />
     </div>
   );
