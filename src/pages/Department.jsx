@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 //import Title from "../components/Title";
 import Button from "../components/Button";
 import { IoMdAdd } from "react-icons/io";
-import { getInitials } from "../utils";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import clsx from "clsx";
 import ConfirmatioDialog, { UserAction } from "../components/Dialogs";
@@ -27,7 +26,6 @@ const Departments = () => {
   const [connection, setConnection] = useState(null);
   const [permissionAction, setpermissionAction] = useState([]);
   const maquyen=Number(localStorage.getItem("permissionId"))
-  const navigate=useNavigate()
   const dispatch = useDispatch();
   useEffect(() => {
     const fetchData = async () => {
@@ -115,7 +113,7 @@ const Departments = () => {
         </div>
       </td>
 
-      <td className="p-2">{department.maTruongPhong}</td>
+      <td className="p-2">{department.truongPhong===null?"Chưa Có":department.truongPhong.tenNhanVien}</td>
       <td>
         <button
           // onClick={() => userStatusClick(user)}
@@ -148,7 +146,6 @@ const Departments = () => {
       </td>
     </tr>
   );
-
   return (
     <>
       <PageSizeSelect pageSize={pageSize} setPageSize={setPageSize} />

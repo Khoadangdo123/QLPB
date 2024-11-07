@@ -7,8 +7,8 @@ import {
     deleteTaskHistory as deleteAPI 
 } from './taskhistoryAPI';
 
-export const fetchTaskHistories = createAsyncThunk('taskHistories/fetchTaskHistories', async ({ search, page }) => {
-    const response = await fetchAPI(search, page);
+export const fetchTaskHistories = createAsyncThunk('taskHistories/fetchTaskHistories', async () => {
+    const response = await fetchAPI();
     return response;
 });
 

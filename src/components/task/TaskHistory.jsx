@@ -12,7 +12,7 @@ const TaskHistory = ({ openTaskHistory, setOpenTaskHistory, maCongViec }) => {
   const lichsucongviec = useSelector((state) => state.taskhistories.list);
   useEffect(() => {
     const loadData = async () => {
-      await dispatch(fetchTaskHistories({ search: "", page: 1 }));
+      await dispatch(fetchTaskHistories());
     };
     loadData();
   }, [dispatch, maCongViec]);

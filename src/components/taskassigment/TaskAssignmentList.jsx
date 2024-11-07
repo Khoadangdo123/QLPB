@@ -273,10 +273,11 @@ const TaskAssignmentList = ({ congviec }) => {
       event.target.checked = !event.target.checked;
     }
   };
-  const chiuTrachNhiem = phancong?.phanCongs?.filter(
+  const phanCongs = phancong?.phanCongs?.filter((task) => task.trangThai === true) || [];
+  const chiuTrachNhiem = phanCongs?.filter(
     (m) => m.vaiTro === "Người Chịu Trách Nhiệm"
   );
-  const thucHien = phancong?.phanCongs?.filter(
+  const thucHien = phanCongs?.filter(
     (m) => m.vaiTro === "Người Thực Hiện"
   );
   return (

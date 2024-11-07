@@ -118,7 +118,6 @@ const Tasks = () => {
   const toggleTimelineModal = () => {
     navigate("/gant",{state:{duan}});
   };
-  console.log(duan)
   return loading ? (
     <div className='py-10'>
       <Loading />

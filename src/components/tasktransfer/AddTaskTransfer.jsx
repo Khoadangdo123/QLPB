@@ -4,10 +4,14 @@ import { Dialog } from "@headlessui/react";
 import { useForm } from "react-hook-form";
 import Button from "../Button";
 import { useDispatch } from "react-redux";
-import { addAssignment } from "../../redux/assignment/assignmentSlice";
+import {
+  addAssignment,
+  deleteAssignment,
+} from "../../redux/assignment/assignmentSlice";
 import { addTaskHistory } from "../../redux/taskhistory/taskhistorySlice";
 import EmployeeSelectTransfer from "./EmployeeSelect";
 import { da } from "@faker-js/faker";
+import { addTaskTransfer } from "../../redux/tasktransfer/tasktranferSlice";
 
 const AddTaskTransfer = ({
   openTransfer,
@@ -42,11 +46,8 @@ const AddTaskTransfer = ({
     };
     fetchEmployees();
   }, [currentEmployee]);
-  console.log(employees)
+  //console.log(employees)
   const submitHandler = async (data) => {
-    console.log(transferNote);
-    console.log(selectedCurrentEmployee);
-    console.log(selectedEmployees);
     if (
       selectedCurrentEmployee.length === 0 ||
       selectedCurrentEmployee === null
@@ -62,31 +63,48 @@ const AddTaskTransfer = ({
       alert("Vui lòng chọn nhân viên");
       return;
     }
-    var arrNhanVien=selectedCurrentEmployee.split("-");
-    console.log(arrNhanVien)
+    var arrNhanVien = selectedCurrentEmployee.split("-");
+    console.log(arrNhanVien);
     try {
-      for(const employee of selectedEmployees){
-        console.log("Mã Công Việc: "+maCongViec)
-        console.log("Tên Công Việc: "+tenCongViec)
-        console.log(employee.maNhanVien+"-"+employee.vaiTro)
+      for (const employee of selectedEmployees) {
+        console.log("Mã Phân Công: " + arrNhanVien[0]);
+        console.log("Mã Nhân Viên Chuyển Giao: " + arrNhanVien[1]);
+        console.log("Tên nhân viên chuyển giao: "+arrNhanVien[2])
+        console.log("Mã Công Việc: " + maCongViec);
+        console.log("Tên Công Việc: " + tenCongViec);
+        console.log("Mã Nhân Viên Thực Hiện: " + employee.maNhanVien);
+        console.log("Vai Trò: " + employee.vaiTro);
+        console.log("Lý do chuyển giao: " + transferNote);
+        console.log("Nhân viên được chuyển giao: "+employee.tenNhanVien)
+        await dispatch(deleteAssignment(Number(arrNhanVien[0])));
+        await dispatch(
+          addTaskTransfer({
+            lyDoChuyenGiao: transferNote,
+            vaiTro: employee.vaiTro,
+            maNhanVienChuyenGiao: Number(arrNhanVien[1]),
+            maNhanVienThucHien: Number(employee.maNhanVien),
+            maPhanCong: Number(arrNhanVien[0]),
+            tenCongViec: tenCongViec,
+          })
+        );
+        await dispatch(
+          addAssignment({
+            maCongViec: Number(maCongViec),
+            maNhanVien: Number(employee.maNhanVien),
+            vaiTro: employee.vaiTro,
+          })
+        );
+        await dispatch(
+          addTaskHistory({
+            maCongViec: maCongViec,
+            ngayCapNhat: new Date().toISOString(),
+            noiDung: `${new Date().toISOString()}: Công việc ${tenCongViec} được chuyển giao từ ${
+              arrNhanVien[2]
+            } sang ${employee.tenNhanVien}. Nội dung: ${transferNote}`,
+          })
+        );
       }
-      // await dispatch(
-      //   addAssignment({
-      //     maCongViec: maCongViec,
-      //     maNhanVien: Number(selectedEmployee.maNhanVien),
-      //     vaiTro: selectedEmployee.vaiTro,
-      //   })
-      // );
-      // await dispatch(
-      //   addTaskHistory({
-      //     maCongViec: maCongViec,
-      //     ngayCapNhat: new Date().toISOString(),
-      //     noiDung: `${new Date().toISOString()}: Công việc ${tenCongViec} được chuyển giao từ ${
-      //       currentEmployee?.tenNhanVien
-      //     } sang ${selectedEmployee.tenNhanVien}. Nội dung: ${transferNote}`,
-      //   })
-      // );
-      //setOpen(false);
+      setOpen(false);
     } catch (e) {
       console.log(e);
     }
@@ -117,7 +135,16 @@ const AddTaskTransfer = ({
                   <option value="">Đang tải nhân viên...</option>
                 ) : employees.length > 0 ? (
                   employees.map((item) => (
-                    <option key={item.maNhanVien} value={item.maPhanCong+"-"+item.maNhanVien}>
+                    <option
+                      key={item.maNhanVien}
+                      value={
+                        item.maPhanCong +
+                        "-" +
+                        item.maNhanVien +
+                        "-" +
+                        item.nhanVien.tenNhanVien
+                      }
+                    >
                       {item.maNhanVien}-{item.nhanVien.tenNhanVien}-
                       {item.vaiTro}
                     </option>

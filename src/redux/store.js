@@ -17,6 +17,7 @@ import taskhistoryReducer from "./taskhistory/taskhistorySlice"
 import fileReducer from "./file/fileSlice"
 import fileassignmentReducer from "./fileassignment/fileassignmentSlice"
 import reminderReducer from "./reminder/reminderSlice"
+import taskTransferReducer from "./tasktransfer/tasktranferSlice"
 const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
@@ -36,7 +37,8 @@ const store = configureStore({
     taskhistories:taskhistoryReducer,
     file:fileReducer,
     fileassignment:fileassignmentReducer,
-    reminders:reminderReducer
+    reminders:reminderReducer,
+    tasktransfer:taskTransferReducer
   },
   // middleware: (getDefaultMiddleware) =>
   //   getDefaultMiddleware().concat(apiSlice.middleware),

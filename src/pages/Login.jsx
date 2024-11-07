@@ -26,7 +26,7 @@ const Login = () => {
       console.log(AuthRequest)
       const result = await dispath(AuthLogin(AuthRequest))
       if(result.payload && result.payload.isSuccess){
-        navigate('/dashboard')
+        navigate('/home')
       }
     }catch(e){
       console.log(e);
@@ -35,7 +35,7 @@ const Login = () => {
 
   useEffect(() => {
     if (authUser) {
-      navigate('/dashboard');
+      navigate('/home');
     }
   }, [authUser, navigate]);
 

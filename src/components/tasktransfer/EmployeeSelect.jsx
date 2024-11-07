@@ -30,7 +30,7 @@ const EmployeeSelectTransfer = ({ selectedEmployees, setSelectedEmployees,maPhon
             ]);
         }
     };
-    console.log(employees)
+    //console.log(employees)
     const handleRemoveEmployee = (maNhanVien) => {
         setSelectedEmployees(selectedEmployees.filter(item => item.maNhanVien !== maNhanVien));
     };

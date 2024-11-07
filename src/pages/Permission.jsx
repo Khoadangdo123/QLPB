@@ -10,6 +10,7 @@ import PageSizeSelect from "../components/PageSizeSelect";
 import { fetchPermissions } from "../redux/permission/permissionSlice";
 import UserPermissions from "../components/permission/UserPermissions";
 import API_ENDPOINTS from "../constant/linkapi";
+import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 
 const Permission = () => {
   const [pageSize, setPageSize] = useState(10);
@@ -26,10 +27,13 @@ const Permission = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [roleCode, setRoleCode] = useState("Admin");
   const [permissionAction,setpermissionAction]=useState([])
+  const maquyen=Number(localStorage.getItem("permissionId"))
   const dispatch = useDispatch();
   useEffect(() => {
     const fetchData = async () => {
       await dispatch(fetchPermissions({ search: "", page: pageSize }));
+      const result=await dispatch(checkPermission({maQuyen:maquyen,tenChucNang:"Phân Quyền"})).unwrap()
+      setpermissionAction(result)
     };
     fetchData();
   }, [dispatch, pageSize]);
@@ -52,6 +56,13 @@ const Permission = () => {
           console.log("Connected!");
           connection.on("loadNhomQuyen", () => {
             dispatch(fetchPermissions({ search: "", page: pageSize }));
+          });
+          connection.on("loadHanhDong", async () => {
+            const result = await dispatch(
+              checkPermission({ maQuyen: maquyen, tenChucNang: "Phân Quyền" })
+            ).unwrap();
+            setpermissionAction(result);
+            
           });
         })
         .catch((error) => console.error("Connection failed: ", error));
@@ -95,18 +106,20 @@ const Permission = () => {
         </button>
       </td>
       <td className="p-2 flex gap-4 justify-end">
+      {permissionAction.includes("Sửa") &&
         <Button
           className="text-blue-600 hover:text-blue-500 font-semibold sm:px-0"
           label="Edit"
           type="button"
           onClick={() => editClick(role)}
-        />
+        />}
+        {permissionAction.includes("Xóa") &&
         <Button
           className="text-red-700 hover:text-red-500 font-semibold sm:px-0"
           label="Delete"
           type="button"
           onClick={() => deleteClick(role.maQuyen)}
-        />
+        />}
         <Button
           className="text-blue-700 hover:text-blue-500 font-semibold sm:px-0"
           label="Phân Quyền"
@@ -126,12 +139,13 @@ const Permission = () => {
       <div className="w-full md:px-1 px-0 mb-6">
         <div className="flex items-center justify-between mb-8">
           <Title title="Quản Lý Nhóm Quyền" />
+          {permissionAction.includes("Thêm") &&
           <Button
             label="Thêm Nhóm Quyền Mới"
             icon={<IoMdAdd className="text-lg" />}
             className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md 2xl:py-2.5"
             onClick={() => setOpen(true)}
-          />
+          />}
         </div>
 
         <div className="bg-white px-2 md:px-4 py-4 shadow-md rounded">

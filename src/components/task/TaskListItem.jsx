@@ -108,29 +108,35 @@ const TaskListItem = ({ congviec, duAn }) => {
           });
         })
         .catch((error) => console.error("Connection failed: ", error));
-        return () => {
-          if (connection) {
-            connection.off("loadHanhDong");
-            connection.off("loadPhanCong")
-            connection.off("updateCongViec")
-          }
-        };
+      return () => {
+        if (connection) {
+          connection.off("loadHanhDong");
+          connection.off("loadPhanCong");
+          connection.off("updateCongViec");
+        }
+      };
     }
   }, [connection, maCongViec, dispatch]);
   const handleToggleDetail = () => {
     setExpanded(!expanded);
   };
-  console.log(permissionAction);
-  const chiuTrachNhiem = phancong?.phanCongs?.filter(
+  const phanCongs =
+    phancong?.phanCongs?.filter((task) => task.trangThai === true) || [];
+  const chiuTrachNhiem = phanCongs?.filter(
     (m) => m.vaiTro === "Người Chịu Trách Nhiệm"
   );
-  const thucHien = phancong?.phanCongs?.filter(
+  const thucHien = phanCongs?.filter(
     (m) => m.vaiTro === "Người Thực Hiện"
   );
-  const congViecHoanThanh =
-    phancong?.phanCongs?.filter((task) => task.trangThaiCongViec === true)
-      .length ?? 0;
-  const tongCongViec = phancong?.phanCongs?.length || 1;
+  // const congViecHoanThanh =
+  //   phancong?.phanCongs?.filter((task) => task.trangThaiCongViec === true)
+  //     .length ?? 0;
+  // const tongCongViec = phancong?.phanCongs?.length || 1;
+  // const completionPercent = (congViecHoanThanh / tongCongViec) * 100;
+  const congViecHoanThanh = phanCongs.filter(
+    (task) => task.trangThaiCongViec === true
+  ).length;
+  const tongCongViec = phanCongs.length || 1;
   const completionPercent = (congViecHoanThanh / tongCongViec) * 100;
   useEffect(() => {
     if (completionPercent === 100 && trangThaiCongViec === false) {
@@ -146,7 +152,6 @@ const TaskListItem = ({ congviec, duAn }) => {
       }
     }
   }, [completionPercent, trangThaiCongViec, maCongViec, dispatch]);
-  console.log(congviec.trangThaiCongViec);
   const handleAddSubTask = (newSubTask) => {
     setSubTasks([...subTasks, newSubTask]);
     setOpen(false);

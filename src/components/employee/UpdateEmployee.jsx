@@ -27,7 +27,7 @@ const UpdateEmployee = ({ open, setOpen, employeeData }) => {
   } = useForm({ defaultValues });
   useEffect(()=>{
     if(employeeData){
-        console.log("Employee Data:",employeeData)
+
         reset(defaultValues)
     }
   },[defaultValues,reset]);
@@ -72,7 +72,7 @@ const UpdateEmployee = ({ open, setOpen, employeeData }) => {
             name="maNhanVien"
             label="Mã Nhân Viên"
             className="w-full rounded"
-            register={register("tenChucVu", {
+            register={register("maNhanVien", {
               required: "Mã Nhân Viên is required!",
             })}
             error={errors.maNhanVien ? errors.maNhanVien.message : ""}

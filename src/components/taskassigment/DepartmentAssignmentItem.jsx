@@ -74,9 +74,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
               checkPermission({ maQuyen: 3, tenChucNang: "Công Việc" })
             ).unwrap();
             setpermissionAction(result);
-            if(!permissionAction.includes("Xem")){
-              navigate("/")
-            }
+          
           });
           //   connection.on("loadCongViec", async () => {
           //     setLoading(true);

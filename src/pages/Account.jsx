@@ -90,21 +90,20 @@ const Accounts = () => {
       </tr>
     </thead>
   );
-
   const TableRow = ({ account }) => (
     <tr className='border-b border-gray-200 text-gray-600 hover:bg-gray-400/10'>
       <td className='p-2'>
         <div className='flex items-center gap-3'>
           <div className='w-9 h-9 rounded-full text-white flex items-center justify-center text-sm bg-blue-700'>
             <span className='text-xs md:text-sm text-center'>
-              {account.maNhanVien}
+              {account.tenTaiKhoan}
             </span>
           </div>
           {account.maNhanVien}
         </div>
       </td>
 
-      <td className='p-2'>{account.maNhomQuyen}</td>
+      <td className='p-2'>{account.nhomQuyen.tenQuyen}</td>
       <td className='p-2'>{account.tenTaiKhoan}</td>
       <td className='p-2'>{account.matKhau}</td>
       {/* <td>
@@ -176,6 +175,7 @@ const Accounts = () => {
         open={open}
         setOpen={setOpen}
         userData={selected}
+        account={accounts}
         key={new Date().getTime().toString()}
       />
 

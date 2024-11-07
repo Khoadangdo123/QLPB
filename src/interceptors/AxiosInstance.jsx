@@ -40,6 +40,7 @@ axiosInstance.interceptors.response.use(
         const tmp = JSON.parse(localStorage.getItem("authUser"));
         const token = tmp.token;
         originalRequest.headers.Authorization = `Bearer ${token}`;
+        const decoded = parseJwt(token);
         return axiosInstance(originalRequest);
       } catch (refreshError) {
         window.location.href = "/log-in";

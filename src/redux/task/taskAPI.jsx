@@ -8,7 +8,6 @@ export const addTask = async (task) => {
     const response = await axiosInstance.post("CongViec", task);
     return response.data;
 };
-
 export const updateTask = async (id, task) => {
     const response = await axiosInstance.put("CongViec" + "/" + id, task);
     return response.data;

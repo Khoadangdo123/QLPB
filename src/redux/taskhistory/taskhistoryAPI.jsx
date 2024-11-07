@@ -1,6 +1,6 @@
 import axiosInstance from "../../interceptors/AxiosInstance";
-export const fetchTaskHistories = async (search = '', page = 1) => {
-    const response = await axiosInstance.get(`${"LichSuCongViec"}?search=${search}&page=${page}`);
+export const fetchTaskHistories = async () => {
+    const response = await axiosInstance.get(`${"LichSuCongViec"}`);
     return response.data;
 }
 

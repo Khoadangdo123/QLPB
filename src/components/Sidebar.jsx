@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { MdDashboard, MdOutlineAddTask} from "react-icons/md";
+import { MdDashboard, MdOutlineAddTask } from "react-icons/md";
 import {
   FaTasks,
   FaUsers,
@@ -25,7 +25,7 @@ const Sidebar = () => {
 
   const [permissionAction, setpermissionAction] = useState([]);
   const [viewFuntions, setViewFunction] = useState([]);
-  const navigate=useNavigate()
+  const navigate = useNavigate();
   //const { user } = useSelector((state) => state.authen);
   const duans = useSelector((state) => state.projects.list);
   const maquyen = Number(localStorage.getItem("permissionId"));
@@ -91,17 +91,25 @@ const Sidebar = () => {
       ).unwrap();
       setpermissionAction(result);
       const visibleLinks = [];
-
+      const acc_link = [];
       for (const link of linkData) {
         const result = await dispatch(
           checkPermission({ maQuyen: maquyen, tenChucNang: link.label })
         ).unwrap();
         if (result.includes("Xem")) {
           visibleLinks.push(link);
+        } else {
+          if (link.link === undefined) {
+            acc_link.push("/project");
+          } else {
+            acc_link.push(link.link);
+          }
         }
       }
       setViewFunction(visibleLinks);
-      console.log(visibleLinks)
+      localStorage.setItem("acc_url", JSON.stringify(acc_link));
+      console.log(localStorage.getItem("acc_url"));
+      console.log(acc_link);
       setLoadingProjects(false);
     };
     fetchData();
@@ -132,16 +140,26 @@ const Sidebar = () => {
             ).unwrap();
             setpermissionAction(result);
             const visibleLinks = [];
+            const acc_link = [];
             for (const link of linkData) {
               const result = await dispatch(
                 checkPermission({ maQuyen: maquyen, tenChucNang: link.label })
               ).unwrap();
               if (result.includes("Xem")) {
                 visibleLinks.push(link);
+              } else {
+                if (link.link === undefined) {
+                  acc_link.push("/project");
+                } else {
+                  acc_link.push(link.link);
+                }
               }
             }
-            console.log(visibleLinks)
+            console.log(visibleLinks);
             setViewFunction(visibleLinks);
+            localStorage.setItem("acc_url", JSON.stringify(acc_link));
+            console.log(localStorage.getItem("acc_url"));
+            console.log(acc_link);
           });
         } catch (error) {
           console.error("Connection failed: ", error);
@@ -158,8 +176,8 @@ const Sidebar = () => {
   }, [connection, dispatch]);
   const location = useLocation();
   const currentPath = location.pathname;
-  const sidebarLinks = linkData.filter(link => 
-    viewFuntions.some(view => view.label === link.label)
+  const sidebarLinks = linkData.filter((link) =>
+    viewFuntions.some((view) => view.label === link.label)
   );
   const closeSidebar = () => {
     dispatch(setOpenSidebar(false));
@@ -340,7 +358,7 @@ const Sidebar = () => {
       <div className="pt-4">
         <button
           className="w-full flex gap-2 p-3 items-center text-lg text-gray-800 hover:bg-gray-100 rounded-lg transition"
-          onClick={() => navigate('/home')}
+          onClick={() => navigate("/home")}
         >
           <FaHome />
           <span>Home</span>

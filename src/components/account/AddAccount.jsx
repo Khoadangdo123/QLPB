@@ -9,9 +9,8 @@ import ModalWrapper from "../ModalWrapper";
 import {fetchEmployees } from "../../redux/employees/employeeSlice";
 import { fetchPermissions } from "../../redux/permission/permissionSlice";
 import { addAccount, fetchAccounts } from "../../redux/accounts/accountSlice";
-const AddAccount = ({ open, setOpen, accountData }) => {
+const AddAccount = ({ open, setOpen, accountData,account }) => {
   const defaultValues = accountData ?? {};
-  //const { user } = useSelector((state) => state.auth);
   const dispatch=useDispatch();
   const employees=useSelector((state)=>state.employees.list)
   const nhomquyens=useSelector((state)=>state.permissions.list)
@@ -48,7 +47,10 @@ const AddAccount = ({ open, setOpen, accountData }) => {
       console.error("Failed to add employee: ", error);
     }
   };
-
+  const exitsAcount=account.map((acc) => acc.maNhanVien);
+  const allowAccount=employees.filter(
+    (employee) => ! exitsAcount.includes(employee.maNhanVien)
+  );
   return (
     <ModalWrapper open={open} setOpen={setOpen}>
       <form onSubmit={handleSubmit(handleOnSubmit)} className="">
@@ -67,13 +69,14 @@ const AddAccount = ({ open, setOpen, accountData }) => {
             {...register("maNhanVien", { required: "Chọn Nhân Viên" })}
           >
             <option value="">Chọn Nhân Viên</option>
-            {employees.map((item) => (
+            {allowAccount.map((item) => (
               <option key={item.maNhanVien} value={item.maNhanVien}>
                 {item.tenNhanVien}
               </option>
             ))}
           </select>
         {errors.maNhanVien && <span className="text-red-600">{errors.maNhanVien.message}</span>}
+        <br />
         <label htmlFor="maQuyen" className="block text-sm font-medium text-gray-700">
             
           </label>
@@ -90,19 +93,7 @@ const AddAccount = ({ open, setOpen, accountData }) => {
             ))}
           </select>
         {errors.maQuyen && <span className="text-red-600">{errors.maQuyen.message}</span>}
-        {/* <div className="mt-2 flex flex-col gap-6">
-          <Textbox
-            placeholder="Nhóm Quyền"
-            type="text"
-            name="maNhomQuyen"
-            label="Nhóm Quyền"
-            className="w-full rounded"
-            register={register("maNhomQuyen", {
-              required: "Nhóm Quyền is required!",
-            })}
-            error={errors.maNhomQuyen ? errors.maNhomQuyen.message : ""}
-          />
-        </div> */}
+        <br />
         <div className="mt-2 flex flex-col gap-6">
           <Textbox
             placeholder="Tên Tài Khoản"

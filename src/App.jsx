@@ -27,18 +27,24 @@ import FileView from "./components/taskassigment/FileView";
 import Home from "./pages/HomePage";
 function Layout() {
   const dispatch=useDispatch();
+  const location = useLocation();
   const authUser = useSelector((state) => state.authen);
-  console.log(authUser)
+  const acc_link = JSON.parse(localStorage.getItem('acc_url')) || [];
+  console.log(acc_link)
   if(authUser.user===null || localStorage.getItem("authUser")===null || localStorage.getItem("authUser")===undefined){
-    window.location.href = "/log-in";
+    return <Navigate to="/log-in" replace />;
+  }
+  if(acc_link.includes(location.pathname)){
+    console.log("err")
+    return <Navigate to="/home" replace />;
   }
   const token=authUser.user.token;
   var payload = JSON.parse(atob(token.split('.')[1]));
   console.log(payload)
   localStorage.setItem("userId",payload.MaTaiKhoan)
   localStorage.setItem("permissionId",Number(payload.MaNhomQuyen))
-  const location = useLocation();
-  return authUser ? (
+  console.log(authUser)
+  return (
     <div className='w-full h-screen flex flex-col md:flex-row'>
       <div className='w-1/5 h-screen bg-white sticky top-0 hidden md:block'>
         <Sidebar />
@@ -54,9 +60,10 @@ function Layout() {
         </div>
       </div>
     </div>
-  ) : (
-    <Navigate to='/log-in' state={{ from: location }} replace />
-  );
+  ) 
+  // : (
+  //   <Navigate to='/log-in' state={{ from: location }} replace />
+  // );
 }
 
 const MobileSidebar = () => {
