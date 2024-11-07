@@ -182,7 +182,7 @@ const TaskListItem = ({ congviec, duAn }) => {
         isParentTask(congviec) ? "" : "ml-4"
       }`}
     >
-      <div className={`w-full flex py-1 border-b text-sm ${itemClass}`}>
+      <div className={`w-full flex items-center py-1 border-b text-sm ${itemClass}`}>
         <div
           className={`flex-1 w-1/4 px-4 truncate cursor-pointer ${
             isParentTask(congviec) ? "font-bold" : "pl-4"

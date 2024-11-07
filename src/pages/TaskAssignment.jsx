@@ -53,7 +53,7 @@ const TaskAssignment = () => {
     startConnection();
     return () => {
       if (connection) {
-        connection.off("task");
+        //connection.off("task");
         connection.off("loadPhanCong");
         connection.off("loadCongViec");
         connection.stop()

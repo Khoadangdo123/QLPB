@@ -5,7 +5,7 @@ import { Navigate, useNavigate, useParams } from "react-router-dom";
 import Loading from "../components/Loader";
 import Title from "../components/Title";
 import Button from "../components/Button";
-import { IoMdAdd } from "react-icons/io";
+import { IoMdAdd, IoMdClock } from "react-icons/io";
 import Tabs from "../components/Tabs";
 import TaskTitle from "../components/TaskTitle";
 import BoardView from "../components/BoardView";
@@ -41,6 +41,7 @@ const Tasks = () => {
   const [sections, setSections] = useState([]);
   const [connection, setConnection] = useState(null);
   const [showTimeline, setShowTimeline] = useState(false);
+  const [showRemider,setShowRemider]=useState(false)
   const [timelineModalOpen, setTimelineModalOpen] = useState(false);
   const maquyen=Number(localStorage.getItem("permissionId"))
   const [permissionAction,setpermissionAction]=useState([])
@@ -134,6 +135,14 @@ const Tasks = () => {
               onClick={() => setOpen(true)}
               label="Tạo phần dự án"
               icon={<IoMdAdd className="text-lg" />}
+              className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 2xl:py-2.5"
+            />
+            }
+            {permissionAction.includes("Thêm") && 
+            <Button
+              onClick={() => setOpen(true)}
+              label="Tạo nhắc hẹn"
+              icon={<IoMdClock className="text-lg" />}
               className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 2xl:py-2.5"
             />
             }
