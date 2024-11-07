@@ -1,19 +1,16 @@
-import axios from "axios";
-import API_ENDPOINTS from "../../constant/linkapi";
-
+import axiosInstance from "../../interceptors/AxiosInstance";
 export const fetchSections = async (search = '', page = 1) => {
-    const response = await axios.get(API_ENDPOINTS.PHANDUAN + `?search=${search}&page=${page}`);
+    const response = await axiosInstance.get("PhanDuAn" + `?search=${search}&page=${page}`);
     return response.data;
 };
 
 export const addSection = async (section) => {
-    const response = await axios.post(API_ENDPOINTS.PHANDUAN, section);
+    const response = await axiosInstance.post("PhanDuAn", section);
     return response.data;
 };
 
 export const updateSection = async (id, section) => {
-    console.log("Section API: ", section)
-    const response = await axios.put(API_ENDPOINTS.PHANDUAN + "/" + id, section);
+    const response = await axiosInstance.put("PhanDuAn" + "/" + id, section);
     return response.data;
 };
 

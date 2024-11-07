@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchTasks as fetchAPI, addTask as addAPI, updateTask as updateAPI,fetchByIdTask as fetchByIdAPI } from './taskAPI';
+import { fetchTasks as fetchAPI, addTask as addAPI, updateTask as updateAPI,fetchByIdTask as fetchByIdAPI,updateCompleteTask as updateCompleteTaskAPI } from './taskAPI';
 
 export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async ({ search, page }) => {
   const response = await fetchAPI(search, page);
@@ -13,6 +13,10 @@ export const addTask = createAsyncThunk('tasks/addTask', async (task) => {
 
 export const updateTask = createAsyncThunk('tasks/updateTask', async ({ id, task }) => {
   const response = await updateAPI(id, task);
+  return response;
+});
+export const updateCompleteTask = createAsyncThunk('tasks/updateCompleteTask', async ({ id, task }) => {
+  const response = await updateCompleteTaskAPI(id, task);
   return response;
 });
 export const fetchByIdTask = createAsyncThunk('tasks/fetchByIdTask', async (id) => {
@@ -51,6 +55,11 @@ const taskSlice = createSlice({
         state.list.push(action.payload);
       })
       .addCase(updateTask.fulfilled, (state, action) => {
+        const index = state.list.findIndex((task) => task.maCongViec === action.payload.maCongViec);
+        if (index !== -1) {
+          state.list[index] = action.payload;
+        }
+      }).addCase(updateCompleteTask.fulfilled, (state, action) => {
         const index = state.list.findIndex((task) => task.maCongViec === action.payload.maCongViec);
         if (index !== -1) {
           state.list[index] = action.payload;

@@ -1,17 +1,28 @@
 import { BiCalendar, BiPlus } from "react-icons/bi";
 import { BGS, formatDate } from "../../utils";
 import Selection from "../Selection";
-import UserInfo from "../UserInfo";
 import clsx from "clsx";
 import Button from "../Button";
 import AddTask from "./AddTask";
 import { useEffect, useState } from "react";
-import { IoMdAdd } from "react-icons/io";
+
+import {
+  IoMdAdd,
+  IoMdCreate,
+  IoMdSwap,
+  IoMdTime,
+  IoMdTrash,
+} from "react-icons/io";
 import DetailTask from "./DetailTask";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchByIdTask } from "../../redux/task/taskSlice";
+import { fetchByIdTask, updateCompleteTask } from "../../redux/task/taskSlice";
 import EmployeeInfo from "../EmployeeInfo";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import UpdateTask from "./UpdateTask";
+import AddTaskTransfer from "../tasktransfer/AddTaskTransfer";
+import TaskHistory from "./TaskHistory";
+import { checkPermission } from "../../redux/permissiondetail/permissionDetailSlice";
+import API_ENDPOINTS from "../../constant/linkapi";
 const priorities = [
   { id: "low", name: "Thấp" },
   { id: "medium", name: "Trung Bình" },
@@ -26,21 +37,46 @@ const stages = [
 
 const TaskListItem = ({ congviec, duAn }) => {
   const [open, setOpen] = useState(false);
+  const [openUpdate, setOpenUpdate] = useState(false);
+  const [openTransfer, setOpenTransfer] = useState(false);
+  const [openTaskHistory, setOpenTaskHistory] = useState(false);
   const [taskRoot, setTaskRoot] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [subTasks, setSubTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [permissionAction, setpermissionAction] = useState([]);
   const [connection, setConnection] = useState(null);
+  const maquyen = Number(localStorage.getItem("permissionId"));
+  const [error, setError] = useState(null);
   const dispatch = useDispatch();
   const maCongViec = congviec.maCongViec;
+  const trangThaiCongViec = congviec.trangThaiCongViec;
   const phancong = useSelector((state) =>
     state.tasks.list.find((task) => task.maCongViec === maCongViec)
   );
   useEffect(() => {
-    dispatch(fetchByIdTask(maCongViec));
+    const fetchTask = async () => {
+      try {
+        if (maCongViec) {
+          setLoading(true);
+          await dispatch(fetchByIdTask(maCongViec));
+          const result = await dispatch(
+            checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })
+          ).unwrap();
+          setpermissionAction(result);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTask();
   }, [maCongViec]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub")
+      .withUrl(API_ENDPOINTS.HUB_URL)
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
@@ -62,30 +98,60 @@ const TaskListItem = ({ congviec, duAn }) => {
               dispatch(fetchByIdTask(maCongViec));
             }
           });
-          // connection.on("loadCongViec", () => {
-          //   if (maCongViec) {
-          //     dispatch(fetchByIdTask(maCongViec));
-          //   }
-          // });
+          connection.on("loadHanhDong", async () => {
+            if (maCongViec) {
+              const result = await dispatch(
+                checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })
+              ).unwrap();
+              setpermissionAction(result);
+            }
+          });
         })
         .catch((error) => console.error("Connection failed: ", error));
+      return () => {
+        if (connection) {
+          connection.off("loadHanhDong");
+          connection.off("loadPhanCong");
+          connection.off("updateCongViec");
+        }
+      };
     }
   }, [connection, maCongViec, dispatch]);
   const handleToggleDetail = () => {
     setExpanded(!expanded);
   };
-  const chiuTrachNhiem = phancong?.phanCongs?.filter(
+  const phanCongs =
+    phancong?.phanCongs?.filter((task) => task.trangThai === true) || [];
+  const chiuTrachNhiem = phanCongs?.filter(
     (m) => m.vaiTro === "Người Chịu Trách Nhiệm"
   );
-  const thucHien = phancong?.phanCongs?.filter(
+  const thucHien = phanCongs?.filter(
     (m) => m.vaiTro === "Người Thực Hiện"
   );
-  const congViecHoanThanh =
-    phancong?.phanCongs?.filter((task) => task.trangThaiCongViec === true)
-      .length ?? 0;
-  const tongCongViec = phancong?.phanCongs?.length || 1;
+  // const congViecHoanThanh =
+  //   phancong?.phanCongs?.filter((task) => task.trangThaiCongViec === true)
+  //     .length ?? 0;
+  // const tongCongViec = phancong?.phanCongs?.length || 1;
+  // const completionPercent = (congViecHoanThanh / tongCongViec) * 100;
+  const congViecHoanThanh = phanCongs.filter(
+    (task) => task.trangThaiCongViec === true
+  ).length;
+  const tongCongViec = phanCongs.length || 1;
   const completionPercent = (congViecHoanThanh / tongCongViec) * 100;
-  //
+  useEffect(() => {
+    if (completionPercent === 100 && trangThaiCongViec === false) {
+      try {
+        const result = dispatch(
+          updateCompleteTask({
+            id: maCongViec,
+            task: true,
+          })
+        ).unwrap();
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  }, [completionPercent, trangThaiCongViec, maCongViec, dispatch]);
   const handleAddSubTask = (newSubTask) => {
     setSubTasks([...subTasks, newSubTask]);
     setOpen(false);
@@ -93,7 +159,9 @@ const TaskListItem = ({ congviec, duAn }) => {
   const isParentTask = (task) => {
     return !task.maCongViecCha;
   };
-
+  const hasSubTasks = (task) => {
+    return task.congViecCon && task.congViecCon.length > 0;
+  };
   const getCompletionColor = (percent) => {
     if (percent < 50) {
       return "bg-red-600";
@@ -103,14 +171,18 @@ const TaskListItem = ({ congviec, duAn }) => {
       return "bg-green-500";
     }
   };
-  const itemClass = isParentTask(congviec) ? "font-bold" : "pl-6 bg-gray-100";
+  const itemClass = isParentTask(congviec)
+    ? hasSubTasks(congviec)
+      ? "font-bold text-blue-600 bg-blue-100"
+      : "font-bold bg-blue-200"
+    : "pl-6 bg-gray-100";
   return (
     <div
       className={`w-full flex items-center px-4 ${
         isParentTask(congviec) ? "" : "ml-4"
       }`}
     >
-      <div className={`w-full flex py-1 border-b text-sm ${itemClass}`}>
+      <div className={`w-full flex items-center py-1 border-b text-sm ${itemClass}`}>
         <div
           className={`flex-1 w-1/4 px-4 truncate cursor-pointer ${
             isParentTask(congviec) ? "font-bold" : "pl-4"
@@ -124,8 +196,6 @@ const TaskListItem = ({ congviec, duAn }) => {
           ) : (
             <span className="break-words">{congviec.tenCongViec}</span>
           )}
-          {/* Phần trăm tiến độ */}
-
           <div className="w-full bg-gray-200 rounded-full h-4 mt-2">
             <div
               className={`${getCompletionColor(
@@ -138,7 +208,6 @@ const TaskListItem = ({ congviec, duAn }) => {
             {completionPercent.toFixed(2)}% Hoàn thành
           </span>
         </div>
-
         <div className="flex-1 w-1/5 px-4 ">
           <span>{congviec.mucDoUuTien}</span>
         </div>
@@ -167,7 +236,6 @@ const TaskListItem = ({ congviec, duAn }) => {
                 BGS[index % BGS?.length]
               )}
             >
-              {/* <UserInfo user={m} /> */}
               <EmployeeInfo employee={m} />
             </div>
           ))}
@@ -189,7 +257,6 @@ const TaskListItem = ({ congviec, duAn }) => {
                 BGS[index % BGS?.length]
               )}
             >
-              {/* <UserInfo user={m} /> */}
               <EmployeeInfo employee={m} />
             </div>
           ))}
@@ -206,15 +273,48 @@ const TaskListItem = ({ congviec, duAn }) => {
           <Selection items={stages} selectedItem={congviec.trangThaiCongViec} />
         </div>
 
-        <div className="flex-1 px-4 flex justify-end">
+        <div className="flex-1 px-4 flex flex-wrap justify-end items-center gap-2">
+          {permissionAction.includes("Thêm") && (
+            <Button
+              onClick={() => {
+                setTaskRoot(congviec.maCongViec);
+                setOpen(true);
+              }}
+              icon={<IoMdAdd className="text-lg" />}
+              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
+            />
+          )}
+          {permissionAction.includes("Sửa") && (
+            <Button
+              onClick={() => {
+                setOpenUpdate(true);
+              }}
+              icon={<IoMdCreate className="text-lg" />}
+              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
+            />
+          )}
+          {permissionAction.includes("Xóa") && (
+            <Button
+              onClick={() => {}}
+              icon={<IoMdTrash className="text-lg" />}
+              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
+            />
+          )}
+          {permissionAction.includes("Sửa") && (
+            <Button
+              onClick={() => {
+                setOpenTransfer(true);
+              }}
+              icon={<IoMdSwap className="text-lg" />}
+              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
+            />
+          )}
           <Button
             onClick={() => {
-              setTaskRoot(congviec.maCongViec);
-              setOpen(true);
+              setOpenTaskHistory(true);
             }}
-            label="Tạo CV" // Rút ngắn văn bản nếu cần
-            icon={<IoMdAdd className="text-lg" />}
-            className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-0.5 px-2 text-xs h-8" // Giảm padding và xác định chiều cao
+            icon={<IoMdTime className="text-lg" />}
+            className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
           />
         </div>
       </div>
@@ -224,6 +324,28 @@ const TaskListItem = ({ congviec, duAn }) => {
         phanDuAn={congviec.maPhanDuAn}
         duAn={duAn}
         congViecCha={taskRoot}
+      />
+      <UpdateTask
+        openUpdate={openUpdate}
+        setOpenUpdate={setOpenUpdate}
+        phanDuAn={congviec.maPhanDuAn}
+        duAn={duAn}
+        maCongViec={congviec.maCongViec}
+        task={congviec}
+        phanCong={phancong}
+      />
+      <AddTaskTransfer
+        openTransfer={openTransfer}
+        setOpenTransfer={setOpenTransfer}
+        maCongViec={maCongViec}
+        tenCongViec={congviec.tenCongViec}
+        maPhongBan={null}
+        currentEmployee={phancong?.phanCongs}
+      />
+      <TaskHistory
+        openTaskHistory={openTaskHistory}
+        setOpenTaskHistory={setOpenTaskHistory}
+        maCongViec={maCongViec}
       />
       {expanded && (
         <DetailTask

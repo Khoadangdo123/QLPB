@@ -13,10 +13,16 @@ import taskReduder from "./task/taskSlice"
 import sendGmailReducer from "./sendgmail/sendgmailSlice"
 import assignmentReducer from "./assignment/assignmentSlice"
 import workdepartmentReducer from "./workdepartment/workdepartmentSlice"
+import taskhistoryReducer from "./taskhistory/taskhistorySlice"
+import fileReducer from "./file/fileSlice"
+import fileassignmentReducer from "./fileassignment/fileassignmentSlice"
+import reminderReducer from "./reminder/reminderSlice"
+import taskTransferReducer from "./tasktransfer/tasktranferSlice"
+import schedulingReducer from  "./scheduling/schedulingSlice"
 const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
-    auth: authReducer,
+    //auth: authReducer,
     assignments:assignmentReducer,
     departments:departmetReducer,
     employees:employeeReducer,
@@ -28,10 +34,16 @@ const store = configureStore({
     sections:sectionReducer,
     tasks:taskReduder,
     sendGmail:sendGmailReducer,
-    workdepartments:workdepartmentReducer
+    workdepartments:workdepartmentReducer,
+    taskhistories:taskhistoryReducer,
+    file:fileReducer,
+    fileassignment:fileassignmentReducer,
+    reminders:reminderReducer,
+    tasktransfer:taskTransferReducer,
+    scheduling:schedulingReducer
   },
-  middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiSlice.middleware),
+  // middleware: (getDefaultMiddleware) =>
+  //   getDefaultMiddleware().concat(apiSlice.middleware),
   devTools: true,
 });
 

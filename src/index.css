@@ -126,3 +126,87 @@
   }
 }
 /**/
+.ViewContainer {
+  list-style: none;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.Button {
+  background-color: #007bff; /* Màu xanh lam */
+  color: white; /* Chữ trắng */
+  border: none;
+  padding: 10px 20px; /* Tăng kích thước padding */
+  margin: 0 4px; /* Giảm khoảng cách giữa các nút */
+  border-radius: 5px; /* Bo tròn các góc */
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.2s; /* Hiệu ứng chuyển đổi */
+}
+
+.Button:hover {
+  background-color: #0056b3; /* Màu xanh đậm khi hover */
+  transform: scale(1.05); /* Phóng to nhẹ khi hover */
+}
+
+.Switch {
+  margin: 0 15px;
+  font-size: 14px;
+  font-family: "Arial, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue";
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Switch_Toggle {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 30px;
+  margin-right: 5px;
+}
+
+.Switch_Toggle input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.Slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: background-color 0.4s;
+  border-radius: 30px; /* Bo tròn cho slider */
+}
+
+.Slider:before {
+  position: absolute;
+  content: "";
+  height: 21px;
+  width: 21px;
+  left: 6px;
+  bottom: 4px;
+  background-color: white;
+  transition: transform 0.4s;
+  border-radius: 50%; /* Bo tròn cho vòng tròn */
+}
+
+input:checked + .Slider {
+  background-color: #2196f3; /* Màu xanh khi checked */
+}
+
+input:focus + .Slider {
+  box-shadow: 0 0 1px #2196f3; /* Bóng khi focus */
+}
+
+input:checked + .Slider:before {
+  transform: translateX(26px); /* Di chuyển vòng tròn khi checked */
+}
+

@@ -12,7 +12,7 @@ import { parse } from "date-fns";
 
 const UpdateDepartment = ({ open, setOpen, departmentData }) => {
   const defaultValues = departmentData ?? {};
-  const { user } = useSelector((state) => state.auth);
+  //const { user } = useSelector((state) => state.auth);
   const dispatch=useDispatch();
   const employee=useSelector((state)=>state.employees.list)
   useEffect(()=>{

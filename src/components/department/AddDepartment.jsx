@@ -11,7 +11,7 @@ import { addDepartment, fetchDepartments } from "../../redux/departments/departm
 
 const AddDepartment = ({ open, setOpen, employeeData }) => {
   const defaultValues = employeeData ?? {};
-  const { user } = useSelector((state) => state.auth);
+  //const { user } = useSelector((state) => state.auth);
   const dispatch=useDispatch();
   const employee=useSelector((state)=>state.employees.list)
   useEffect(()=>{
@@ -36,7 +36,7 @@ const AddDepartment = ({ open, setOpen, employeeData }) => {
         tenPhongBan:data.tenPhongBan,
         maTruongPhong:Number(data.maTruongPhong)
     })); 
-      //await dispatch(fetchDepartments({ search: '', page: 1 }));
+      // await dispatch(fetchDepartments({ search: '', page: 10 }));
       setOpen(false);
     } catch (error) {
       console.error("Failed to add department: ", error);

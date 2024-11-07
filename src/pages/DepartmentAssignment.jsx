@@ -3,12 +3,13 @@ import DepartmentAssignmentList from "../components/taskassigment/DepartmentAssi
 import { fetchManagerDepartment } from "../redux/departments/departmentSlice";
 import { useEffect, useState } from "react";
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import API_ENDPOINTS from "../constant/linkapi";
 const DepartmentAssignment=()=>{
     const [loading, setLoading] = useState(true);
     const [connection, setConnection] = useState(null);
     const dispatch=useDispatch();
-    //const maNhanVien=Number(localStorage.getItem("userId"));
-    const maNhanVien=3
+    const maNhanVien=Number(localStorage.getItem("userId"));
+    //const maNhanVien=3
     const phongbans=useSelector((state)=>state.departments)
     useEffect(() => {
         const loadData = async () => {
@@ -20,7 +21,7 @@ const DepartmentAssignment=()=>{
     }, [maNhanVien, dispatch]);
     useEffect(() => {
         const newConnection = new HubConnectionBuilder()
-          .withUrl("https://localhost:7131/hub")
+          .withUrl(API_ENDPOINTS.HUB_URL)
           .withAutomaticReconnect()
           .configureLogging(LogLevel.Information)
           .build();
@@ -78,7 +79,6 @@ const DepartmentAssignment=()=>{
     if (!phongbans) {
         return <p>not found</p>
     }
-    console.log(phongbans)
     return(<div className="w-full bg-transparent">
         <div className="text-lg bg-transparent">
             <div className="w-full flex border-y-2 py-2 px-4 font-bold -mb-2 bg-white shadow-sm text-sm">

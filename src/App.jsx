@@ -1,6 +1,6 @@
 import { Transition } from "@headlessui/react";
 import clsx from "clsx";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment,useRef, } from "react";
 import { IoClose } from "react-icons/io5";
 import { useDispatch, useSelector } from "react-redux";
 import { Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
@@ -18,19 +18,34 @@ import { setOpenSidebar } from "./redux/slices/authSlice";
 import Employees from "./pages/Employee";
 import Sections from "./pages/Section";
 import Accounts from "./pages/Account";
-import * as signalR from '@microsoft/signalr';
 import RolePermission from "./pages/Permission";
 import TaskAssignment from "./pages/TaskAssignment";
 import DepartmentAssignment from "./pages/DepartmentAssignment";
+import ChatBox from "./components/task/Milestones";
+import Tasktransfer from "./pages/TaskTransfer";
+import GanttApp from "./components/task/Gant";
+import FileView from "./components/taskassigment/FileView";
+import Home from "./pages/HomePage";
 function Layout() {
+  const dispatch=useDispatch();
+  const location = useLocation();
   const authUser = useSelector((state) => state.authen);
-  console.log(authUser)
+  const acc_link = JSON.parse(localStorage.getItem('acc_url')) || [];
+  console.log(acc_link)
+  if(authUser.user===null || localStorage.getItem("authUser")===null || localStorage.getItem("authUser")===undefined){
+    return <Navigate to="/log-in" replace />;
+  }
+  if(acc_link.includes(location.pathname)){
+    console.log("err")
+    return <Navigate to="/home" replace />;
+  }
   const token=authUser.user.token;
   var payload = JSON.parse(atob(token.split('.')[1]));
+  console.log(payload)
   localStorage.setItem("userId",payload.MaTaiKhoan)
-  const location = useLocation();
-
-  return authUser ? (
+  localStorage.setItem("permissionId",Number(payload.MaNhomQuyen))
+  console.log(authUser)
+  return (
     <div className='w-full h-screen flex flex-col md:flex-row'>
       <div className='w-1/5 h-screen bg-white sticky top-0 hidden md:block'>
         <Sidebar />
@@ -46,12 +61,10 @@ function Layout() {
         </div>
       </div>
     </div>
-  ) : (
-    <Navigate to='/log-in' state={{ from: location }} replace />
-  );
-  // return (
+  ) 
+  // : (
   //   <Navigate to='/log-in' state={{ from: location }} replace />
-  // )
+  // );
 }
 
 const MobileSidebar = () => {
@@ -62,7 +75,7 @@ const MobileSidebar = () => {
   const closeSidebar = () => {
     dispatch(setOpenSidebar(false));
   };
-
+  if(localStorage.getItem(""))
   return (
     <>
       <Transition
@@ -110,10 +123,9 @@ function App() {
     <main className='w-full min-h-screen bg-[#f3f4f6] position-fixed'>
       <Routes>
         <Route element={<Layout />}>
-          <Route index path='/' element={<Navigate to='/dashboard' />} />
+          <Route index path='/' element={<Navigate to='/home' />} />
           <Route path='/dashboard' element={<Dashboard />} />
           <Route path='/project/:id' element={<Tasks />} />
-          {/* <Route path='/completed/:status' element={<Tasks />} /> */}
           <Route path='/in-progress/:status' element={<Tasks />} />
           <Route path='/todo/:status' element={<Tasks />} />
           <Route path='/team' element={<Users />} />
@@ -126,6 +138,12 @@ function App() {
           <Route path='/taskassignment' element={<TaskAssignment/>} />
           <Route path='/assignmentdepartment' element={<DepartmentAssignment/>} />
           <Route path='/task/:id' element={<TaskDetails />} />
+          <Route path='/milestones' element={<ChatBox />} /> 
+          <Route path='/tasktransfer' element={<Tasktransfer/>}/>
+          <Route path='/home' element={<Home/>}/>
+          <Route path="/gant" element={<GanttApp/>}/>
+          <Route path="/taskassignment/fileView/:id" element={<FileView/>}/>
+          <Route path="*" element={<Navigate to="/home" />} />
         </Route>
         <Route path='/log-in' element={<Login />} />
       </Routes>

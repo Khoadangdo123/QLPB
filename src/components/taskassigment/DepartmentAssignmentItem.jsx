@@ -11,13 +11,19 @@ import { updateAssignment } from "../../redux/assignment/assignmentSlice";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import { IoMdAdd } from "react-icons/io";
 import AddTaskEmployee from "./AddTaskEmployee";
+import { useNavigate } from "react-router-dom";
+import { checkPermission } from "../../redux/permissiondetail/permissionDetailSlice";
+import API_ENDPOINTS from "../../constant/linkapi";
 const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [connection, setConnection] = useState(null);
+  const [permissionAction, setpermissionAction] = useState([]);
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const maCongViec = congViecPhongBan.maCongViec;
+  const maquyen=Number(localStorage.getItem("permissionId"))
   const vaiTro = congViecPhongBan.vaiTro;
   const maPhanCong = congViecPhongBan.maPhanCong;
   const maPhongBan = congViecPhongBan.maPhongBan;
@@ -29,6 +35,10 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
       setLoading(true);
       try {
         await dispatch(fetchByIdTask(maCongViec));
+        const result = await dispatch(
+          checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc Phòng Ban" })
+        ).unwrap();
+        setpermissionAction(result);
       } catch (error) {
         console.error("Error fetching task:", error);
       } finally {
@@ -42,7 +52,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
   }, [maCongViec, dispatch]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl("https://localhost:7131/hub")
+      .withUrl(API_ENDPOINTS.HUB_URL)
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
@@ -59,16 +69,23 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
             await dispatch(fetchByIdTask(maCongViec));
             setLoading(false);
           });
-        //   connection.on("loadCongViec", async () => {
-        //     setLoading(true);
-        //     await dispatch(fetchByIdTask(maCongViec));
-        //     setLoading(false);
-        //   });
-        //   connection.on("updateCongViec", async () => {
-        //     setLoading(true);
-        //     await dispatch(fetchByIdTask(maCongViec));
-        //     setLoading(false);
-        //   });
+          connection.on("loadHanhDong", async () => {
+            const result = await dispatch(
+              checkPermission({ maQuyen: 3, tenChucNang: "Công Việc" })
+            ).unwrap();
+            setpermissionAction(result);
+          
+          });
+          //   connection.on("loadCongViec", async () => {
+          //     setLoading(true);
+          //     await dispatch(fetchByIdTask(maCongViec));
+          //     setLoading(false);
+          //   });
+          //   connection.on("updateCongViec", async () => {
+          //     setLoading(true);
+          //     await dispatch(fetchByIdTask(maCongViec));
+          //     setLoading(false);
+          //   });
         } catch (err) {
           console.error("Error while starting connection: ", err);
         }
@@ -226,6 +243,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
               <EmployeeInfo employee={m} />
             </div>
           ))}
+           {permissionAction.includes("Thêm") && 
           <button
             onClick={() => {
               setOpen(true);
@@ -233,7 +251,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
             className="rounded-full border-2 border-dashed size-fit p-1 ml-2 border-gray-400 text-gray-400"
           >
             <BiPlus />
-          </button>
+          </button>}
         </div>
       </div>
       {expanded && (
@@ -252,6 +270,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
         setOpen={setOpen}
         maCongViec={congviec.maCongViec}
         maPhongBan={maPhongBan}
+        tenCongViec={congviec.tenCongViec}
       />
     </div>
   );
