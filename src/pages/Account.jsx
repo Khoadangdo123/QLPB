@@ -9,7 +9,6 @@ import Title from "../components/Title";
 import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
 import { fetchAccounts } from "../redux/accounts/accountSlice";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
-import { useNavigate } from "react-router-dom";
 import API_ENDPOINTS from "../constant/linkapi";
 const Accounts = () => {
   const [pageSize, setPageSize] = useState(10);
@@ -22,7 +21,6 @@ const Accounts = () => {
   const [connection, setConnection] = useState(null);
   const [permissionAction,setpermissionAction]=useState([])
   const maquyen=Number(localStorage.getItem("permissionId"))
-  const navigate=useNavigate()
   const dispatch = useDispatch();
   useEffect(() => {
     const fetchData = async () => {
@@ -103,7 +101,7 @@ const Accounts = () => {
         </div>
       </td>
 
-      <td className='p-2'>{account.nhomQuyen.tenQuyen}</td>
+      <td className='p-2'>{account.nhomQuyen ? account.nhomQuyen.tenQuyen : "N/A"}</td>
       <td className='p-2'>{account.tenTaiKhoan}</td>
       <td className='p-2'>{account.matKhau}</td>
       {/* <td>
@@ -154,7 +152,6 @@ const Accounts = () => {
           onClick={() => setOpen(true)}
         />
           }
-          
         </div>
 
         <div className="bg-white px-2 md:px-4 py-4 shadow-md rounded">
