@@ -10,7 +10,7 @@ import { useDispatch, useSelector } from "react-redux";
 import PageSizeSelect from "../components/PageSizeSelect";
 import { fetchEmployees } from "../redux/employees/employeeSlice";
 import AddEmployee from "../components/employee/AddEmployee";
-import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
 import UpdateEmployee from "../components/employee/UpdateEmployee";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 import { useNavigate } from "react-router-dom";
@@ -42,11 +42,11 @@ const Employees = () => {
   }, [dispatch, pageSize]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl(API_ENDPOINTS.HUB_URL)
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build();
-
+    .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
+    .withAutomaticReconnect([0, 2000, 10000, 30000])
+    .configureLogging(LogLevel.Information)
+    .build();
+    newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
     setConnection(newConnection);
   }, []);
   useEffect(() => {
@@ -65,6 +65,12 @@ const Employees = () => {
           });
         })
         .catch((error) => console.error("Connection failed: ", error));
+        return () => {
+          if (connection) {
+            connection.off("loadHanhDong");
+            connection.off("loadEmployee");
+          }
+        };
     }
   }, [dispatch, pageSize, connection]);
   const employeeActionHandler = () => {};

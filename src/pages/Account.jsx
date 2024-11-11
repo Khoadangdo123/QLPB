@@ -6,7 +6,7 @@ import PageSizeSelect from "../components/PageSizeSelect";
 import AddAccount from "../components/account/AddAccount";
 import ConfirmatioDialog, { UserAction } from "../components/Dialogs";
 import Title from "../components/Title";
-import { HubConnectionBuilder,LogLevel } from '@microsoft/signalr';
+import { HubConnectionBuilder,LogLevel,HttpTransportType } from '@microsoft/signalr';
 import { fetchAccounts } from "../redux/accounts/accountSlice";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 import API_ENDPOINTS from "../constant/linkapi";
@@ -38,10 +38,11 @@ const Accounts = () => {
   }, [dispatch, pageSize]);
   useEffect(()=>{
     const newConnection = new HubConnectionBuilder()
-      .withUrl(API_ENDPOINTS.HUB_URL).withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build();
-
+    .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
+    .withAutomaticReconnect([0, 2000, 10000, 30000])
+    .configureLogging(LogLevel.Information)
+    .build();
+    newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
     setConnection(newConnection);
   },[])
   useEffect(()=>{
@@ -60,12 +61,12 @@ const Accounts = () => {
           })
           .catch((error) => console.error("Connection failed: ", error));
       }
-      // return () => {
-      //   if (connection) {
-      //     connection.off("loadTaiKhoan");
-      //     connection.off("loadHanhDong");
-      //   }
-      // };
+      return () => {
+        if (connection) {
+          connection.off("loadTaiKhoan");
+          connection.off("loadHanhDong");
+        }
+      };
   },[dispatch,pageSize,connection])
   const accountActionHandler = () => {};
   const deleteHandler = () => {};

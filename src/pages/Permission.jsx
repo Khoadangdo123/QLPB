@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Button from "../components/Button";
 import { IoMdAdd } from "react-icons/io";
-import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
 import clsx from "clsx";
 import ConfirmatioDialog, { UserAction } from "../components/Dialogs";
 import Title from "../components/Title";
@@ -40,11 +40,11 @@ const Permission = () => {
 
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl(API_ENDPOINTS.HUB_URL)
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build();
-
+    .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
+    .withAutomaticReconnect([0, 2000, 10000, 30000])
+    .configureLogging(LogLevel.Information)
+    .build();
+    newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
     setConnection(newConnection);
   }, []);
 

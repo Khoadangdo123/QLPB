@@ -9,7 +9,7 @@ import { fetchByIdTask } from "../../redux/task/taskSlice";
 import DetailTask from "../task/DetailTask";
 import { BGS, formatDate } from "../../utils";
 import { updateAssignment } from "../../redux/assignment/assignmentSlice";
-import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
 import { addTaskHistory } from "../../redux/taskhistory/taskhistorySlice";
 import FileUpload from "./FileUpload";
 import { IoMdCloudUpload } from "react-icons/io";
@@ -102,10 +102,11 @@ const TaskAssignmentList = ({ congviec }) => {
   }, [maCongViec, dispatch]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl(API_ENDPOINTS.HUB_URL)
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build();
+    .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
+    .withAutomaticReconnect([0, 2000, 10000, 30000])
+    .configureLogging(LogLevel.Information)
+    .build();
+    newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
     setConnection(newConnection);
   }, []);
   useEffect(() => {
@@ -177,14 +178,14 @@ const TaskAssignmentList = ({ congviec }) => {
       startConnection();
     }
 
-    // return () => {
-    //   if (connection) {
-    //     connection.off("loadFile");
-    //     //connection.off("loadCongViec");
-    //     connection.off("loadPhanCong");
-    //     connection.off("loadHanhDong");
-    //   }
-    // };
+    return () => {
+      if (connection) {
+        connection.off("loadFile");
+        connection.off("loadCongViec");
+        connection.off("loadPhanCong");
+        connection.off("loadHanhDong");
+      }
+    };
   }, [connection, dispatch, maCongViec]);
   if (loading) {
     return (

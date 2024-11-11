@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import DepartmentAssignmentList from "../components/taskassigment/DepartmentAssignmentList";
 import { fetchManagerDepartment } from "../redux/departments/departmentSlice";
 import { useEffect, useState } from "react";
-import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
+import { HubConnectionBuilder, LogLevel, HttpTransportType } from '@microsoft/signalr';
 import API_ENDPOINTS from "../constant/linkapi";
 const DepartmentAssignment=()=>{
     const [loading, setLoading] = useState(true);
@@ -21,10 +21,11 @@ const DepartmentAssignment=()=>{
     }, [maNhanVien, dispatch]);
     useEffect(() => {
         const newConnection = new HubConnectionBuilder()
-          .withUrl(API_ENDPOINTS.HUB_URL)
-          .withAutomaticReconnect()
-          .configureLogging(LogLevel.Information)
-          .build();
+        .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
+        .withAutomaticReconnect([0, 2000, 10000, 30000])
+        .configureLogging(LogLevel.Information)
+        .build();
+        newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
         setConnection(newConnection);
       }, []);
       useEffect(() => {
@@ -63,12 +64,12 @@ const DepartmentAssignment=()=>{
           startConnection();
         }
     
-        // return () => {
-        //   if (connection) {
-        //     connection.off("loadPhanCong");
-        //     connection.off("updateCongViec")
-        //   }
-        // };
+        return () => {
+          if (connection) {
+            connection.off("loadPhanCong");
+            connection.off("updateCongViec")
+          }
+        };
       }, [connection, dispatch, maNhanVien]);
     if (loading) {
         return (

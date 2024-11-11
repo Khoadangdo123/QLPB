@@ -13,7 +13,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { setOpenSidebar } from "../redux/slices/authSlice";
 import clsx from "clsx";
 import { addProject, fetchProjects } from "../redux/project/projectSlice";
-import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
 import { FaUserGroup } from "react-icons/fa6";
 import { GoProject } from "react-icons/go";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
@@ -114,11 +114,11 @@ const Sidebar = () => {
   }, [dispatch, maquyen]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl(API_ENDPOINTS.HUB_URL)
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build();
-
+    .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
+    .withAutomaticReconnect([0, 2000, 10000, 30000])
+    .configureLogging(LogLevel.Information)
+    .build();
+    newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
     setConnection(newConnection);
   }, []);
   useEffect(() => {

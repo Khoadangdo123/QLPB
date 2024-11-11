@@ -5,7 +5,7 @@ import {
   fetchEmployeeAssignment,
 } from "../redux/assignment/assignmentSlice";
 import TaskAssignmentList from "../components/taskassigment/TaskAssignmentList";
-import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
 import { useNavigate } from "react-router-dom";
 import API_ENDPOINTS from "../constant/linkapi";
 const TaskAssignment = () => {
@@ -25,10 +25,11 @@ const TaskAssignment = () => {
   }, [maNhanVien, dispatch]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl(API_ENDPOINTS.HUB_URL)
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build();
+    .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
+    .withAutomaticReconnect([0, 2000, 10000, 30000])
+    .configureLogging(LogLevel.Information)
+    .build();
+    newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
     setConnection(newConnection);
   }, []);
   useEffect(() => {
@@ -51,14 +52,14 @@ const TaskAssignment = () => {
       }
     };
     startConnection();
-    // return () => {
-    //   if (connection) {
-    //     //connection.off("task");
-    //     connection.off("loadPhanCong");
-    //     connection.off("loadCongViec");
-    //     connection.stop()
-    //   }
-    // };
+    return () => {
+      if (connection) {
+        //connection.off("task");
+        connection.off("loadPhanCong");
+        connection.off("loadCongViec");
+        connection.stop()
+      }
+    };
   }, [connection, dispatch, maNhanVien]);
   return (
     <div className="w-full bg-transparent">
