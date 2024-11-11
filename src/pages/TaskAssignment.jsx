@@ -51,14 +51,14 @@ const TaskAssignment = () => {
       }
     };
     startConnection();
-    return () => {
-      if (connection) {
-        //connection.off("task");
-        connection.off("loadPhanCong");
-        connection.off("loadCongViec");
-        connection.stop()
-      }
-    };
+    // return () => {
+    //   if (connection) {
+    //     //connection.off("task");
+    //     connection.off("loadPhanCong");
+    //     connection.off("loadCongViec");
+    //     connection.stop()
+    //   }
+    // };
   }, [connection, dispatch, maNhanVien]);
   return (
     <div className="w-full bg-transparent">

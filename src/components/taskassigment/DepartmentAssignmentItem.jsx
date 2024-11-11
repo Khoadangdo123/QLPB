@@ -62,6 +62,8 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
+      newConnection.serverTimeoutInMilliseconds = 30000;
+      newConnection.serverTimeoutInMilliseconds = 120000;
     setConnection(newConnection);
   }, []);
   useEffect(() => {
@@ -103,12 +105,12 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
     if (connection) {
       startConnection();
     }
-    return () => {
-      if (connection) {
-        connection.off("loadPhanCong");
-        connection.off("loadHanhDong");
-      }
-    };
+    // return () => {
+    //   if (connection) {
+    //     connection.off("loadPhanCong");
+    //     connection.off("loadHanhDong");
+    //   }
+    // };
   }, [connection, dispatch, maCongViec]);
   if (loading) {
     return (

@@ -72,12 +72,12 @@ const Departments = () => {
         })
         .catch((error) => console.error("Connection failed: ", error));
     }
-    return () => {
-      if (connection) {
-        connection.off("loadEmployee");
-        connection.off("loadHanhDong");
-      }
-    };
+    // return () => {
+    //   if (connection) {
+    //     connection.off("loadEmployee");
+    //     connection.off("loadHanhDong");
+    //   }
+    // };
   }, [dispatch, pageSize, connection]);
   const departmentActionHandler = () => {};
   const deleteHandler = () => {};

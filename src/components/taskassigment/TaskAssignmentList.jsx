@@ -177,14 +177,14 @@ const TaskAssignmentList = ({ congviec }) => {
       startConnection();
     }
 
-    return () => {
-      if (connection) {
-        connection.off("loadFile");
-        //connection.off("loadCongViec");
-        connection.off("loadPhanCong");
-        connection.off("loadHanhDong");
-      }
-    };
+    // return () => {
+    //   if (connection) {
+    //     connection.off("loadFile");
+    //     //connection.off("loadCongViec");
+    //     connection.off("loadPhanCong");
+    //     connection.off("loadHanhDong");
+    //   }
+    // };
   }, [connection, dispatch, maCongViec]);
   if (loading) {
     return (

@@ -80,17 +80,6 @@ const TaskListItem = ({ congviec, duAn }) => {
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
-  //   newConnection.serverTimeoutInMilliseconds = 30000;
-  //   newConnection.keepAliveIntervalInMilliseconds = 20000;
-  //   newConnection.start()
-  //   .then(() => console.log("Kết nối SignalR thành công"))
-  //   .catch((err) => console.error("Kết nối SignalR thất bại:", err));
-
-  //  newConnection.onclose(async (error) => {
-  //   console.error("Kết nối bị ngắt:", error);
-  //   // Tự động thử kết nối lại nếu bị ngắt kết nối
-  //   await newConnection.start().catch((err) => console.error("Thử kết nối lại thất bại:", err));
-  // });
     setConnection(newConnection);
   }, []);
   useEffect(() => {
@@ -119,13 +108,13 @@ const TaskListItem = ({ congviec, duAn }) => {
           });
         })
         .catch((error) => console.error("Connection failed: ", error));
-      return () => {
-        if (connection) {
-          connection.off("loadHanhDong");
-          connection.off("loadPhanCong");
-          connection.off("updateCongViec");
-        }
-      };
+      // return () => {
+      //   if (connection) {
+      //     connection.off("loadHanhDong");
+      //     connection.off("loadPhanCong");
+      //     connection.off("updateCongViec");
+      //   }
+      // };
     }
   }, [connection, maCongViec, dispatch]);
   const handleToggleDetail = () => {

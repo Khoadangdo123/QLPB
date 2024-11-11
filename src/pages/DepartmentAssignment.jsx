@@ -63,12 +63,12 @@ const DepartmentAssignment=()=>{
           startConnection();
         }
     
-        return () => {
-          if (connection) {
-            connection.off("loadPhanCong");
-            connection.off("updateCongViec")
-          }
-        };
+        // return () => {
+        //   if (connection) {
+        //     connection.off("loadPhanCong");
+        //     connection.off("updateCongViec")
+        //   }
+        // };
       }, [connection, dispatch, maNhanVien]);
     if (loading) {
         return (

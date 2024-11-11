@@ -60,12 +60,12 @@ const Accounts = () => {
           })
           .catch((error) => console.error("Connection failed: ", error));
       }
-      return () => {
-        if (connection) {
-          connection.off("loadTaiKhoan");
-          connection.off("loadHanhDong");
-        }
-      };
+      // return () => {
+      //   if (connection) {
+      //     connection.off("loadTaiKhoan");
+      //     connection.off("loadHanhDong");
+      //   }
+      // };
   },[dispatch,pageSize,connection])
   const accountActionHandler = () => {};
   const deleteHandler = () => {};
