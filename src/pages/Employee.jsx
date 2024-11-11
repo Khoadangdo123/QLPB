@@ -50,29 +50,33 @@ const Employees = () => {
     setConnection(newConnection);
   }, []);
   useEffect(() => {
-    if (connection && connection.state === "Disconnected") {
-      connection
-        .start()
-        .then(() => {
+    const connectSignalR = async () => {
+      if (connection && connection.state === "Disconnected") {
+        try {
+          await connection.start();
           console.log("Connected!");
+  
           connection.on("loadEmployee", () => {
             dispatch(fetchEmployees({ search: "", page: pageSize }));
           });
-          connection.on("loadHanhDong",async () => {
+  
+          connection.on("loadHanhDong", async () => {
             const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Nhân Viên" })).unwrap();
             setpermissionAction(result);
-           
           });
-        })
-        .catch((error) => console.error("Connection failed: ", error));
-        return () => {
-          if (connection) {
-            connection.off("loadHanhDong");
-            connection.off("loadEmployee");
-          }
-        };
-    }
-  }, [dispatch, pageSize, connection]);
+        } catch (error) {
+          console.error("Connection failed: ", error);
+        }
+      }
+    };
+    connectSignalR(); 
+    return () => {
+      if (connection) {
+        connection.off("loadEmployee");
+        connection.off("loadHanhDong");
+      }
+    };
+  }, [dispatch, pageSize, connection, maquyen]);
   const employeeActionHandler = () => {};
   const deleteHandler = () => {};
 

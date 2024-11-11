@@ -31,24 +31,33 @@ const TaskGroup = ({ phanduan, duAn }) => {
 
     setConnection(newConnection);
   },[])
-  useEffect(()=>{
-    if (connection && connection.state === "Disconnected") {
-        connection.start()
-          .then(() => {
-            console.log("Connected!");
-            connection.on("loadHanhDong",async () => {
+  useEffect(() => {
+    const connectSignalR = async () => {
+      if (connection && connection.state === "Disconnected") {
+        try {
+          await connection.start();
+          console.log("Connected!");
+  
+          connection.on("loadHanhDong", async () => {
+            try {
               const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })).unwrap();
               setpermissionAction(result);
-            });
-          })
-          .catch((error) => console.error("Connection failed: ", error));
-      }
-      return () => {
-        if (connection) {
-          connection.off("loadHanhDong");
+            } catch (error) {
+              console.error("Error when checking permission: ", error);
+            }
+          });
+        } catch (error) {
+          console.error("Connection failed: ", error);
         }
-      };
-  },[dispatch,connection])
+      }
+    };
+    connectSignalR(); 
+    return () => {
+      if (connection) {
+        connection.off("loadHanhDong");
+      }
+    };
+  }, [dispatch, connection, maquyen]);
   const groupedTasks = (phanduan.congViecs || []).reduce((acc, task) => {
     const parentId = task.maCongViecCha || 'root'; 
     if (!acc[parentId]) {

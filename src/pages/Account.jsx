@@ -46,28 +46,35 @@ const Accounts = () => {
     setConnection(newConnection);
   },[])
   useEffect(()=>{
-    if (connection && connection.state === "Disconnected") {
-        connection.start()
-          .then(() => {
-            console.log("Connected!");
-            connection.on("loadTaiKhoan",async () => {
-              await dispatch(fetchAccounts({ search: '', page: pageSize }));
-            });
-            connection.on("loadHanhDong",async () => {
-              const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Tài Khoản" })).unwrap();
-              setpermissionAction(result);
-             
-            });
-          })
-          .catch((error) => console.error("Connection failed: ", error));
-      }
-      return () => {
-        if (connection) {
-          connection.off("loadTaiKhoan");
-          connection.off("loadHanhDong");
+    const connectSignalR = async () => {
+      if (connection && connection.state === "Disconnected") {
+        try {
+          await connection.start();
+          console.log("Connected!");
+  
+          connection.on("loadTaiKhoan", async () => {
+            await dispatch(fetchAccounts({ search: '', page: pageSize }));
+          });
+  
+          connection.on("loadHanhDong", async () => {
+            const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Tài Khoản" })).unwrap();
+            setpermissionAction(result);
+          });
+        } catch (error) {
+          console.error("Connection failed: ", error);
         }
-      };
-  },[dispatch,pageSize,connection])
+      }
+    };
+  
+    connectSignalR();
+  
+    return () => {
+      if (connection) {
+        connection.off("loadTaiKhoan");
+        connection.off("loadHanhDong");
+      }
+    };
+  },[dispatch,pageSize,connection,maquyen])
   const accountActionHandler = () => {};
   const deleteHandler = () => {};
   const deleteClick = (id) => {

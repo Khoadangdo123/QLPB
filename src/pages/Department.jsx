@@ -47,17 +47,12 @@ const Departments = () => {
     .build();
     newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
     setConnection(newConnection);
-    // return () => {
-    //   if (newConnection) {
-    //     newConnection.stop();
-    //   }
-    // };
   }, []);
   useEffect(() => {
-    if (connection && connection.state === "Disconnected") {
-      connection
-        .start()
-        .then(() => {
+    const connectSignalR = async () => {
+      if (connection && connection.state === "Disconnected") {
+        try {
+          await connection.start();
           console.log("Connected!");
           connection.on("loadEmployee", async () => {
             await dispatch(fetchDepartments({ search: "", page: pageSize }));
@@ -67,18 +62,20 @@ const Departments = () => {
               checkPermission({ maQuyen: maquyen, tenChucNang: "Phòng Ban" })
             ).unwrap();
             setpermissionAction(result);
-            
           });
-        })
-        .catch((error) => console.error("Connection failed: ", error));
-    }
+        } catch (error) {
+          console.error("Connection failed: ", error);
+        }
+      }
+    };
+    connectSignalR();
     return () => {
       if (connection) {
         connection.off("loadEmployee");
         connection.off("loadHanhDong");
       }
     };
-  }, [dispatch, pageSize, connection]);
+  }, [dispatch, pageSize, connection, maquyen]);
   const departmentActionHandler = () => {};
   const deleteHandler = () => {};
 

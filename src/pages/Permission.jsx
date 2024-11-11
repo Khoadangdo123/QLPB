@@ -49,25 +49,37 @@ const Permission = () => {
   }, []);
 
   useEffect(() => {
-    if (connection && connection.state === "Disconnected") {
-      connection
-        .start()
-        .then(() => {
+    const connectSignalR = async () => {
+      if (connection && connection.state === "Disconnected") {
+        try {
+          await connection.start();
           console.log("Connected!");
+  
           connection.on("loadNhomQuyen", () => {
             dispatch(fetchPermissions({ search: "", page: pageSize }));
           });
+  
           connection.on("loadHanhDong", async () => {
             const result = await dispatch(
               checkPermission({ maQuyen: maquyen, tenChucNang: "Phân Quyền" })
             ).unwrap();
             setpermissionAction(result);
-            
           });
-        })
-        .catch((error) => console.error("Connection failed: ", error));
-    }
-  }, [dispatch, pageSize, connection]);
+        } catch (error) {
+          console.error("Connection failed: ", error);
+        }
+      }
+    };
+  
+    connectSignalR(); 
+    return () => {
+      if (connection) {
+        connection.off("loadNhomQuyen");
+        connection.off("loadHanhDong");
+        connection.stop();
+      }
+    };
+  }, [dispatch, pageSize, connection, maquyen]);
   const roleActionHandler = () => {};
   const deleteHandler = () => {};
 

@@ -17,7 +17,11 @@ import DetailTask from "./DetailTask";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchByIdTask, updateCompleteTask } from "../../redux/task/taskSlice";
 import EmployeeInfo from "../EmployeeInfo";
-import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
+import {
+  HubConnectionBuilder,
+  LogLevel,
+  HttpTransportType,
+} from "@microsoft/signalr";
 import UpdateTask from "./UpdateTask";
 import AddTaskTransfer from "../tasktransfer/AddTaskTransfer";
 import TaskHistory from "./TaskHistory";
@@ -44,6 +48,7 @@ const TaskListItem = ({ congviec, duAn }) => {
   const [expanded, setExpanded] = useState(false);
   const [subTasks, setSubTasks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isConnectionStarted, setIsConnectionStarted] = useState(false);
   const [permissionAction, setpermissionAction] = useState([]);
   const [connection, setConnection] = useState(null);
   const maquyen = Number(localStorage.getItem("permissionId"));
@@ -76,29 +81,34 @@ const TaskListItem = ({ congviec, duAn }) => {
   }, [maCongViec]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
+      .withUrl(API_ENDPOINTS.HUB_URL, {
+        transport: HttpTransportType.WebSockets | HttpTransportType.LongPolling,
+      })
       .withAutomaticReconnect([0, 2000, 10000, 30000])
       .configureLogging(LogLevel.Information)
       .build();
-      newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
+    newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
     setConnection(newConnection);
   }, []);
   useEffect(() => {
-    if (connection && connection.state === "Disconnected") {
-      connection
-        .start()
-        .then(() => {
+    const connectSignalR = async () => {
+      if (connection && connection.state === "Disconnected") {
+        try {
+          await connection.start();
           console.log("Connected!");
+          //clearTimeout(timeout);
           connection.on("updateCongViec", () => {
             if (maCongViec) {
               dispatch(fetchByIdTask(maCongViec));
             }
           });
+
           connection.on("loadPhanCong", () => {
             if (maCongViec) {
               dispatch(fetchByIdTask(maCongViec));
             }
           });
+
           connection.on("loadHanhDong", async () => {
             if (maCongViec) {
               const result = await dispatch(
@@ -107,17 +117,22 @@ const TaskListItem = ({ congviec, duAn }) => {
               setpermissionAction(result);
             }
           });
-        })
-        .catch((error) => console.error("Connection failed: ", error));
-      return () => {
-        if (connection) {
-          connection.off("loadHanhDong");
-          connection.off("loadPhanCong");
-          connection.off("updateCongViec");
+        } catch (error) {
+          console.error("Connection failed: ", error);
+          window.location.reload()
         }
-      };
-    }
-  }, [connection, maCongViec, dispatch]);
+      }
+    };
+
+    connectSignalR();
+    return () => {
+      if (connection) {
+        connection.off("loadHanhDong");
+        connection.off("loadPhanCong");
+        connection.off("updateCongViec");
+      }
+    };
+  }, [connection, maCongViec, dispatch, maquyen]);
   const handleToggleDetail = () => {
     setExpanded(!expanded);
   };

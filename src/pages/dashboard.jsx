@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-import React from 'react';
+import React, { useState } from 'react';
 
 const barData = [
   { name: 'Lam viec', value: 4, color: '#4CAF50' },
@@ -26,43 +25,17 @@ const lollipopData = [
   { name: 'G', value: 1 },
 ];
 
-const StatBox = ({ title, value, filters }) => (
-  <div style={styles.statBox}>
-    <h2 style={styles.statValue}>{value}</h2>
-    <p style={styles.statTitle}>{title}</p>
-    <p style={styles.statFilters}>{filters}</p>
+const DatePicker = ({ label, value, onChange }) => (
+  <div style={styles.datePickerContainer}>
+    <label style={styles.dateLabel}>{label}</label>
+    <input
+      type="date"
+      value={value}
+      onChange={onChange}
+      style={styles.dateInput}
+    />
   </div>
 );
-
-=======
-
-
-import React from 'react';
-
-const barData = [
-  { name: 'Lam viec', value: 4, color: '#4CAF50' },
-  { name: 'Nghi', value: 0, color: '#F44336' },
-  { name: 'Hoc', value: 0, color: '#2196F3' },
-];
-
-const pieData = [
-  { name: 'Incomplete', value: 4, color: '#FF6384' },
-];
-
-const lineData = Array.from({ length: 14 }, (_, i) => ({
-  name: `09/${i + 1}`,
-  value: 4
-}));
-
-const lollipopData = [
-  { name: 'A', value: 5 },
-  { name: 'B', value: 4 },
-  { name: 'C', value: 3 },
-  { name: 'D', value: 2 },
-  { name: 'E', value: 1 },
-  { name: 'F', value: 1 },
-  { name: 'G', value: 1 },
-];
 
 const StatBox = ({ title, value, filters }) => (
   <div style={styles.statBox}>
@@ -72,8 +45,6 @@ const StatBox = ({ title, value, filters }) => (
   </div>
 );
 
->>>>>>> 494cec82d34dcaf88954e0c79dd992ca76128cc8
-//còn đang gặp bug nên chưa hoàn thành
 const BarChartComponent = () => (
   <div style={styles.chartBox}>
     <h6 style={styles.chartTitle}>Total Tasks by Section</h6>
@@ -97,106 +68,6 @@ const BarChartComponent = () => (
             </div>
             <span style={styles.barLabel}>{item.name}</span>
           </div>
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-=======
-
-          <div>
-            <p> {user.name}</p>
-            <span className='text-xs text-black'>{user?.role}</span>
-          </div>
-        </div>
-      </td>
-
-      <td>
-        <p
-          className={clsx(
-            "w-fit px-3 py-1 rounded-full text-sm",
-            user?.isActive ? "bg-blue-200" : "bg-yellow-100"
-          )}
-        >
-          {user?.isActive ? "Active" : "Disabled"}
-        </p>
-      </td>
-      <td className='py-2 text-sm'>{moment(user?.createdAt).fromNow()}</td>
-    </tr>
-  );
-
-  return (
-    <div className='w-full md:w-1/3 bg-white h-fit px-2 md:px-6 py-4 shadow-md rounded'>
-      <table className='w-full mb-5'>
-        <TableHeader />
-        <tbody>
-          {users?.map((user, index) => (
-            <TableRow key={index + user?._id} user={user} />
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-};
-const Dashboard = () => {
-  const totals = summary.tasks;
-
-  const stats = [
-    {
-      _id: "1",
-      label: "SỐ LƯỢNG CÔNG VIỆC",
-      total: summary?.totalTasks || 0,
-      icon: <FaNewspaper />,
-      bg: "bg-[#1d4ed8]",
-    },
-    {
-      _id: "2",
-      label: "CÔNG VIỆC HOÀN THÀNH",
-      total: totals["completed"] || 0,
-      icon: <MdAdminPanelSettings />,
-      bg: "bg-[#0f766e]",
-    },
-    {
-      _id: "3",
-      label: "QUÁ TRÌNH LÀM VIỆC",
-      total: totals["in progress"] || 0,
-      icon: <LuClipboardEdit />,
-      bg: "bg-[#f59e0b]",
-    },
-    {
-      _id: "4",
-      label: "DANH SÁCH",
-      total: totals["todo"],
-      icon: <FaArrowsToDot />,
-      bg: "bg-[#be185d]" || 0,
-    },
-  ];
-
-  const Card = ({ label, count, bg, icon }) => {
-    return (
-      <div className='w-full h-32 bg-white p-5 shadow-md rounded-md flex items-center justify-between'>
-        <div className='h-full flex flex-1 flex-col justify-between'>
-          <p className='text-base text-gray-600'>{label}</p>
-          <span className='text-2xl font-semibold'>{count}</span>
-          <span className='text-sm text-gray-400'>{"110 last month"}</span>
-        </div>
-
-        <div
-          className={clsx(
-            "w-10 h-10 rounded-full flex items-center justify-center text-white",
-            bg
-          )}
-        >
-          {icon}
-        </div>
-      </div>
-    );
-  };
-  return (
-    <div className='h-full py-4'>
-      <div className='grid grid-cols-1 md:grid-cols-4 gap-5'>
-        {stats.map(({ icon, bg, label, total }, index) => (
-          <Card key={index} icon={icon} bg={bg} label={label} count={total} />
->>>>>>> b421cf6a9adc58573433ad8fcc7ccea69fbf1ce7
->>>>>>> 494cec82d34dcaf88954e0c79dd992ca76128cc8
         ))}
       </div>
     </div>
@@ -210,13 +81,13 @@ const PieChartComponent = () => (
     <div style={styles.donutChartContainer}>
       <div style={styles.donutChart}>
         <div style={styles.donutHole}></div>
-        <div style={{...styles.donutRing, background: `conic-gradient(${pieData[0].color} 360deg, ${pieData[0].color} 360deg)`}}></div>
+        <div style={{ ...styles.donutRing, background: `conic-gradient(${pieData[0].color} 360deg, ${pieData[0].color} 360deg)` }}></div>
         <div style={styles.donutNumber}>{pieData[0].value}</div>
       </div>
     </div>
     <div style={styles.legend}>
       <div style={styles.legendItem}>
-        <div style={{...styles.legendColor, backgroundColor: pieData[0].color}}></div>
+        <div style={{ ...styles.legendColor, backgroundColor: pieData[0].color }}></div>
         <span>{pieData[0].name}</span>
       </div>
     </div>
@@ -229,7 +100,7 @@ const LollipopChartComponent = () => (
     <h6 style={styles.chartTitle}>Upcoming Tasks by Assignee</h6>
     <div style={styles.lollipopChart}>
       {lollipopData.map((item, index) => (
-        <div key={index} style={{...styles.lollipopItem, height: `${item.value * 20}px`}}>
+        <div key={index} style={{ ...styles.lollipopItem, height: `${item.value * 20}px` }}>
           <div style={styles.lollipopCircle}></div>
           <div style={styles.lollipopLine}></div>
           <span style={styles.lollipopLabel}>{item.name}</span>
@@ -251,7 +122,7 @@ const LineChartComponent = () => (
       </div>
       <div style={styles.lineChartContent}>
         {[0, 1, 2, 3].map((value) => (
-          <div key={value} style={{...styles.gridLine, bottom: `${value * 25}%`}} />
+          <div key={value} style={{ ...styles.gridLine, bottom: `${value * 25}%` }} />
         ))}
         {lineData.map((item, index) => (
           <div
@@ -276,25 +147,55 @@ const LineChartComponent = () => (
     </div>
     <div style={styles.lineLegend}>
       <span style={styles.lineLegendItem}>
-        <span style={{...styles.lineLegendColor, backgroundColor: '#E0E0E0'}}></span>
+        <span style={{ ...styles.lineLegendColor, backgroundColor: '#E0E0E0' }}></span>
         Total
       </span>
       <span style={styles.lineLegendItem}>
-        <span style={{...styles.lineLegendColor, backgroundColor: '#8884D8'}}></span>
+        <span style={{ ...styles.lineLegendColor, backgroundColor: '#8884D8' }}></span>
         Completed
       </span>
     </div>
     <p style={styles.chartFilters}>No Filters</p>
   </div>
 );
-<<<<<<< HEAD
-=======
 
->>>>>>> 494cec82d34dcaf88954e0c79dd992ca76128cc8
-// Component chính
 function App() {
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
   return (
     <div style={styles.app}>
+      {/* Nút download */}
+      <div style={styles.downloadContainer}>
+        <button
+          onClick={() => window.open('3121410169_LeNgocGiau_Seminar_BTBS(1).pdf')}
+          style={styles.downloadButton}
+        >
+          <div style={styles.downloadContent}>
+            <div style={styles.fileInfoWrapper}>
+              <span style={styles.pdfIcon}>PDF</span>
+              <span>3121410169_LeNgocGiau_Seminar_BTBS(1).pdf</span>
+              <span style={styles.fileSize}>730 KB</span>
+            </div>
+            <div style={styles.timeInfo}>49 phút trước</div>
+          </div>
+        </button>
+      </div>
+
+      <div style={styles.header}>
+        <div style={styles.datePickersWrapper}>
+          <DatePicker
+            label="From"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          <DatePicker
+            label="To"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </div>
+      </div>
       <div style={styles.statContainer}>
         <StatBox title="Completed tasks" value={0} filters="1 Filter" />
         <StatBox title="Incomplete tasks" value={4} filters="1 Filter" />
@@ -315,15 +216,96 @@ const styles = {
   app: {
     padding: '30px',
     fontFamily: 'Arial, sans-serif',
-    backgroundColor: '#1E1E1E',
+    backgroundColor: '#EEEEEE',
     color: '#fff',
     minHeight: '100vh',
+    position: 'relative',
+  },
+  downloadContainer: {
+    position: 'absolute',
+    top: '30px',
+    left: '30px',
+  },
+  downloadButton: {
+    display: 'block',
+    padding: '8px 12px',
+    backgroundColor: '#fff',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    color: '#333',
+    transition: 'background-color 0.2s',
+    width: 'fit-content',
+    '&:hover': {
+      backgroundColor: '#f5f5f5',
+    }
+  },
+  downloadContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  fileInfoWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  timeInfo: {
+    fontSize: '12px',
+    color: '#666',
+    marginLeft: '-250px',
+  },
+  pdfIcon: {
+    backgroundColor: '#f40f02',
+    color: 'white',
+    padding: '2px 4px',
+    borderRadius: '3px',
+    fontSize: '12px',
+    fontWeight: 'bold',
+  },
+  fileSize: {
+    color: '#666',
+    fontSize: '12px',
+    marginLeft: '8px',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginBottom: '20px',
+    width: '100%',
+  },
+  datePickersWrapper: {
+    display: 'flex',
+    gap: '15px',
+    alignItems: 'center',
+  },
+  datePickerContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  dateLabel: {
+    color: '#2D2D2D',
+    fontSize: '14px',
+    fontWeight: '500',
+  },
+  dateInput: {
+    padding: '8px 12px',
+    borderRadius: '6px',
+    border: '1px solid #3D3D3D',
+    backgroundColor: '#FFFFFF',
+    color: '#2D2D2D',
+    fontSize: '14px',
+    cursor: 'pointer',
+    outline: 'none',
   },
   statContainer: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
     gap: '25px',
     marginBottom: '30px',
+    marginTop: '40px',
   },
   statBox: {
     padding: '25px',
@@ -332,10 +314,6 @@ const styles = {
     transition: 'all 0.3s ease',
     cursor: 'pointer',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    '&:hover': {
-      transform: 'translateY(-5px)',
-      boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)',
-    },
   },
   statValue: {
     fontSize: '2.8em',
@@ -365,10 +343,6 @@ const styles = {
     position: 'relative',
     transition: 'all 0.3s ease',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    '&:hover': {
-      transform: 'translateY(-5px)',
-      boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)',
-    },
   },
   chartTitle: {
     margin: '0 0 20px',
@@ -566,10 +540,7 @@ const styles = {
     marginRight: '8px',
     borderRadius: '3px',
   },
+
 };
 
-<<<<<<< HEAD
 export default App;
-=======
-export default App;
->>>>>>> 494cec82d34dcaf88954e0c79dd992ca76128cc8

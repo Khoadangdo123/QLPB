@@ -165,12 +165,12 @@ const Sidebar = () => {
       }
     };
     startConnection();
-    return () => {
-      if (connection) {
-        connection.off("loadDuAn");
-        connection.off("loadHanhDong");
-      }
-    };
+    // return () => {
+    //   if (connection) {
+    //     connection.off("loadDuAn");
+    //     connection.off("loadHanhDong");
+    //   }
+    // };
   }, [connection, dispatch]);
   const location = useLocation();
   const currentPath = location.pathname;
