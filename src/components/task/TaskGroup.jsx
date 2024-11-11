@@ -71,6 +71,25 @@ const TaskGroup = ({ phanduan, duAn }) => {
     ));
   };
 
+  // return (
+  //   <div className="w-full bg-transparent border-b-1">
+  //     <div className="p-4 w-full flex items-center justify-between font-semibold bg-white text-gray-600 mb-2 mt-4 shadow-sm border-y text-sm">
+  //       <span>{phanduan.tenPhan}</span>
+  //       {permissionAction.includes("Thêm") &&
+  //       <Button
+  //         onClick={() => setOpen(true)}
+  //         label="Tạo công việc"
+  //         className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 px-3 text-xs"
+  //       />}
+  //     </div>
+      
+  //     <div className="bg-slate-50 shadow-md">
+  //       {groupedTasks['root'] ? renderTasks(groupedTasks['root'], duAn) : <p>Chưa có công việc nào.</p>}
+  //     </div>
+
+  //     <AddTask open={open} setOpen={setOpen} phanDuAn={phanduan.maPhanDuAn} duAn={duAn} congViecCha={taskRoot} />
+  //   </div>
+  // );
   return (
     <div className="w-full bg-transparent border-b-1">
       <div className="p-4 w-full flex items-center justify-between font-semibold bg-white text-gray-600 mb-2 mt-4 shadow-sm border-y text-sm">
@@ -83,10 +102,10 @@ const TaskGroup = ({ phanduan, duAn }) => {
         />}
       </div>
       
-      <div className="bg-slate-50 shadow-md">
+      <div className="bg-slate-50 shadow-md p-4 space-y-2">
         {groupedTasks['root'] ? renderTasks(groupedTasks['root'], duAn) : <p>Chưa có công việc nào.</p>}
       </div>
-
+  
       <AddTask open={open} setOpen={setOpen} phanDuAn={phanduan.maPhanDuAn} duAn={duAn} congViecCha={taskRoot} />
     </div>
   );

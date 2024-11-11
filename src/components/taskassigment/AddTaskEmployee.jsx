@@ -10,7 +10,7 @@ import { addTaskHistory } from "../../redux/taskhistory/taskhistorySlice";
 const LISTS = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const PRIORITY = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const uploadedFileURLs = [];
-const AddTaskEmployee = ({ open, setOpen,maCongViec,maPhongBan,tenCongViec}) => {
+const AddTaskEmployee = ({ open, setOpen,maCongViec,maPhongBan,tenCongViec,nhanViens}) => {
   const task = "";
   const {
     register,
@@ -76,6 +76,7 @@ const AddTaskEmployee = ({ open, setOpen,maCongViec,maPhongBan,tenCongViec}) => 
             <EmployeeSelectDepartment maPhongBan={maPhongBan}
             selectedEmployees={selectedEmployees}
             setSelectedEmployees={setSelectedEmployees}
+            nhanViens={nhanViens}
           />
             <div className='bg-gray-50 py-6 sm:flex sm:flex-row-reverse gap-4'>
               {uploading ? (

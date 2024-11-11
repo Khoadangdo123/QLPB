@@ -108,8 +108,6 @@ const Sidebar = () => {
       }
       setViewFunction(visibleLinks);
       localStorage.setItem("acc_url", JSON.stringify(acc_link));
-      console.log(localStorage.getItem("acc_url"));
-      console.log(acc_link);
       setLoadingProjects(false);
     };
     fetchData();

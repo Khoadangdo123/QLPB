@@ -46,7 +46,6 @@ const AddTaskTransfer = ({
     };
     fetchEmployees();
   }, [currentEmployee]);
-  //console.log(employees)
   const submitHandler = async (data) => {
     if (
       selectedCurrentEmployee.length === 0 ||

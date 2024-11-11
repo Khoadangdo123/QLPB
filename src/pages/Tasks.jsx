@@ -40,9 +40,10 @@ const Tasks = () => {
   const [loading, setLoading] = useState(false);
   const [sections, setSections] = useState([]);
   const [connection, setConnection] = useState(null);
-  const [showTimeline, setShowTimeline] = useState(false);
-  const [showRemider,setShowRemider]=useState(false)
   const [timelineModalOpen, setTimelineModalOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOrder, setSortOrder] = useState("asc");
+  const [filterStatus, setFilterStatus] = useState("all");
   const maquyen=Number(localStorage.getItem("permissionId"))
   const [permissionAction,setpermissionAction]=useState([])
   const duan=useSelector((state) =>
@@ -68,6 +69,7 @@ const Tasks = () => {
       .withUrl(API_ENDPOINTS.HUB_URL).withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
+      
 
     setConnection(newConnection);
   },[])
@@ -155,7 +157,7 @@ const Tasks = () => {
           </div>
         )}
       </div>
-
+      
       <Tabs tabs={TABS} setSelected={setSelected}>
         {selected !== 0 ? (
           <BoardView tasks={tasks} />

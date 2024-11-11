@@ -27,6 +27,8 @@ const Login = () => {
       const result = await dispath(AuthLogin(AuthRequest))
       if(result.payload && result.payload.isSuccess){
         navigate('/home')
+      }else{
+        alert("Mật khẩu hoặc tài khoản không đúng")
       }
     }catch(e){
       console.log(e);

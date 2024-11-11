@@ -30,7 +30,6 @@ function Layout() {
   const location = useLocation();
   const authUser = useSelector((state) => state.authen);
   const acc_link = JSON.parse(localStorage.getItem('acc_url')) || [];
-  console.log(acc_link)
   if(authUser.user===null || localStorage.getItem("authUser")===null || localStorage.getItem("authUser")===undefined){
     return <Navigate to="/log-in" replace />;
   }
@@ -43,7 +42,6 @@ function Layout() {
   console.log(payload)
   localStorage.setItem("userId",payload.MaTaiKhoan)
   localStorage.setItem("permissionId",Number(payload.MaNhomQuyen))
-  console.log(authUser)
   return (
     <div className='w-full h-screen flex flex-col md:flex-row'>
       <div className='w-1/5 h-screen bg-white sticky top-0 hidden md:block'>

@@ -73,7 +73,7 @@ const TaskAssignment = () => {
           <div className="flex-1 px-2">Trình Trạng</div>
           <div className="flex-1 px-2">File</div>
         </div>
-        <div className="bg-slate-50 rounded-md shadow-md">
+        <div className="bg-slate-50 rounded-md shadow-md p-4 space-y-2">
           {phancongs.list.map((item, index) => (
             <TaskAssignmentList congviec={item} key={index} />
           ))}
@@ -81,5 +81,6 @@ const TaskAssignment = () => {
       </div>
     </div>
   );
+  
 };
 export default TaskAssignment;

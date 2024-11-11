@@ -17,7 +17,7 @@ import DetailTask from "./DetailTask";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchByIdTask, updateCompleteTask } from "../../redux/task/taskSlice";
 import EmployeeInfo from "../EmployeeInfo";
-import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
 import UpdateTask from "./UpdateTask";
 import AddTaskTransfer from "../tasktransfer/AddTaskTransfer";
 import TaskHistory from "./TaskHistory";
@@ -76,10 +76,21 @@ const TaskListItem = ({ congviec, duAn }) => {
   }, [maCongViec]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl(API_ENDPOINTS.HUB_URL)
+      .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
+  //   newConnection.serverTimeoutInMilliseconds = 30000;
+  //   newConnection.keepAliveIntervalInMilliseconds = 20000;
+  //   newConnection.start()
+  //   .then(() => console.log("Kết nối SignalR thành công"))
+  //   .catch((err) => console.error("Kết nối SignalR thất bại:", err));
+
+  //  newConnection.onclose(async (error) => {
+  //   console.error("Kết nối bị ngắt:", error);
+  //   // Tự động thử kết nối lại nếu bị ngắt kết nối
+  //   await newConnection.start().catch((err) => console.error("Thử kết nối lại thất bại:", err));
+  // });
     setConnection(newConnection);
   }, []);
   useEffect(() => {
@@ -125,9 +136,7 @@ const TaskListItem = ({ congviec, duAn }) => {
   const chiuTrachNhiem = phanCongs?.filter(
     (m) => m.vaiTro === "Người Chịu Trách Nhiệm"
   );
-  const thucHien = phanCongs?.filter(
-    (m) => m.vaiTro === "Người Thực Hiện"
-  );
+  const thucHien = phanCongs?.filter((m) => m.vaiTro === "Người Thực Hiện");
   // const congViecHoanThanh =
   //   phancong?.phanCongs?.filter((task) => task.trangThaiCongViec === true)
   //     .length ?? 0;
@@ -182,7 +191,9 @@ const TaskListItem = ({ congviec, duAn }) => {
         isParentTask(congviec) ? "" : "ml-4"
       }`}
     >
-      <div className={`w-full flex items-center py-1 border-b text-sm ${itemClass}`}>
+      <div
+        className={`w-full flex items-center py-1 border-b text-sm ${itemClass}`}
+      >
         <div
           className={`flex-1 w-1/4 px-4 truncate cursor-pointer ${
             isParentTask(congviec) ? "font-bold" : "pl-4"
@@ -219,7 +230,15 @@ const TaskListItem = ({ congviec, duAn }) => {
             }}
           >
             {congviec.thoiGianKetThuc ? (
-              formatDate(new Date(congviec.thoiGianKetThuc))
+              <span
+                className={`${
+                  new Date(congviec.thoiGianKetThuc) < new Date()
+                    ? "text-red-500"
+                    : "text-green-500"
+                }`}
+              >
+                {formatDate(new Date(congviec.thoiGianKetThuc))}
+              </span>
             ) : (
               <div className="p-1 w-fit border-2 border-dashed rounded-full border-gray-400">
                 <BiCalendar size={20} />
@@ -270,18 +289,35 @@ const TaskListItem = ({ congviec, duAn }) => {
           </button>
         </div>
         <div className="flex-1 px-4 ">
-          <Selection items={stages} selectedItem={congviec.trangThaiCongViec} />
+          {/* <Selection items={stages} selectedItem={congviec.trangThaiCongViec} /> */}
+          <span
+            className={`${
+              congviec.trangThaiCongViec === true
+                ? "text-green-500"
+                : congviec.trangThaiCongViec === false &&
+                  new Date(congviec.thoiGianKetThuc) < new Date()
+                ? "text-red-500"
+                : "text-yellow-500"
+            }`}
+          >
+            {congviec.trangThaiCongViec === true
+              ? "Đã hoàn thành"
+              : congviec.trangThaiCongViec === false &&
+                new Date(congviec.thoiGianKetThuc) > new Date()
+              ? "Chưa hoàn thành"
+              : "Trì hoãn"}
+          </span>
         </div>
 
-        <div className="flex-1 px-4 flex flex-wrap justify-end items-center gap-2">
+        <div className="flex-1 px-4 flex flex-wrap justify-end items-center gap-1">
           {permissionAction.includes("Thêm") && (
             <Button
               onClick={() => {
                 setTaskRoot(congviec.maCongViec);
                 setOpen(true);
               }}
-              icon={<IoMdAdd className="text-lg" />}
-              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
+              icon={<IoMdAdd className="text-base" />}
+              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs h-7" // Giảm padding và xác định chiều cao
             />
           )}
           {permissionAction.includes("Sửa") && (
@@ -289,15 +325,15 @@ const TaskListItem = ({ congviec, duAn }) => {
               onClick={() => {
                 setOpenUpdate(true);
               }}
-              icon={<IoMdCreate className="text-lg" />}
-              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
+              icon={<IoMdCreate className="text-base" />}
+              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs h-7" // Giảm padding và xác định chiều cao
             />
           )}
           {permissionAction.includes("Xóa") && (
             <Button
               onClick={() => {}}
-              icon={<IoMdTrash className="text-lg" />}
-              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
+              icon={<IoMdTrash className="text-base" />}
+              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs h-7" // Giảm padding và xác định chiều cao
             />
           )}
           {permissionAction.includes("Sửa") && (
@@ -305,16 +341,16 @@ const TaskListItem = ({ congviec, duAn }) => {
               onClick={() => {
                 setOpenTransfer(true);
               }}
-              icon={<IoMdSwap className="text-lg" />}
-              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
+              icon={<IoMdSwap className="text-base" />}
+              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs h-7" // Giảm padding và xác định chiều cao
             />
           )}
           <Button
             onClick={() => {
               setOpenTaskHistory(true);
             }}
-            icon={<IoMdTime className="text-lg" />}
-            className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1.5 text-xs h-8 gap-0.5" // Giảm padding và xác định chiều cao
+            icon={<IoMdTime className="text-base" />}
+            className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs h-7" // Giảm padding và xác định chiều cao
           />
         </div>
       </div>

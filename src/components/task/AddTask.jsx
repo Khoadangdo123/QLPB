@@ -43,16 +43,22 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
   const lichSuCongViec = useSelector((state) => state.taskhistories.list);
   const submitHandler = async (data) => {
     console.log(congViecCha, duAn);
+    if(data.thoiGianBatDau>data.thoiGianKetThuc){
+      alert("Thời kết thúc phải lớn hơn thời gian bắt đầu")
+      return
+    }
     let CongViec = {
       maPhanDuAn: Number(phanDuAn),
       maCongViecCha: congViecCha === false ? null : congViecCha,
       tenCongViec: data.tenCongViec,
       moTa: data.moTa,
       mucDoUuTien: stage,
+      thoiGianBatDau: data.thoiGianBatDau,
       thoiGianKetThuc: data.thoiGianKetThuc,
       trangThaiCongViec: false,
       mucDoHoanThanh: 0,
     };
+    console.log(CongViec)
     console.log(selectedEmployees);
     console.log(selectedDepartment);
     console.log(CongViec.tenCongViec);
@@ -87,17 +93,30 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
                 } chịu trách nhiệm`,
               })
             );
-            await dispatch(
-              sendGmail({
-                name: department.responsiblePerson,
-                toGmail: department.email,
-                subject: "Thông Tin Phân Công Dự Án",
-                body: generateEmailTemplateForManager(department, CongViec),
-              })
-            );
+            // await dispatch(
+            //   sendGmail({
+            //     name: department.responsiblePerson,
+            //     toGmail: department.email,
+            //     subject: "Thông Tin Phân Công Dự Án",
+            //     body: generateEmailTemplateForManager(department, CongViec),
+            //   })
+            // );
           }
         );
         await Promise.all(departmentPromises);
+        const emailPromises = selectedDepartment.map((department) =>
+          dispatch(
+            sendGmail({
+              name: department.responsiblePerson,
+              toGmail: department.email,
+              subject: "Thông Tin Phân Công Dự Án",
+              body: generateEmailTemplateForManager(department, CongViec),
+            })
+          )
+        );
+    
+        // Chờ cho tất cả email được gửi
+        await Promise.all(emailPromises);
         await dispatch(
           sendNotification({
             maCongViec: 1,
@@ -128,16 +147,28 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
               } với vai trò ${employee.vaiTro}`,
             })
           );
-          await dispatch(
+          // await dispatch(
+          //   sendGmail({
+          //     name: employee.tenNhanVien,
+          //     toGmail: employee.email,
+          //     subject: "Thông Tin Phân Công Dự Án",
+          //     body: generateEmailTemplate(employee, CongViec),
+          //   })
+          // );
+        });
+        await Promise.all(employeePromises);
+        const employeeEmailPromises = selectedEmployees.map((employee) =>
+          dispatch(
             sendGmail({
               name: employee.tenNhanVien,
               toGmail: employee.email,
               subject: "Thông Tin Phân Công Dự Án",
               body: generateEmailTemplate(employee, CongViec),
             })
-          );
-        });
-        await Promise.all(employeePromises);
+          )
+        );
+        // Chờ cho tất cả email được gửi
+        await Promise.all(employeeEmailPromises);
         await dispatch(
           sendNotification({
             maCongViec: 1,
@@ -204,6 +235,41 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
                 selected={selectedDepartment}
                 setSelected={setSelectedDepartment}
               />
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="w-full sm:w-1/2">
+                  <Textbox
+                    placeholder="Ngày bắt đầu"
+                    type="datetime-local"
+                    name="date"
+                    label="Ngày bắt đầu"
+                    className="w-full rounded"
+                    register={register("thoiGianBatDau", {
+                      required: "Ngày là bắt buộc!",
+                    })}
+                    error={
+                      errors.thoiGianBatDau ? errors.thoiGianBatDau.message : ""
+                    }
+                  />
+                </div>
+
+                <div className="w-full sm:w-1/2">
+                  <Textbox
+                    placeholder="Ngày kết thúc"
+                    type="datetime-local"
+                    name="date"
+                    label="Ngày kết thúc"
+                    className="w-full rounded"
+                    register={register("thoiGianKetThuc", {
+                      required: "Ngày là bắt buộc!",
+                    })}
+                    error={
+                      errors.thoiGianKetThuc
+                        ? errors.thoiGianKetThuc.message
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
               <div className="flex gap-4">
                 <SelectList
                   label="Mức Độ Ưu Tiên"
@@ -211,20 +277,6 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
                   selected={stage}
                   setSelected={setStage}
                 />
-
-                <div className="w-full">
-                  <Textbox
-                    placeholder="Ngày"
-                    type="datetime-local"
-                    name="date"
-                    label="Ngày hoàn thành"
-                    className="w-full rounded"
-                    register={register("thoiGianKetThuc", {
-                      required: "Ngày là bắt buộc!",
-                    })}
-                    error={errors.date ? errors.date.message : ""}
-                  />
-                </div>
               </div>
 
               <div className="bg-gray-50 py-6 sm:flex sm:flex-row-reverse gap-4">

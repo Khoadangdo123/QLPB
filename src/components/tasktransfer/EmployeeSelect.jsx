@@ -5,11 +5,10 @@ import { fetchEmployees } from '../../redux/employees/employeeSlice';
 const EmployeeSelectTransfer = ({ selectedEmployees, setSelectedEmployees,maPhongBan, employees }) => {
     const dispatch = useDispatch();
     const nhanviens = useSelector((state) => state.employees.list);
-
     useEffect(() => {
         dispatch(fetchEmployees({ search: '', page: 30 }));
     }, [dispatch]);
-
+    console.log(maPhongBan)
     const handleSelectChange = (e) => {
         const maNhanVien = e.target.value;
         const selectedEmployee = nhanviens.find((item) => item.maNhanVien === Number(maNhanVien));
@@ -40,9 +39,17 @@ const EmployeeSelectTransfer = ({ selectedEmployees, setSelectedEmployees,maPhon
             item.maNhanVien === maNhanVien ? { ...item, vaiTro } : item
         ));
     };
-    const validNhanvien = nhanviens.filter(
-        (nv) => !employees.some((emp) => emp.maNhanVien === nv.maNhanVien)
-    );
+    // const validNhanvien = nhanviens.filter(
+    //     (nv) => !employees.some((emp) => emp.maNhanVien === nv.maNhanVien)
+    // );
+    const validNhanvien = nhanviens.filter((nv) => {
+        // If maPhongBan is provided, filter employees by their department
+        if (maPhongBan) {
+            return nv.maPhongBan === maPhongBan && !employees.some((emp) => emp.maNhanVien === nv.maNhanVien);
+        }
+        // Otherwise, return employees who are not already selected
+        return !employees.some((emp) => emp.maNhanVien === nv.maNhanVien);
+    });
     return (
         <div className='flex flex-col'>
             <label className="block text-sm font-medium text-gray-700">Nhân Viên</label>
