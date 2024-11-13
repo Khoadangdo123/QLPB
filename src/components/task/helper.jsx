@@ -123,7 +123,7 @@ export function initTasks() {
           name: i.tenCongViec,
           id: i.maCongViec,
           type: "task",
-          progress: 80,
+          progress: i.mucDoHoanThanh,
           isDisabled: true,
           styles: {
             progressColor: taskColor,

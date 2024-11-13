@@ -26,7 +26,6 @@ const AddTaskEmployee = ({ open, setOpen,maCongViec,maPhongBan,tenCongViec,nhanV
   const [uploading, setUploading] = useState(false);
   const submitHandler =async (data) => {
     try{
-      //await dispatch(fetchByIdProject(Number(duAn)))
       if(Array.isArray(selectedEmployees) && selectedEmployees.length > 0){
         const employeePromises = selectedEmployees.map(async (employee) => {
             console.log({

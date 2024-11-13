@@ -9,6 +9,7 @@ import ModalWrapper from "../ModalWrapper";
 import {fetchDepartments } from "../../redux/departments/departmentSlice";
 import { addEmployee, fetchEmployees, updateEmployee } from "../../redux/employees/employeeSlice";
 import Employees from "../../pages/Employee";
+import { toast } from "sonner";
 const UpdateEmployee = ({ open, setOpen, employeeData }) => {
   const defaultValues = employeeData ?? {};
   //const { user } = useSelector((state) => state.auth);
@@ -50,8 +51,10 @@ const UpdateEmployee = ({ open, setOpen, employeeData }) => {
         email:data.email}
       })); 
       await dispatch(fetchEmployees({ search: '', page: 10 }));
+      toast.success("Cập nhật thành công")
       setOpen(false);
     } catch (error) {
+      toast.error("Cập nhật thất bại")
       console.error("Failed to update employee: ", error);
     }
   };

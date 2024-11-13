@@ -10,6 +10,7 @@ import { HubConnectionBuilder,LogLevel,HttpTransportType } from '@microsoft/sign
 import { fetchAccounts } from "../redux/accounts/accountSlice";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 import API_ENDPOINTS from "../constant/linkapi";
+import getConnection from "../hub/signalRConnection";
 const Accounts = () => {
   const [pageSize, setPageSize] = useState(10);
   const accounts = useSelector((state) => state.accounts.list);
@@ -18,9 +19,10 @@ const Accounts = () => {
   const [selected, setSelected] = useState(null);
   const [openUpdate, setOpenUpdate] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
-  const [connection, setConnection] = useState(null);
+  //const [connection, setConnection] = useState(null);
   const [permissionAction,setpermissionAction]=useState([])
   const maquyen=Number(localStorage.getItem("permissionId"))
+  const connection=getConnection()
   const dispatch = useDispatch();
   useEffect(() => {
     const fetchData = async () => {
@@ -36,38 +38,53 @@ const Accounts = () => {
     
     fetchData();
   }, [dispatch, pageSize]);
-  useEffect(()=>{
-    const newConnection = new HubConnectionBuilder()
-    .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
-    .withAutomaticReconnect([0, 2000, 10000, 30000])
-    .configureLogging(LogLevel.Information)
-    .build();
-    newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
-    setConnection(newConnection);
-  },[])
+  // useEffect(()=>{
+  //   const newConnection = new HubConnectionBuilder()
+  //   .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
+  //   .withAutomaticReconnect([0, 2000, 10000, 30000])
+  //   .configureLogging(LogLevel.Information)
+  //   .build();
+  //   newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
+  //   setConnection(newConnection);
+  // },[])
   useEffect(()=>{
     const connectSignalR = async () => {
-      if (connection && connection.state === "Disconnected") {
-        try {
-          await connection.start();
-          console.log("Connected!");
-  
-          connection.on("loadTaiKhoan", async () => {
-            await dispatch(fetchAccounts({ search: '', page: pageSize }));
-          });
-  
-          connection.on("loadHanhDong", async () => {
-            const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Tài Khoản" })).unwrap();
-            setpermissionAction(result);
-          });
-        } catch (error) {
-          console.error("Connection failed: ", error);
+      if(connection){
+        if (connection.state === "Disconnected") {
+          try {
+            await connection.start();
+            console.log("Connected!");
+            connection.on("loadTaiKhoan", async () => {
+              await dispatch(fetchAccounts({ search: '', page: pageSize }));
+            });
+            connection.on("loadHanhDong", async () => {
+              const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Tài Khoản" })).unwrap();
+              setpermissionAction(result);
+              console.log("account")
+            });
+          } catch (error) {
+            console.error("Connection failed: ", error);
+          }
+        }else if(connection.state === "Connected"){
+          try {
+            console.log("Connected!");
+            connection.on("loadTaiKhoan", async () => {
+              await dispatch(fetchAccounts({ search: '', page: pageSize }));
+            });
+            connection.on("loadHanhDong", async () => {
+              const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Tài Khoản" })).unwrap();
+              setpermissionAction(result);
+              console.log("account")
+            });
+          } catch (error) {
+            console.error("Connection failed: ", error);
+          }
         }
       }
     };
   
     connectSignalR();
-  
+
     return () => {
       if (connection) {
         connection.off("loadTaiKhoan");

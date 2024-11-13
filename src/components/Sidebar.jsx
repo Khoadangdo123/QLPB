@@ -18,6 +18,7 @@ import { FaUserGroup } from "react-icons/fa6";
 import { GoProject } from "react-icons/go";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 import API_ENDPOINTS from "../constant/linkapi";
+import { toast } from "react-toastify";
 const Sidebar = () => {
   const dispatch = useDispatch();
   const [connection, setConnection] = useState(null);
@@ -26,7 +27,6 @@ const Sidebar = () => {
   const [permissionAction, setpermissionAction] = useState([]);
   const [viewFuntions, setViewFunction] = useState([]);
   const navigate = useNavigate();
-  //const { user } = useSelector((state) => state.authen);
   const duans = useSelector((state) => state.projects.list);
   const maquyen = Number(localStorage.getItem("permissionId"));
   const taskSubMenu = duans.map((duan) => ({
@@ -131,7 +131,6 @@ const Sidebar = () => {
           connection.on("loadDuAn", async () => {
             await dispatch(fetchProjects({ search: "", page: 20 }));
           });
-
           connection.on("loadHanhDong", async () => {
             const result = await dispatch(
               checkPermission({ maQuyen: maquyen, tenChucNang: "Dự Án" })
@@ -153,12 +152,12 @@ const Sidebar = () => {
                 }
               }
             }
-            console.log(visibleLinks);
             setViewFunction(visibleLinks);
             localStorage.setItem("acc_url", JSON.stringify(acc_link));
-            console.log(localStorage.getItem("acc_url"));
-            console.log(acc_link);
           });
+          connection.on("nhantin", async (message) => {
+            alert(message)
+          })
         } catch (error) {
           console.error("Connection failed: ", error);
         }
@@ -219,8 +218,10 @@ const Sidebar = () => {
       );
       console.log("Dự án được tạo:", projectName);
       setProjectName("");
+      toast.success("Thêm thành công")
       setModalOpen(false);
     } catch (e) {
+      toast.error("Thêm thất bại")
       console.log(e);
     }
   };

@@ -15,6 +15,7 @@ import FileUpload from "./FileUpload";
 import { IoMdCloudUpload } from "react-icons/io";
 import { fetchAllFile } from "../../redux/file/fileSlice";
 import { AiFillFile, AiFillDelete, AiOutlineDownload } from "react-icons/ai";
+import getConnection from "../../hub/signalRConnection";
 import {
   FaFilePdf,
   FaFileWord,
@@ -39,14 +40,17 @@ const TaskAssignmentList = ({ congviec }) => {
   const [expanded, setExpanded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [completed, setCompleted] = useState(congviec.trangThaiCongViec);
-  const [connection, setConnection] = useState(null);
+  //const [connection, setConnection] = useState(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [selectedFileUrl, setSelectedFileUrl] = useState("");
   const [filteredFiles, setFilteredFiles] = useState([]);
   const [fileDetails, setFileDetails] = useState([]);
   const [permissionAction, setpermissionAction] = useState([]);
+  const [setDay,setStatusDay]=useState(true)
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const connection=getConnection()
   const maquyen = Number(localStorage.getItem("permissionId"));
   const maCongViec = congviec.maCongViec;
   const vaiTro = congviec.vaiTro;
@@ -100,84 +104,144 @@ const TaskAssignmentList = ({ congviec }) => {
       fetchData();
     }
   }, [maCongViec, dispatch]);
-  useEffect(() => {
-    const newConnection = new HubConnectionBuilder()
-    .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
-    .withAutomaticReconnect([0, 2000, 10000, 30000])
-    .configureLogging(LogLevel.Information)
-    .build();
-    newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
-    setConnection(newConnection);
-  }, []);
+  // useEffect(() => {
+  //   const newConnection = new HubConnectionBuilder()
+  //   .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
+  //   .withAutomaticReconnect([0, 2000, 10000, 30000])
+  //   .configureLogging(LogLevel.Information)
+  //   .build();
+  //   newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
+  //   setConnection(newConnection);
+  // }, []);
   useEffect(() => {
     const startConnection = async () => {
-      if (connection && connection.state === "Disconnected") {
-        try {
-          await connection.start();
-          console.log("Connection started");
-          connection.on("loadPhanCong", async () => {
-            setLoading(true);
-            await dispatch(fetchByIdTask(maCongViec));
-            setLoading(false);
-          });
-          //
-          connection.on("loadCongViec", async () => {
-            setLoading(true);
-            await dispatch(fetchByIdTask(maCongViec));
-            setLoading(false);
-          });
-          connection.on("loadHanhDong", async () => {
-            const result = await dispatch(
-              checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })
-            ).unwrap();
-            setpermissionAction(result);
-          });
-          connection.on("loadFile", async () => {
-            setLoading(true);
-            return Promise.all([
-              dispatch(fetchByIdTask(maCongViec)),
-              dispatch(fetchAllFile()).unwrap(),
-              dispatch(fetchChiTietFileByPhanCong(maPhanCong)).unwrap(),
-            ])
-              .then(([taskResponse, files, result]) => {
-                const matchingFiles = files.filter((file) =>
-                  result.some((detail) => detail.maFile === file.maFile)
-                );
-                const filesWithDetails = matchingFiles.map((file) => {
-                  const correspondingDetail = result.find(
-                    (detail) => detail.maFile === file.maFile
+      if(connection){
+        if (connection.state === "Disconnected") {
+          try {
+            await connection.start();
+            console.log("Connection started");
+            connection.on("loadPhanCong", async () => {
+              setLoading(true);
+              await dispatch(fetchByIdTask(maCongViec));
+              setLoading(false);
+            });
+            //
+            connection.on("loadCongViec", async () => {
+              setLoading(true);
+              await dispatch(fetchByIdTask(maCongViec));
+              setLoading(false);
+            });
+            connection.on("loadHanhDong", async () => {
+              const result = await dispatch(
+                checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })
+              ).unwrap();
+              setpermissionAction(result);
+            });
+            connection.on("loadFile", async () => {
+              setLoading(true);
+              return Promise.all([
+                dispatch(fetchByIdTask(maCongViec)),
+                dispatch(fetchAllFile()).unwrap(),
+                dispatch(fetchChiTietFileByPhanCong(maPhanCong)).unwrap(),
+              ])
+                .then(([taskResponse, files, result]) => {
+                  const matchingFiles = files.filter((file) =>
+                    result.some((detail) => detail.maFile === file.maFile)
                   );
-                  const correspondingStatus = result.find(
-                    (detail) => detail.maFile === file.maFile
-                  )?.trangThai;
-                  return {
-                    ...file,
-                    maChiTietFile: correspondingDetail
-                      ? correspondingDetail.maChiTietFile
-                      : null,
-                    trangThaiFile: correspondingStatus,
-                  };
+                  const filesWithDetails = matchingFiles.map((file) => {
+                    const correspondingDetail = result.find(
+                      (detail) => detail.maFile === file.maFile
+                    );
+                    const correspondingStatus = result.find(
+                      (detail) => detail.maFile === file.maFile
+                    )?.trangThai;
+                    return {
+                      ...file,
+                      maChiTietFile: correspondingDetail
+                        ? correspondingDetail.maChiTietFile
+                        : null,
+                      trangThaiFile: correspondingStatus,
+                    };
+                  });
+  
+                  setFilteredFiles(filesWithDetails);
+                })
+                .catch((error) => {
+                  console.error("Error fetching task:", error);
+                })
+                .finally(() => {
+                  setLoading(false);
                 });
-
-                setFilteredFiles(filesWithDetails);
-              })
-              .catch((error) => {
-                console.error("Error fetching task:", error);
-              })
-              .finally(() => {
-                setLoading(false);
-              });
-          });
-        } catch (err) {
-          console.error("Error while starting connection: ", err);
+            });
+            console.log("connected---")
+          } catch (err) {
+            console.error("Error while starting connection: ", err);
+          }
+        }else if(connection.state === "Connected"){
+          try {
+            console.log("Connection started");
+            connection.on("loadPhanCong", async () => {
+              setLoading(true);
+              await dispatch(fetchByIdTask(maCongViec));
+              setLoading(false);
+            });
+            //
+            connection.on("loadCongViec", async () => {
+              setLoading(true);
+              await dispatch(fetchByIdTask(maCongViec));
+              setLoading(false);
+            });
+            connection.on("loadHanhDong", async () => {
+              const result = await dispatch(
+                checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })
+              ).unwrap();
+              setpermissionAction(result);
+            });
+            connection.on("loadFile", async () => {
+              setLoading(true);
+              return Promise.all([
+                dispatch(fetchByIdTask(maCongViec)),
+                dispatch(fetchAllFile()).unwrap(),
+                dispatch(fetchChiTietFileByPhanCong(maPhanCong)).unwrap(),
+              ])
+                .then(([taskResponse, files, result]) => {
+                  const matchingFiles = files.filter((file) =>
+                    result.some((detail) => detail.maFile === file.maFile)
+                  );
+                  const filesWithDetails = matchingFiles.map((file) => {
+                    const correspondingDetail = result.find(
+                      (detail) => detail.maFile === file.maFile
+                    );
+                    const correspondingStatus = result.find(
+                      (detail) => detail.maFile === file.maFile
+                    )?.trangThai;
+                    return {
+                      ...file,
+                      maChiTietFile: correspondingDetail
+                        ? correspondingDetail.maChiTietFile
+                        : null,
+                      trangThaiFile: correspondingStatus,
+                    };
+                  });
+  
+                  setFilteredFiles(filesWithDetails);
+                })
+                .catch((error) => {
+                  console.error("Error fetching task:", error);
+                })
+                .finally(() => {
+                  setLoading(false);
+                });
+            });
+            console.log("connected---")
+          } catch (err) {
+            console.error("Error while starting connection: ", err);
+          }
         }
       }
     };
 
-    if (connection) {
-      startConnection();
-    }
-
+    startConnection();
     return () => {
       if (connection) {
         connection.off("loadFile");
@@ -186,7 +250,10 @@ const TaskAssignmentList = ({ congviec }) => {
         connection.off("loadHanhDong");
       }
     };
-  }, [connection, dispatch, maCongViec]);
+  }, [connection, dispatch, maCongViec,maquyen]);
+  useEffect(()=>{
+
+  },[])
   if (loading) {
     return (
       <div

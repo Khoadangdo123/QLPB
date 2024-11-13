@@ -8,13 +8,14 @@ import TaskAssignmentList from "../components/taskassigment/TaskAssignmentList";
 import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
 import { useNavigate } from "react-router-dom";
 import API_ENDPOINTS from "../constant/linkapi";
+import getConnection from "../hub/signalRConnection";
 const TaskAssignment = () => {
-  const [connection, setConnection] = useState(null);
+  //const [connection, setConnection] = useState(null);
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(true);
   const maNhanVien = Number(localStorage.getItem("userId"));
   const phancongs = useSelector((state) => state.assignments);
-  const navigate=useNavigate()
+  const connection=getConnection()
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);   
@@ -23,41 +24,49 @@ const TaskAssignment = () => {
     };
     loadData();
   }, [maNhanVien, dispatch]);
-  useEffect(() => {
-    const newConnection = new HubConnectionBuilder()
-    .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
-    .withAutomaticReconnect([0, 2000, 10000, 30000])
-    .configureLogging(LogLevel.Information)
-    .build();
-    newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
-    setConnection(newConnection);
-  }, []);
+  
   useEffect(() => {
     const startConnection = async () => {
-      if (connection && connection.state === "Disconnected") {
-        try {
-          await connection.start();
-          console.log("Connection started");
-          connection.on("loadPhanCong", async () => {
-            setLoading(true);
-            await dispatch(fetchEmployeeAssignment(maNhanVien));
-            setLoading(false);
-          });
-          connection.on("task", async (message) => {
-            alert(message);
-          });
-        } catch (err) {
-          console.error("Error while starting connection: ", err);
+      if(connection){
+        if (connection.state === "Disconnected") {
+          try {
+            await connection.start();
+            console.log("Connection started");
+            connection.on("loadPhanCong", async () => {
+              setLoading(true);
+              await dispatch(fetchEmployeeAssignment(maNhanVien));
+              setLoading(false);
+            });
+            connection.on("task", async (message) => {
+              alert(message);
+            });
+          } catch (err) {
+            console.error("Error while starting connection: ", err);
+          }
+        }else if (connection.state === "Connected") {
+          try {
+            console.log("Connection started");
+            connection.on("loadPhanCong", async () => {
+              setLoading(true);
+              await dispatch(fetchEmployeeAssignment(maNhanVien));
+              setLoading(false);
+            });
+            connection.on("task", async (message) => {
+              alert(message);
+            });
+          } catch (err) {
+            console.error("Error while starting connection: ", err);
+          }
         }
       }
     };
     startConnection();
     return () => {
       if (connection) {
-        //connection.off("task");
+        connection.off("task");
         connection.off("loadPhanCong");
         connection.off("loadCongViec");
-        connection.stop()
+        //connection.stop()
       }
     };
   }, [connection, dispatch, maNhanVien]);

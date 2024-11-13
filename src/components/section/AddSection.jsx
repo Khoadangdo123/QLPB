@@ -7,6 +7,7 @@ import Button from "../Button";
 import { useDispatch } from "react-redux";
 import { addSection } from "../../redux/section/sectionSlice";
 import { fetchByIdProject } from "../../redux/project/projectSlice";
+import { toast } from "react-toastify";
 
 const AddSection = ({ open, setOpen,duAn}) => {
   const dispatch=useDispatch();
@@ -22,8 +23,10 @@ const AddSection = ({ open, setOpen,duAn}) => {
           tenPhan:data.tenPhan
         })); 
         await dispatch(fetchByIdProject(Number(duAn)));
+        toast.success("Thêm thành công")
         setOpen(false);
     } catch (error) {
+      toast.error("Thêm thất bại")
         console.error("Failed to add section: ", error);
       }
   };

@@ -17,6 +17,7 @@ const API_ENDPOINTS = {
     LICHSUCONGVIEC:`${API_URL}/LichSuCongViec`,
     FILES:`${API_URL}/Files`,
     CHITIETFILE:`${API_URL}/ChiTietFile`,
-    HUB_URL:HUB
+    HUB_URL:HUB,
+    URL:API_URL
 };
 export default API_ENDPOINTS;

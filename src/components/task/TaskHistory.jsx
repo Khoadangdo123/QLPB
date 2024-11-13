@@ -1,14 +1,23 @@
 import { useDispatch, useSelector } from "react-redux";
 import Button from "../Button";
 import ModalWrapper from "../ModalWrapper";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import {
+  HubConnectionBuilder,
+  LogLevel,
+  HttpTransportType,
+} from "@microsoft/signalr";
 import {
   fetchTaskHistories,
   fetchTaskHistoryById,
 } from "../../redux/taskhistory/taskhistorySlice";
+import API_ENDPOINTS from "../../constant/linkapi";
+import getConnection from "../../hub/signalRConnection";
 
 const TaskHistory = ({ openTaskHistory, setOpenTaskHistory, maCongViec }) => {
   const dispatch = useDispatch();
+  //const [connection, setConnection] = useState(null);
+  const connection=getConnection();
   const lichsucongviec = useSelector((state) => state.taskhistories.list);
   useEffect(() => {
     const loadData = async () => {
@@ -16,6 +25,52 @@ const TaskHistory = ({ openTaskHistory, setOpenTaskHistory, maCongViec }) => {
     };
     loadData();
   }, [dispatch, maCongViec]);
+  // useEffect(() => {
+  //   const newConnection = new HubConnectionBuilder()
+  //     .withUrl(API_ENDPOINTS.HUB_URL, {
+  //       transport: HttpTransportType.WebSockets | HttpTransportType.LongPolling,
+  //     })
+  //     .withAutomaticReconnect([0, 2000, 10000, 30000])
+  //     .configureLogging(LogLevel.Information)
+  //     .build();
+  //   newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
+
+  //   setConnection(newConnection);
+  // }, []);
+  useEffect(() => {
+    const connectSignalR = async () => {
+      if(connection){
+        if (connection.state === "Disconnected") {
+          try {
+            await connection.start();
+            console.log("Connected!");
+    
+            connection.on("loadLichSuCongViec", async () => {
+              await dispatch(fetchTaskHistories());
+            });
+          } catch (error) {
+            console.error("Connection failed: ", error);
+          }
+        }else if(connection.state === "Connected"){
+          try {
+            console.log("Connected!");
+    
+            connection.on("loadLichSuCongViec", async () => {
+              await dispatch(fetchTaskHistories());
+            });
+          } catch (error) {
+            console.error("Connection failed: ", error);
+          }
+        }
+      }
+    };
+    connectSignalR(); 
+    return () => {
+      if (connection) {
+        connection.off("loadLichSuCongViec");
+      }
+    };
+  }, [dispatch, connection]);
   const lichsu = lichsucongviec.filter(
     (item) => item.maCongViec === maCongViec
   );

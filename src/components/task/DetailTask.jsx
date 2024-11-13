@@ -30,33 +30,36 @@ const DetailTask = ({
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
-    newConnection
-      .start()
-      .then(() => {
+
+    const startConnection = async () => {
+      try {
+        await newConnection.start();
         console.log("Connected!");
         setConnection(newConnection);
-
-        // Tham gia nhóm
-        newConnection
-          .invoke("ThamGiaNhom", maCongViec)
-          .then(() => {
-            console.log(`Joined group: ${maCongViec}`);
-          })
-          .catch((err) => console.error("Error joining group: ", err));
-        //newConnection.off("ReceiveMessage");
+        await newConnection.invoke("ThamGiaNhom", maCongViec);
+        console.log(`Joined group: ${maCongViec}`);
+        newConnection.off("ReceiveMessage");
+        newConnection.off("UserJoined");
         newConnection.on("ReceiveMessage", (user, message) => {
           const newMessage = { user, message };
-          console.log(newMessage);
           setMessages((prevMessages) => [...prevMessages, newMessage]);
-          console.log(newMessage);
+          console.log("Received message:", newMessage);
         });
+
         newConnection.on("UserJoined", (message) => {
-          console.log(message);
+          console.log("User joined message:", message);
         });
-      })
-      .catch((err) => console.error("Connection failed: ", err));
+      } catch (err) {
+        console.error("Connection failed: ", err);
+      }
+    };
+
+    startConnection();
+
     return () => {
       if (newConnection) {
+        newConnection.off("ReceiveMessage");
+        newConnection.off("UserJoined");
         newConnection.stop();
         console.log("Connection stopped.");
       }

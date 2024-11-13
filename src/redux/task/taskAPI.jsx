@@ -16,8 +16,12 @@ export const fetchByIdTask = async (id) => {
     const response = await axiosInstance.get("CongViec"+"/"+id);
     return response.data;
 };
-export const updateCompleteTask = async (id, task) => {
-    const response = await axiosInstance.put("CongViec" + "/UpdateCompleteTask/" + id+"?trangThai="+task);
+export const updateCompleteTask = async (id, task,mucDo) => {
+    const response = await axiosInstance.put("CongViec" + "/UpdateCompleteTask/" + id+"?trangThai="+task+"&mucDo="+mucDo);
+    return response.data;
+};
+export const updateTaskDay = async (id, thoiGianKetThuc) => {
+    const response = await axiosInstance.post(`CongViec/UpdateTaskDay?id=${id}&thoiGianKetThuc=${thoiGianKetThuc}`);
     return response.data;
 };
 

@@ -1,7 +1,8 @@
 import axios from "axios";
+import API_ENDPOINTS from "../constant/linkapi";
 
 const axiosInstance = axios.create({
-  baseURL: `https://localhost:7131/api/`,
+  baseURL: `${API_ENDPOINTS.URL}/`,
   headers: {
     "Content-type": "application/json",
   },
@@ -70,7 +71,7 @@ async function refreshToken() {
   const refreshToken = tmp?.refreshToken;
   if (!refreshToken) throw new Error("No refresh token available");
   const response = await axios.post(
-    `https://localhost:7131/api/Authentication/RefreshToken`,
+    `${API_ENDPOINTS.URL}/Authentication/RefreshToken`,
     {
       expiredToken: token,
       refreshToken: refreshToken,

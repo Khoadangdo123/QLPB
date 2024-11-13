@@ -8,6 +8,7 @@ import Button from "../Button";
 import ModalWrapper from "../ModalWrapper";
 import {fetchDepartments } from "../../redux/departments/departmentSlice";
 import { addEmployee, fetchEmployees } from "../../redux/employees/employeeSlice";
+import { toast } from 'react-toastify';
 const AddEmployee = ({ open, setOpen, departmentData }) => {
   const defaultValues = departmentData ?? {};
   //const { user } = useSelector((state) => state.auth);
@@ -41,9 +42,10 @@ const AddEmployee = ({ open, setOpen, departmentData }) => {
         soDienThoai: data.soDienThoai,
         email:data.email
     })); 
-      //await dispatch(fetchEmployees({ search: '', page: 10 }));
+      toast.success("Thêm thành công")
       setOpen(false);
     } catch (error) {
+      toast.error("Thêm không thành công")
       console.error("Failed to add employee: ", error);
     }
   };

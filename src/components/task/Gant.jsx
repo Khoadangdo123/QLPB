@@ -56,39 +56,51 @@ const GanttApp = () => {
     const projectHeader =
       '<Project xmlns="http://schemas.microsoft.com/project">';
     const projectFooter = "</Project>";
-
+  
     const tasksXml = tasks
-  .map((task, index) => {
-    const startDate = new Date(task.start);
-    const endDate = new Date(task.end);
-    if (endDate <= startDate) {
-      endDate.setDate(startDate.getDate() + 1);
-    }
-    startDate.setHours(0, 0, 0, 0);
-    endDate.setHours(0, 0, 0, 0);
-
-    const durationDays = Math.ceil(
-      (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)
-    );
-
-    return `
-      <Task>
-        <UID>${index + 1}</UID>
-        <Name>${task.name}</Name>
-        <Start>${startDate.toISOString()}</Start>
-        <Finish>${endDate.toISOString()}</Finish>
-        <PercentComplete>${task.progress || 0}</PercentComplete>
-        <Duration>${10} days</Duration>
-      </Task>
-    `;
-  })
-  .join('');
-
+      .map((task, index) => {
+        // Lấy startDate và endDate từ task
+        const startDate = task.start;
+        const endDate = task.end;
+  
+        // Nếu endDate trước startDate, sửa lại endDate (nếu cần)
+        if (endDate <= startDate) {
+          endDate.setDate(startDate.getDate() + 1); // Set endDate bằng ngày tiếp theo
+        }
+  
+        // Chuyển đổi giờ phút giây thành chuẩn UTC (ISO 8601)
+        startDate.setHours(0, 0, 0, 0); // Thiết lập giờ, phút, giây là 0 cho ngày bắt đầu
+        endDate.setHours(0, 0, 0, 0); // Thiết lập giờ, phút, giây là 0 cho ngày kết thúc
+  
+        // Tính số ngày Duration
+        const durationDays = Math.ceil(
+          (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)
+        );
+        console.log(durationDays)
+        // Nếu durationDays <= 0 thì gán giá trị tối thiểu là 1
+        const validDuration = durationDays > 0 ? durationDays : 1;
+        // Chuyển startDate và endDate thành chuỗi ISO (chuyển về UTC nếu cần)
+        const startISO = startDate.toISOString(); // Chuyển sang định dạng ISO 8601
+        const endISO = endDate.toISOString(); // Chuyển sang định dạng ISO 8601
+  
+        return `
+          <Task>
+            <UID>${index + 1}</UID>
+            <Name>${task.name}</Name>
+            <Start>${startISO}</Start>
+            <Finish>${endISO}</Finish>
+            <PercentComplete>${task.progress || 0}</PercentComplete>
+            <Duration>${validDuration} days</Duration>
+          </Task>
+        `;
+      })
+      .join("");
+  
     const xmlContent = `${xmlHeader}
       ${projectHeader}
       <Tasks>${tasksXml}</Tasks>
       ${projectFooter}`;
-
+  
     const blob = new Blob([xmlContent], { type: "application/xml" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -97,9 +109,9 @@ const GanttApp = () => {
   };
   const getTaskColor = (task) => {
     const colors = {
-      "task1": "#ff9999",
-      "task2": "#99ff99",
-      "task3": "#9999ff",
+      task1: "#ff9999",
+      task2: "#99ff99",
+      task3: "#9999ff",
     };
     return colors[task.id] || "#cccccc";
   };
@@ -122,7 +134,6 @@ const GanttApp = () => {
         barColor="black"
         rowHeight={40}
         fontSize={14}
-        
       />
     </div>
   );

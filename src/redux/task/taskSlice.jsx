@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { fetchTasks as fetchAPI, addTask as addAPI, updateTask as updateAPI,fetchByIdTask as fetchByIdAPI,updateCompleteTask as updateCompleteTaskAPI } from './taskAPI';
+import { fetchTasks as fetchAPI, addTask as addAPI, updateTask as updateAPI,fetchByIdTask as fetchByIdAPI,updateCompleteTask as updateCompleteTaskAPI
+  ,updateTaskDay as updateTaskDayAPI
+ } from './taskAPI';
 
 export const fetchTasks = createAsyncThunk('tasks/fetchTasks', async ({ search, page }) => {
   const response = await fetchAPI(search, page);
@@ -15,15 +17,18 @@ export const updateTask = createAsyncThunk('tasks/updateTask', async ({ id, task
   const response = await updateAPI(id, task);
   return response;
 });
-export const updateCompleteTask = createAsyncThunk('tasks/updateCompleteTask', async ({ id, task }) => {
-  const response = await updateCompleteTaskAPI(id, task);
+export const updateCompleteTask = createAsyncThunk('tasks/updateCompleteTask', async ({ id, task,mucDo }) => {
+  const response = await updateCompleteTaskAPI(id, task,mucDo);
   return response;
 });
 export const fetchByIdTask = createAsyncThunk('tasks/fetchByIdTask', async (id) => {
   const response = await fetchByIdAPI(id);
   return response;
 });
-
+export const updateTaskDay = createAsyncThunk('tasks/updateTaskDay', async ({ id, thoiGianKetThuc }) => {
+  const response = await updateTaskDayAPI(id, thoiGianKetThuc);
+  return response;
+});
 const initialState = {
   list: [],
   loading: false,
@@ -78,6 +83,11 @@ const taskSlice = createSlice({
         state.loading = false;
         state.status = 'failed';
         state.error = action.error.message;
+      }).addCase(updateTaskDay.fulfilled, (state, action) => {
+        const index = state.list.findIndex((task) => task.maCongViec === action.payload.maCongViec);
+        if (index !== -1) {
+          state.list[index] = { ...state.list[index], thoiGianKetThuc: action.payload.thoiGianKetThuc };
+        }
       });
   },
 });

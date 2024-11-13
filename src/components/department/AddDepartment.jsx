@@ -8,6 +8,7 @@ import Button from "../Button";
 import ModalWrapper from "../ModalWrapper";
 import { fetchEmployees } from "../../redux/employees/employeeSlice";
 import { addDepartment, fetchDepartments } from "../../redux/departments/departmentSlice";
+import { toast } from 'react-toastify';
 
 const AddDepartment = ({ open, setOpen, employeeData }) => {
   const defaultValues = employeeData ?? {};
@@ -36,9 +37,10 @@ const AddDepartment = ({ open, setOpen, employeeData }) => {
         tenPhongBan:data.tenPhongBan,
         maTruongPhong:Number(data.maTruongPhong)
     })); 
-      // await dispatch(fetchDepartments({ search: '', page: 10 }));
+    toast.success("Thêm thành công")
       setOpen(false);
     } catch (error) {
+      toast.success("Thêm thất bại")
       console.error("Failed to add department: ", error);
     }
   };
@@ -64,7 +66,6 @@ const AddDepartment = ({ open, setOpen, employeeData }) => {
             })}
             error={errors.tenPhongBan ? errors.tenPhongBan.message : ""}
           />
-          
           <label htmlFor="maTruongPhong" className="block text-sm font-medium text-gray-700">
             Chọn Trưởng Phòng
           </label>

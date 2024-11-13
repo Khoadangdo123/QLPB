@@ -18,6 +18,7 @@ import {
   fetchTaskHistories,
 } from "../../redux/taskhistory/taskhistorySlice";
 import { sendNotification } from "../../redux/scheduling/schedulingSlice";
+import { toast } from "react-toastify";
 const LISTS = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const PRIORITY = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 
@@ -193,8 +194,10 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
         );
       }
       await dispatch(fetchByIdProject(Number(duAn)));
+      toast.success("Thêm thành công")
       setOpen(false);
     } catch (e) {
+      toast.error("Thêm thất bại")
       console.log(e);
     }
   };

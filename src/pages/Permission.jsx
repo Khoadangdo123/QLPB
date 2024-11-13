@@ -11,6 +11,7 @@ import { fetchPermissions } from "../redux/permission/permissionSlice";
 import UserPermissions from "../components/permission/UserPermissions";
 import API_ENDPOINTS from "../constant/linkapi";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
+import getConnection from "../hub/signalRConnection";
 
 const Permission = () => {
   const [pageSize, setPageSize] = useState(10);
@@ -23,11 +24,12 @@ const Permission = () => {
   const [selectedRole, setSelectedRole] = useState(null);
   const [selectedRolePermissions, setSelectedRolePermissions] = useState(null);
   const [openPermissionModal, setOpenPermissionModal] = useState(false);
-  const [connection, setConnection] = useState(null);
+  //const [connection, setConnection] = useState(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [roleCode, setRoleCode] = useState("Admin");
   const [permissionAction,setpermissionAction]=useState([])
   const maquyen=Number(localStorage.getItem("permissionId"))
+  const connection=getConnection()
   const dispatch = useDispatch();
   useEffect(() => {
     const fetchData = async () => {
@@ -38,35 +40,53 @@ const Permission = () => {
     fetchData();
   }, [dispatch, pageSize]);
 
-  useEffect(() => {
-    const newConnection = new HubConnectionBuilder()
-    .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
-    .withAutomaticReconnect([0, 2000, 10000, 30000])
-    .configureLogging(LogLevel.Information)
-    .build();
-    newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
-    setConnection(newConnection);
-  }, []);
+  // useEffect(() => {
+  //   const newConnection = new HubConnectionBuilder()
+  //   .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
+  //   .withAutomaticReconnect([0, 2000, 10000, 30000])
+  //   .configureLogging(LogLevel.Information)
+  //   .build();
+  //   newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
+  //   setConnection(newConnection);
+  // }, []);
 
   useEffect(() => {
     const connectSignalR = async () => {
-      if (connection && connection.state === "Disconnected") {
-        try {
-          await connection.start();
-          console.log("Connected!");
-  
-          connection.on("loadNhomQuyen", () => {
-            dispatch(fetchPermissions({ search: "", page: pageSize }));
-          });
-  
-          connection.on("loadHanhDong", async () => {
-            const result = await dispatch(
-              checkPermission({ maQuyen: maquyen, tenChucNang: "Phân Quyền" })
-            ).unwrap();
-            setpermissionAction(result);
-          });
-        } catch (error) {
-          console.error("Connection failed: ", error);
+      if(connection){
+        if (connection.state === "Disconnected") {
+          try {
+            await connection.start();
+            console.log("Connected!");
+    
+            connection.on("loadNhomQuyen", () => {
+              dispatch(fetchPermissions({ search: "", page: pageSize }));
+            });
+    
+            connection.on("loadHanhDong", async () => {
+              const result = await dispatch(
+                checkPermission({ maQuyen: maquyen, tenChucNang: "Phân Quyền" })
+              ).unwrap();
+              setpermissionAction(result);
+            });
+          } catch (error) {
+            console.error("Connection failed: ", error);
+          }
+        }else if(connection.state === "Connected"){
+          try {
+            console.log("Connected!");
+            connection.on("loadNhomQuyen", () => {
+              dispatch(fetchPermissions({ search: "", page: pageSize }));
+            });
+    
+            connection.on("loadHanhDong", async () => {
+              const result = await dispatch(
+                checkPermission({ maQuyen: maquyen, tenChucNang: "Phân Quyền" })
+              ).unwrap();
+              setpermissionAction(result);
+            });
+          } catch (error) {
+            console.error("Connection failed: ", error);
+          }
         }
       }
     };
@@ -76,7 +96,7 @@ const Permission = () => {
       if (connection) {
         connection.off("loadNhomQuyen");
         connection.off("loadHanhDong");
-        connection.stop();
+        //connection.stop();
       }
     };
   }, [dispatch, pageSize, connection, maquyen]);

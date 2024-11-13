@@ -12,6 +12,9 @@ import { addTaskHistory } from "../../redux/taskhistory/taskhistorySlice";
 import EmployeeSelectTransfer from "./EmployeeSelect";
 import { da } from "@faker-js/faker";
 import { addTaskTransfer } from "../../redux/tasktransfer/tasktranferSlice";
+import { updateTaskDay } from "../../redux/task/taskSlice";
+import Textbox from "../Textbox";
+import { toast } from "react-toastify";
 
 const AddTaskTransfer = ({
   openTransfer,
@@ -20,6 +23,7 @@ const AddTaskTransfer = ({
   maCongViec,
   tenCongViec,
   maPhongBan,
+  thoiGianKetThuc,
 }) => {
   const {
     register,
@@ -31,7 +35,10 @@ const AddTaskTransfer = ({
   const [transferNote, setTransferNote] = useState("");
   const [loading, setLoading] = useState(true);
   const [employees, setEmployees] = useState([]);
+  const [showEndDate, setShowEndDate] = useState(false);
+  const [endDate, setEndDate] = useState("");
   const [selectedCurrentEmployee, setSelectedCurrentEmployee] = useState("");
+  //console.log(thoiGianKetThuc);
   useEffect(() => {
     const fetchEmployees = async () => {
       try {
@@ -43,68 +50,121 @@ const AddTaskTransfer = ({
       } finally {
         setLoading(false);
       }
+      if (thoiGianKetThuc) {
+        const formattedDate = new Date(thoiGianKetThuc)
+          .toISOString()
+          .slice(0, 16);
+        setEndDate(formattedDate);
+      }
     };
     fetchEmployees();
-  }, [currentEmployee]);
+  }, [currentEmployee, thoiGianKetThuc]);
+  //console.log(employees)
   const submitHandler = async (data) => {
+    if (transferNote.length === 0 || transferNote === null) {
+      toast.warning("Vui lòng nhập lý do");
+      return;
+    }
     if (
       selectedCurrentEmployee.length === 0 ||
       selectedCurrentEmployee === null
     ) {
-      alert("Vui lòng chọn nhân viên");
+      toast.warning("Vui lòng chọn nhân viên");
       return;
     }
-    if (transferNote.length === 0 || transferNote === null) {
-      alert("Vui lòng nhập lý do");
+    if (data.thoiGianKetThuc < new Date()) {
+      toast.warning("Vui lập nhập lớn hơn hoặc bằng ngày hiện tại");
       return;
     }
-    if (selectedEmployees.length == 0) {
-      alert("Vui lòng chọn nhân viên");
+    const selectedDate = new Date(data.thoiGianKetThuc);
+    const currentDate = new Date();
+    if (selectedDate < currentDate) {
+      toast.warning("Vui lòng chọn ngày lớn hơn hoặc bằng ngày hiện tại");
       return;
     }
     var arrNhanVien = selectedCurrentEmployee.split("-");
     console.log(arrNhanVien);
     try {
-      for (const employee of selectedEmployees) {
-        console.log("Mã Phân Công: " + arrNhanVien[0]);
-        console.log("Mã Nhân Viên Chuyển Giao: " + arrNhanVien[1]);
-        console.log("Tên nhân viên chuyển giao: "+arrNhanVien[2])
-        console.log("Mã Công Việc: " + maCongViec);
-        console.log("Tên Công Việc: " + tenCongViec);
-        console.log("Mã Nhân Viên Thực Hiện: " + employee.maNhanVien);
-        console.log("Vai Trò: " + employee.vaiTro);
-        console.log("Lý do chuyển giao: " + transferNote);
-        console.log("Nhân viên được chuyển giao: "+employee.tenNhanVien)
-        await dispatch(deleteAssignment(Number(arrNhanVien[0])));
-        await dispatch(
+      // tùy chọn có cập nhật ngày hay không
+      if (showEndDate) {
+        const updateDateResult = await dispatch(
+          updateTaskDay({
+            id: maCongViec,
+            thoiGianKetThuc: data.thoiGianKetThuc,
+          })
+        );
+        if (updateDateResult.payload === 1) {
+          await dispatch(
+            addTaskHistory({
+              maCongViec: maCongViec,
+              ngayCapNhat: new Date().toISOString(),
+              noiDung: `${new Date().toISOString()}: thời gian kết thúc công việc đã được cập nhật tới ngày ${new Date(
+                endDate
+              ).toISOString()}`,
+            })
+          );
+        }
+      }
+      // chuyển giao trong trường hợp muốn xóa( không chuyển giao nhân viên khác vào)
+      if (selectedEmployees.length === 0) {
+        var result = await dispatch(
+          deleteAssignment(Number(arrNhanVien[0]))
+        );
+        var temp=await dispatch(
           addTaskTransfer({
             lyDoChuyenGiao: transferNote,
-            vaiTro: employee.vaiTro,
+            vaiTro: arrNhanVien[3],
             maNhanVienChuyenGiao: Number(arrNhanVien[1]),
-            maNhanVienThucHien: Number(employee.maNhanVien),
             maPhanCong: Number(arrNhanVien[0]),
             tenCongViec: tenCongViec,
           })
         );
-        await dispatch(
-          addAssignment({
-            maCongViec: Number(maCongViec),
-            maNhanVien: Number(employee.maNhanVien),
-            vaiTro: employee.vaiTro,
-          })
-        );
-        await dispatch(
-          addTaskHistory({
-            maCongViec: maCongViec,
-            ngayCapNhat: new Date().toISOString(),
-            noiDung: `${new Date().toISOString()}: Công việc ${tenCongViec} được chuyển giao từ ${
-              arrNhanVien[2]
-            } sang ${employee.tenNhanVien}. Nội dung: ${transferNote}`,
-          })
-        );
+        console.log(temp)
+        toast.success("Chuyển giao công việc thành công");
+      } else {
+        for (const employee of selectedEmployees) {
+          try {
+            var result = await dispatch(
+              deleteAssignment(Number(arrNhanVien[0]))
+            );
+            if (result !== null) {
+              await dispatch(
+                addTaskTransfer({
+                  lyDoChuyenGiao: transferNote,
+                  vaiTro: employee.vaiTro,
+                  maNhanVienChuyenGiao: Number(arrNhanVien[1]),
+                  maNhanVienThucHien: Number(employee.maNhanVien),
+                  maPhanCong: Number(arrNhanVien[0]),
+                  tenCongViec: tenCongViec,
+                })
+              );
+              await dispatch(
+                addAssignment({
+                  maCongViec: Number(maCongViec),
+                  maNhanVien: Number(employee.maNhanVien),
+                  vaiTro: employee.vaiTro,
+                })
+              );
+              await dispatch(
+                addTaskHistory({
+                  maCongViec: maCongViec,
+                  ngayCapNhat: new Date().toISOString(),
+                  noiDung: `${new Date().toISOString()}: Công việc ${tenCongViec} được chuyển giao từ ${
+                    arrNhanVien[2]
+                  } sang ${employee.tenNhanVien}. Nội dung: ${transferNote}`,
+                })
+              );
+            }
+          } catch (e) {
+            toast.error("Chuyển giao công việc không thành công");
+            console.log(e);
+          }
+        }
+        toast.success("Chuyển giao công việc thành công");
       }
-      setOpen(false);
+      setOpenTransfer(false);
     } catch (e) {
+      toast.error("Chuyển giao công việc không thành công");
       console.log(e);
     }
   };
@@ -133,7 +193,7 @@ const AddTaskTransfer = ({
                 {loading ? (
                   <option value="">Đang tải nhân viên...</option>
                 ) : employees.length > 0 ? (
-                  employees.map((item) => (
+                  employees.filter(item => item.trangThai === true).map((item) => (
                     <option
                       key={item.maNhanVien}
                       value={
@@ -141,7 +201,8 @@ const AddTaskTransfer = ({
                         "-" +
                         item.maNhanVien +
                         "-" +
-                        item.nhanVien.tenNhanVien
+                        item.nhanVien.tenNhanVien+
+                        "-"+item.vaiTro
                       }
                     >
                       {item.maNhanVien}-{item.nhanVien.tenNhanVien}-
@@ -172,7 +233,42 @@ const AddTaskTransfer = ({
                 placeholder="Nhập nội dung chuyển đổi"
               />
             </div>
-
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Ngày kết thúc
+              </label>
+              <input type="text" className="w-full rounded" value={endDate} />
+            </div>
+            <div>
+              <label className="inline-flex items-center">
+                <input
+                  type="checkbox"
+                  className="rounded"
+                  checked={showEndDate}
+                  onChange={() => setShowEndDate(!showEndDate)}
+                />
+                <span className="ml-2 text-sm text-gray-700">
+                  Cập nhật thời gian kết thúc
+                </span>
+              </label>
+            </div>
+            {showEndDate && (
+              <div>
+                <Textbox
+                  placeholder="Ngày kết thúc"
+                  type="datetime-local"
+                  name="date"
+                  label="Ngày kết thúc"
+                  className="w-full rounded"
+                  register={register("thoiGianKetThuc", {
+                    required: "Ngày là bắt buộc!",
+                  })}
+                  error={
+                    errors.thoiGianKetThuc ? errors.thoiGianKetThuc.message : ""
+                  }
+                />
+              </div>
+            )}
             <div className="bg-gray-50 py-6 sm:flex sm:flex-row-reverse gap-4">
               <Button
                 label="Chuyển"

@@ -5,6 +5,7 @@ import Textbox from "../components/Textbox";
 import Button from "../components/Button";
 import { useDispatch, useSelector } from "react-redux";
 import {AuthLogin} from "../redux/authen/authenSlice"
+import { toast } from "react-toastify";
 const Login = () => {
   //const { user } = useSelector((state) => state.auth);
   const {authUser,loading,error}=useSelector((state)=>state.authen)
@@ -18,6 +19,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   const submitHandler = async (data) => {
+
     try{
       let AuthRequest={
         tenTaiKhoan:data.tenTaiKhoan,
@@ -26,11 +28,13 @@ const Login = () => {
       console.log(AuthRequest)
       const result = await dispath(AuthLogin(AuthRequest))
       if(result.payload && result.payload.isSuccess){
+        toast.success("Đăng nhập thành công")
         navigate('/home')
       }else{
-        alert("Mật khẩu hoặc tài khoản không đúng")
+        toast.error("Mật khẩu hoặc tài khoản không đúng")
       }
     }catch(e){
+      toast.error("Lỗi khi đăng nhập")
       console.log(e);
     }
   };
@@ -110,7 +114,8 @@ const Login = () => {
                 className='w-full h-10 bg-blue-700 text-white rounded-full'
               />
               {error &&(
-                <div className="alert alert-danger" role="alert">{error}</div>
+                // <div className="alert alert-danger" role="alert">{error}</div>
+                toast.error("Lỗi đăng nhập vui lòng thử lại")
               )}
             </div>
           </form>
