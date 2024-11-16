@@ -60,7 +60,7 @@ const DetailTask = ({
       if (newConnection) {
         newConnection.off("ReceiveMessage");
         newConnection.off("UserJoined");
-        newConnection.stop();
+        //newConnection.stop();
         console.log("Connection stopped.");
       }
     };
