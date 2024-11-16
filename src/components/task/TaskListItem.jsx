@@ -85,17 +85,6 @@ const TaskListItem = ({ congviec, duAn }) => {
 
     fetchTask();
   }, [maCongViec]);
-  // useEffect(() => {
-  //   const newConnection = new HubConnectionBuilder()
-  //     .withUrl(API_ENDPOINTS.HUB_URL, {
-  //       transport: HttpTransportType.WebSockets | HttpTransportType.LongPolling,
-  //     })
-  //     .withAutomaticReconnect([0, 2000, 10000, 30000])
-  //     .configureLogging(LogLevel.Information)
-  //     .build();
-  //   newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
-  //   setConnection(newConnection);
-  // }, []);
   useEffect(() => {
     const connectSignalR = async () => {
       if(connection){
@@ -170,7 +159,7 @@ const TaskListItem = ({ congviec, duAn }) => {
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);
-    handleResize(); // Kiểm tra kích thước khi component mount
+    handleResize();
     return () => window.removeEventListener("resize", handleResize);
   }, []);
   const handleToggleDetail = () => {

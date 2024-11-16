@@ -37,9 +37,9 @@ const TaskAssignment = () => {
               await dispatch(fetchEmployeeAssignment(maNhanVien));
               setLoading(false);
             });
-            connection.on("task", async (message) => {
-              alert(message);
-            });
+            // connection.on("task", async (message) => {
+            //   alert(message);
+            // });
           } catch (err) {
             console.error("Error while starting connection: ", err);
           }
@@ -51,9 +51,9 @@ const TaskAssignment = () => {
               await dispatch(fetchEmployeeAssignment(maNhanVien));
               setLoading(false);
             });
-            connection.on("task", async (message) => {
-              alert(message);
-            });
+            // connection.on("task", async (message) => {
+            //   alert(message);
+            // });
           } catch (err) {
             console.error("Error while starting connection: ", err);
           }
@@ -63,9 +63,9 @@ const TaskAssignment = () => {
     startConnection();
     return () => {
       if (connection) {
-        connection.off("task");
+        //connection.off("task");
         connection.off("loadPhanCong");
-        connection.off("loadCongViec");
+        //connection.off("loadCongViec");
         //connection.stop()
       }
     };

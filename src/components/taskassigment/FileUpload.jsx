@@ -115,6 +115,7 @@ const FileUpload = ({ isOpen, onRequestClose, maPhanCong,maCongViec}) => {
           }
         })
       );
+      console.log(responses)
       setUploadStatus("done");
     } catch (error) {
       console.error(error);

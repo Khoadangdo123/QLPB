@@ -37,6 +37,8 @@ function Layout() {
     console.log("err")
     return <Navigate to="/home" replace />;
   }
+  var t=JSON.parse(localStorage.getItem("authUser"))
+  console.log(JSON.parse(atob(t.token.split('.')[1])))
   const token=authUser.user.token;
   console.log(authUser.user)
   var payload = JSON.parse(atob(token.split('.')[1]));

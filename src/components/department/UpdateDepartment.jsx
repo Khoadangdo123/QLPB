@@ -9,6 +9,7 @@ import ModalWrapper from "../ModalWrapper";
 import { fetchEmployees } from "../../redux/employees/employeeSlice";
 import { fetchDepartments, updateDepartment } from "../../redux/departments/departmentSlice";
 import { parse } from "date-fns";
+import { toast } from "react-toastify";
 
 const UpdateDepartment = ({ open, setOpen, departmentData }) => {
   const defaultValues = departmentData ?? {};
@@ -16,7 +17,7 @@ const UpdateDepartment = ({ open, setOpen, departmentData }) => {
   const dispatch=useDispatch();
   const employee=useSelector((state)=>state.employees.list)
   useEffect(()=>{
-    dispatch(fetchEmployees({search:'',page:10}))
+    dispatch(fetchEmployees({search:'',page:30}))
   },[dispatch])
   const isLoading = false;
   const isUpdating = false;
@@ -57,8 +58,10 @@ const UpdateDepartment = ({ open, setOpen, departmentData }) => {
             console.error("Update failed with reason:", result.error.message);
           }
       await dispatch(fetchDepartments({ search: '', page:10 }));
+      toast.success("Cập nhật thành công")
       setOpen(false);
     } catch (error) {
+      toast.error("Cập nhật thất bại")
       console.error("Failed to add department: ", error);
     }
   };

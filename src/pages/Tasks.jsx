@@ -72,18 +72,6 @@ const Tasks = () => {
     };
     fetchData();
   }, [id, dispatch]);
-  // useEffect(() => {
-  //   const newConnection = new HubConnectionBuilder()
-  //     .withUrl(API_ENDPOINTS.HUB_URL, {
-  //       transport: HttpTransportType.WebSockets | HttpTransportType.LongPolling,
-  //     })
-  //     .withAutomaticReconnect([0, 2000, 10000, 30000])
-  //     .configureLogging(LogLevel.Information)
-  //     .build();
-  //   newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
-
-  //   setConnection(newConnection);
-  // }, []);
   useEffect(() => {
     const setupConnection = async () => {
       if(connection){
@@ -157,7 +145,6 @@ const Tasks = () => {
               checkPermission({ maQuyen: maquyen, tenChucNang: "Phần Dự Án" })
             ).unwrap();
             setpermissionAction(result);
-            console.log("hellooooo");
           });
         }
       }

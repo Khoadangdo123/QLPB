@@ -9,6 +9,7 @@ import ModalWrapper from "../ModalWrapper";
 import {fetchEmployees } from "../../redux/employees/employeeSlice";
 import { fetchPermissions } from "../../redux/permission/permissionSlice";
 import { addAccount, fetchAccounts } from "../../redux/accounts/accountSlice";
+import { toast } from "react-toastify";
 const AddAccount = ({ open, setOpen, accountData,account }) => {
   const defaultValues = accountData ?? {};
   const dispatch=useDispatch();
@@ -16,7 +17,7 @@ const AddAccount = ({ open, setOpen, accountData,account }) => {
   const nhomquyens=useSelector((state)=>state.permissions.list)
   useEffect(()=>{
     dispatch(fetchEmployees({search:'',page:20}))
-    dispatch(fetchPermissions({search:'',page:10}))
+    dispatch(fetchPermissions({search:'',page:20}))
   },[dispatch])
   const isLoading = false;
   const isUpdating = false;
@@ -42,8 +43,10 @@ const AddAccount = ({ open, setOpen, accountData,account }) => {
         matKhau: data.matKhau
     })); 
       await dispatch(fetchAccounts({ search: '', page: 10 }));
+      toast.success("Thêm thành công")
       setOpen(false);
     } catch (error) {
+      toast.error("Thêm thất bại")
       console.error("Failed to add employee: ", error);
     }
   };

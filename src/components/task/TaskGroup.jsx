@@ -113,7 +113,6 @@ const TaskGroup = ({ phanduan, duAn }) => {
       <div className="bg-slate-50 shadow-md p-4 space-y-2">
         {groupedTasks['root'] ? renderTasks(groupedTasks['root'], duAn) : <p>Chưa có công việc nào.</p>}
       </div>
-  
       <AddTask open={open} setOpen={setOpen} phanDuAn={phanduan.maPhanDuAn} duAn={duAn} congViecCha={taskRoot} />
     </div>
   );

@@ -31,6 +31,9 @@ const AuthSlice = createSlice({
       state.user = null;
       localStorage.removeItem("authUser");
     },
+    updateAuthUser: (state, action) => {
+      state.user = action.payload;
+    }
   },
   extraReducers: (builder) => {
    builder.addCase(AuthLogin.pending,(state)=>{
@@ -62,5 +65,5 @@ const AuthSlice = createSlice({
   });
   },
 });
-export const { setOpenSidebar, logout } = AuthSlice.actions;
+export const { setOpenSidebar, logout,updateAuthUser } = AuthSlice.actions;
 export default AuthSlice.reducer;

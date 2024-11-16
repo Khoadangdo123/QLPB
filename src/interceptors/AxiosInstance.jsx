@@ -1,6 +1,5 @@
 import axios from "axios";
 import API_ENDPOINTS from "../constant/linkapi";
-
 const axiosInstance = axios.create({
   baseURL: `${API_ENDPOINTS.URL}/`,
   headers: {
