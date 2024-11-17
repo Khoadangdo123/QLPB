@@ -6,56 +6,82 @@ import Textbox from "../Textbox";
 import Loading from "../Loader";
 import Button from "../Button";
 import ModalWrapper from "../ModalWrapper";
-import {fetchDepartments } from "../../redux/departments/departmentSlice";
-import { addEmployee, fetchEmployees, updateEmployee } from "../../redux/employees/employeeSlice";
+import { fetchDepartments } from "../../redux/departments/departmentSlice";
+import {
+  addEmployee,
+  fetchEmployees,
+  updateEmployee,
+} from "../../redux/employees/employeeSlice";
 import Employees from "../../pages/Employee";
 import { toast } from "react-toastify";
 import { fetchPermissions } from "../../redux/permission/permissionSlice";
 const UpdateAccount = ({ open, setOpen, accountData }) => {
   const defaultValues = accountData ?? {};
   //const { user } = useSelector((state) => state.auth);
-  const dispatch=useDispatch();
-  const permissions=useSelector((state)=>state.permissions.list)
-  useEffect(()=>{
-    dispatch(fetchPermissions({search:'',page:10}))
-  },[dispatch])
+  const dispatch = useDispatch();
+  const permissions = useSelector((state) => state.permissions.list);
+  useEffect(() => {
+    dispatch(fetchPermissions({ search: "", page: 10 }));
+  }, [dispatch]);
   const isLoading = false;
   const isUpdating = false;
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset
+    reset,
   } = useForm({ defaultValues });
-  useEffect(()=>{
-    if(accountData){
-
-        reset(defaultValues)
+  useEffect(() => {
+    if (accountData) {
+      reset(defaultValues);
     }
-  },[defaultValues,reset]);
-  const handleOnSubmit =async (data) => {
-    console.log("Employee Data:",{
-        maNhanVien:Number(data.maNhanVien),
-        maPhongBan: Number(data.maPhongBan),
-        tenChucVu: data.tenChucVu,
-        tenNhanVien: data.tenNhanVien,
-        soDienThoai: data.soDienThoai,
-        email:data.email
-    });
+  }, [defaultValues, reset]);
+  const handleOnSubmit = async (data) => {
+    if (!data.tenNhanVien || data.tenNhanVien.trim() === "") {
+      toast.warning("Vui lòng nhập tên nhân viên hợp lệ");
+      return;
+    }
+    if (/^\d+$/.test(data.tenNhanVien)) {
+      toast.warning("Tên nhân viên không được chỉ chứa số");
+      return;
+    }
+    if (!/^\d{9,11}$/.test(data.soDienThoai)) {
+      toast.warning("Số điện thoại không hợp lệ (phải từ 9-11 chữ số)");
+      return;
+    }
+    if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email) ||
+      data.email.trim() === ""
+    ) {
+      toast.warning("Email không hợp lệ");
+      return;
+    }
+    if (isNaN(data.maPhongBan) || Number(data.maPhongBan) <= 0) {
+      toast.warning("Mã phòng ban phải là số dương");
+      return;
+    }
+    if (isNaN(data.maNhanVien) || Number(data.maNhanVien) <= 0) {
+      toast.warning("Mã nhân viên phải là số dương");
+      return;
+    }
     try {
-      await dispatch(updateEmployee({
-        id:Number(data.maNhanVien),employee:{
-        maPhongBan: Number(data.maPhongBan),
-        tenChucVu: data.tenChucVu,
-        tenNhanVien: data.tenNhanVien,
-        soDienThoai: data.soDienThoai,
-        email:data.email}
-      })); 
-      await dispatch(fetchEmployees({ search: '', page: 10 }));
-      toast.success("Cập nhật thành công")
+      await dispatch(
+        updateEmployee({
+          id: Number(data.maNhanVien),
+          employee: {
+            maPhongBan: Number(data.maPhongBan),
+            tenChucVu: data.tenChucVu,
+            tenNhanVien: data.tenNhanVien,
+            soDienThoai: data.soDienThoai,
+            email: data.email,
+          },
+        })
+      );
+      await dispatch(fetchEmployees({ search: "", page: 10 }));
+      toast.success("Cập nhật thành công");
       setOpen(false);
     } catch (error) {
-      toast.error("Cập nhật thất bại")
+      toast.error("Cập nhật thất bại");
       console.error("Failed to update employee: ", error);
     }
   };
@@ -67,7 +93,7 @@ const UpdateAccount = ({ open, setOpen, accountData }) => {
           as="h2"
           className="text-base font-bold leading-6 text-gray-900 mb-4"
         >
-         CẬP NHẬT NHÓM QUYỀN
+          CẬP NHẬT NHÓM QUYỀN
         </Dialog.Title>
         <div className="mt-2 flex flex-col gap-6">
           <Textbox
@@ -82,21 +108,25 @@ const UpdateAccount = ({ open, setOpen, accountData }) => {
             error={errors.maTaiKhoan ? errors.maTaiKhoan.message : ""}
           />
         </div>
-        <label htmlFor="maNhomQuyen" className="block text-sm font-medium text-gray-700">
-          </label>
-          <select
-            id="maNhomQuyen"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            {...register("maNhomQuyen", { required: "Select a role!" })}
-          >
-            <option value="">Select Role</option>
-            {permissions.map((item) => (
-              <option key={item.maQuyen} value={item.maQuyen}>
-                {item.tenQuyen}
-              </option>
-            ))}
-          </select>
-        {errors.maNhomQuyen && <span className="text-red-600">{errors.maNhomQuyen.message}</span>}
+        <label
+          htmlFor="maNhomQuyen"
+          className="block text-sm font-medium text-gray-700"
+        ></label>
+        <select
+          id="maNhomQuyen"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          {...register("maNhomQuyen", { required: "Select a role!" })}
+        >
+          <option value="">Select Role</option>
+          {permissions.map((item) => (
+            <option key={item.maQuyen} value={item.maQuyen}>
+              {item.tenQuyen}
+            </option>
+          ))}
+        </select>
+        {errors.maNhomQuyen && (
+          <span className="text-red-600">{errors.maNhomQuyen.message}</span>
+        )}
         <div className="mt-2 flex flex-col gap-6">
           <Textbox
             placeholder="Tên Tài Khoản"

@@ -59,29 +59,20 @@ const GanttApp = () => {
   
     const tasksXml = tasks
       .map((task, index) => {
-        // Lấy startDate và endDate từ task
         const startDate = task.start;
         const endDate = task.end;
-  
-        // Nếu endDate trước startDate, sửa lại endDate (nếu cần)
         if (endDate <= startDate) {
-          endDate.setDate(startDate.getDate() + 1); // Set endDate bằng ngày tiếp theo
+          endDate.setDate(startDate.getDate() + 1);
         }
-  
-        // Chuyển đổi giờ phút giây thành chuẩn UTC (ISO 8601)
-        startDate.setHours(0, 0, 0, 0); // Thiết lập giờ, phút, giây là 0 cho ngày bắt đầu
-        endDate.setHours(0, 0, 0, 0); // Thiết lập giờ, phút, giây là 0 cho ngày kết thúc
-  
-        // Tính số ngày Duration
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(0, 0, 0, 0);
         const durationDays = Math.ceil(
           (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)
         );
         console.log(durationDays)
-        // Nếu durationDays <= 0 thì gán giá trị tối thiểu là 1
         const validDuration = durationDays > 0 ? durationDays : 1;
-        // Chuyển startDate và endDate thành chuỗi ISO (chuyển về UTC nếu cần)
-        const startISO = startDate.toISOString(); // Chuyển sang định dạng ISO 8601
-        const endISO = endDate.toISOString(); // Chuyển sang định dạng ISO 8601
+        const startISO = startDate.toISOString();
+        const endISO = endDate.toISOString();
   
         return `
           <Task>

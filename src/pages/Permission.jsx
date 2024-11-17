@@ -24,12 +24,10 @@ const Permission = () => {
   const [selectedRole, setSelectedRole] = useState(null);
   const [selectedRolePermissions, setSelectedRolePermissions] = useState(null);
   const [openPermissionModal, setOpenPermissionModal] = useState(false);
-  //const [connection, setConnection] = useState(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [roleCode, setRoleCode] = useState("Admin");
   const [permissionAction,setpermissionAction]=useState([])
   const maquyen=Number(localStorage.getItem("permissionId"))
-  const connection=getConnection()
   const dispatch = useDispatch();
   useEffect(() => {
     const fetchData = async () => {
@@ -41,43 +39,26 @@ const Permission = () => {
   }, [dispatch, pageSize]);
 
   useEffect(() => {
+    const connection=getConnection()
     const connectSignalR = async () => {
-      if(connection){
-        if (connection.state === "Disconnected") {
-          try {
-            await connection.start();
-            console.log("Connected!");
-    
-            connection.on("loadNhomQuyen",async () => {
-              await dispatch(fetchPermissions({ search: "", page: pageSize }));
-            });
-    
-            connection.on("loadHanhDong", async () => {
-              const result = await dispatch(
-                checkPermission({ maQuyen: maquyen, tenChucNang: "Phân Quyền" })
-              ).unwrap();
-              setpermissionAction(result);
-            });
-          } catch (error) {
-            console.error("Connection failed: ", error);
-          }
-        }else if(connection.state === "Connected"){
-          try {
-            console.log("Connected!");
-            connection.on("loadNhomQuyen",async () => {
-             await dispatch(fetchPermissions({ search: "", page: pageSize }));
-            });
-    
-            connection.on("loadHanhDong", async () => {
-              const result = await dispatch(
-                checkPermission({ maQuyen: maquyen, tenChucNang: "Phân Quyền" })
-              ).unwrap();
-              setpermissionAction(result);
-            });
-          } catch (error) {
-            console.error("Connection failed: ", error);
-          }
+      try {
+        if (connection && connection.state === "Disconnected") {
+          await connection.start();
+          console.log("Connected!"); 
         }
+        connection.on("loadNhomQuyen",async () => {
+          await dispatch(fetchPermissions({ search: "", page: pageSize }));
+        });
+
+        connection.on("loadHanhDong", async () => {
+          const result = await dispatch(
+            checkPermission({ maQuyen: maquyen, tenChucNang: "Phân Quyền" })
+          ).unwrap();
+          setpermissionAction(result);
+        });
+        console.log("Connected! update"); 
+      } catch (error) {
+        console.error("Connection failed: ", error);
       }
     };
   
@@ -88,7 +69,7 @@ const Permission = () => {
         connection.off("loadHanhDong");
       }
     };
-  }, [dispatch, pageSize, connection, maquyen]);
+  }, [dispatch, pageSize,maquyen]);
   const roleActionHandler = () => {};
   const deleteHandler = () => {};
 

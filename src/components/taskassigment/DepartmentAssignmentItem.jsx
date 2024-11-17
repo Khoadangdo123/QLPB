@@ -17,11 +17,10 @@ import API_ENDPOINTS from "../../constant/linkapi";
 import TaskHistory from "../task/TaskHistory";
 import AddTaskTransfer from "../tasktransfer/AddTaskTransfer";
 import getConnection from "../../hub/signalRConnection";
-const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
+const DepartmentAssignmentItem = ({ congViecPhongBan,filterTask}) => {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  //const [connection, setConnection] = useState(null);
   const [permissionAction, setpermissionAction] = useState([]);
   const [openTransfer, setOpenTransfer] = useState(false);
   const [openTaskHistory, setOpenTaskHistory] = useState(false);
@@ -34,7 +33,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
   const congviec = useSelector((state) =>
     state.tasks.list.find((task) => task.maCongViec === maCongViec)
   );
-  useEffect(() => {
+  useEffect(() => {      
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -52,7 +51,6 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
         setLoading(false);
       }
     };
-
     if (maCongViec) {
       fetchData();
     }
@@ -60,29 +58,28 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
   useEffect(() => {
     const connection=getConnection()
     const startConnection = async () => {
-      if (connection.state === "Disconnected") {
-        try {
+      try {
+        if (connection && connection.state === "Disconnected") {
           await connection.start();
           console.log("Connection started");
-          connection.on("loadPhanCong", async () => {
-            setLoading(true);
-            await dispatch(fetchByIdTask(maCongViec));
-            setLoading(false);
-          });
-          connection.on("loadHanhDong", async () => {
-            const result = await dispatch(
-              checkPermission({
-                maQuyen: maquyen,
-                tenChucNang: "Công Việc Phòng Ban",
-              })
-            ).unwrap();
-            setpermissionAction(result);
-          });
-        } catch (err) {
-          console.error("Error while starting connection: ", err);
         }
-      }
-      if(connection){
+        connection.on("loadPhanCong", async () => {
+          setLoading(true);
+          await dispatch(fetchByIdTask(maCongViec));
+          setLoading(false);
+        });
+        connection.on("loadHanhDong", async () => {
+          const result = await dispatch(
+            checkPermission({
+              maQuyen: maquyen,
+              tenChucNang: "Công Việc Phòng Ban",
+            })
+          ).unwrap();
+          setpermissionAction(result);
+        });
+        console.log("Connection started update");
+      } catch (err) {
+        console.error("Error while starting connection: ", err);
       }
     };
 
@@ -120,7 +117,11 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
   if (!congviec) {
     return <p>not found</p>;
   }
-
+  if(congviec.trangThaiCongViec===false && filterTask==="completed"){
+    return null;
+  }else if(congviec.trangThaiCongViec===true && filterTask==="incomplete"){
+    return null
+  }
   const handleToggleDetail = () => {
     setExpanded(!expanded);
   };
@@ -139,6 +140,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
   const thucHien = congviec?.phanCongs?.filter(
     (m) => m.vaiTro === "Người Thực Hiện"
   );
+
   const congViecHoanThanh =
     congviec?.phanCongs?.filter((task) => task.trangThaiCongViec === true)
       .length ?? 0;

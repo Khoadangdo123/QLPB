@@ -62,9 +62,6 @@ function Layout() {
       </div>
     </div>
   ) 
-  // : (
-  //   <Navigate to='/log-in' state={{ from: location }} replace />
-  // );
 }
 
 const MobileSidebar = () => {

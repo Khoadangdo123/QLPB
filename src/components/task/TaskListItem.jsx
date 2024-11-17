@@ -54,7 +54,6 @@ const TaskListItem = ({ congviec, duAn }) => {
   const [loading, setLoading] = useState(true);
   const [isConnectionStarted, setIsConnectionStarted] = useState(false);
   const [permissionAction, setpermissionAction] = useState([]);
-  //const [connection, setConnection] = useState(null);
   const maquyen = Number(localStorage.getItem("permissionId"));
   const [statusTask, setStatusTask] = useState(congviec.trangThaiCongViec);
   const [error, setError] = useState(null);
@@ -88,11 +87,11 @@ const TaskListItem = ({ congviec, duAn }) => {
     const connection=getConnection();
     const connectSignalR = async () => {
       try {
-        if (connection.state === "Disconnected") {
+        if (connection && connection.state === "Disconnected") {
           await connection.start();
           console.log("SignalR connected!");
         }
-        console.log("Connected!");
+        console.log("Connected! update");
         connection.on("updateCongViec",async () => {
           if (maCongViec) {
             await dispatch(fetchByIdTask(maCongViec));
@@ -113,6 +112,10 @@ const TaskListItem = ({ congviec, duAn }) => {
             setpermissionAction(result);
           }
         });
+        // connection.onclose(() => {
+        //   console.error("Connection lost, trying to reconnect...");
+        //   setTimeout(() => connectSignalR(), 5000); // Thử kết nối lại sau 5 giây
+        // });
       } catch (error) {
         console.error("Connection failed: ", error);
       }

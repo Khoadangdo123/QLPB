@@ -45,8 +45,25 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
   const submitHandler = async (data) => {
     console.log(congViecCha, duAn);
     if (data.thoiGianBatDau > data.thoiGianKetThuc) {
-      alert("Thời kết thúc phải lớn hơn thời gian bắt đầu");
+      toast.warning("Vui lòng chọn ngày kết thúc lớn hơn ngày bắt đầu")
       return;
+    }
+    if(selectedDepartment.length===0 && selectedEmployees.length===0){
+      toast.warning("Vui lòng chọn nhân viên hoặc phòng ban")
+      return;
+    }
+    if(selectedDepartment.length>0){
+      const missingRoles = selectedEmployees.some(
+        (employee) => !employee.vaiTro || employee.vaiTro.trim() === ""
+      );
+      if (missingRoles) {
+        toast.warning("Vui lòng chọn vai trò cho tất cả nhân viên");
+        return;
+      }
+    }
+    if(data.moTa.trim()==="" || data.tenCongViec.trim()===""){
+      toast.warning("Vui lòng nhập")
+      return
     }
     let CongViec = {
       maPhanDuAn: Number(phanDuAn),
@@ -59,10 +76,6 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
       trangThaiCongViec: false,
       mucDoHoanThanh: 0,
     };
-    console.log(CongViec);
-    console.log(selectedEmployees);
-    console.log(selectedDepartment);
-    console.log(CongViec.tenCongViec);
     try {
       const result = await dispatch(addTask(CongViec)).unwrap();
       if (Array.isArray(selectedDepartment) && selectedDepartment.length > 0) {

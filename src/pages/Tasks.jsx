@@ -38,14 +38,12 @@ const Tasks = () => {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sections, setSections] = useState([]);
-  //const [connection, setConnection] = useState(null);
   const [timelineModalOpen, setTimelineModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [filterStatus, setFilterStatus] = useState("all");
   const maquyen = Number(localStorage.getItem("permissionId"));
   const [permissionAction, setpermissionAction] = useState([]);
-  const connection = getConnection();
   const duan = useSelector((state) =>
     state.projects.list.find((project) => project.maDuAn === Number(id))
   );
@@ -67,83 +65,48 @@ const Tasks = () => {
     fetchData();
   }, [id, dispatch]);
   useEffect(() => {
+    const connection = getConnection();
     const setupConnection = async () => {
-      if (connection) {
-        if (connection.state === "Disconnected") {
-          await connection
-            .start()
-            .then(() => {
-              console.log("Connected!");
-              connection.on("loadDuAn", async () => {
-                if (id) {
-                  await dispatch(fetchByIdProject(id));
-                  console.log("Dự Án: " + id);
-                }
-              });
-              connection.on("loadCongViec", async () => {
-                if (id) {
-                  await dispatch(fetchByIdProject(id));
-                }
-              });
-              connection.on("loadPhanCong", async () => {
-                if (id) {
-                  await dispatch(fetchByIdProject(id));
-                }
-              });
-              connection.on("updateCongViec", async () => {
-                if (id) {
-                  await dispatch(fetchByIdProject(id));
-                  console.log("Dự Án: " + id);
-                }
-              });
-              connection.on("loadHanhDong", async () => {
-                const result = await dispatch(
-                  checkPermission({
-                    maQuyen: maquyen,
-                    tenChucNang: "Phần Dự Án",
-                  })
-                ).unwrap();
-                setpermissionAction(result);
-                console.log("hellooooo");
-              });
-            })
-            .catch((error) => console.error("Connection failed: ", error));
-        } else if (connection.state === "Connected") {
-          console.log("Đã kết nối");
-
-          connection.on("loadDuAn", async () => {
-            if (id) {
-              await dispatch(fetchByIdProject(id));
-              console.log("Dự Án: " + id);
-            }
-          });
-
-          connection.on("loadCongViec", async () => {
-            if (id) {
-              await dispatch(fetchByIdProject(id));
-            }
-          });
-
-          connection.on("loadPhanCong", async () => {
-            if (id) {
-              await dispatch(fetchByIdProject(id));
-            }
-          });
-
-          connection.on("updateCongViec", async () => {
-            if (id) {
-              await dispatch(fetchByIdProject(id));
-              console.log("Dự Án: " + id);
-            }
-          });
-
-          connection.on("loadHanhDong", async () => {
-            const result = await dispatch(
-              checkPermission({ maQuyen: maquyen, tenChucNang: "Phần Dự Án" })
-            ).unwrap();
-            setpermissionAction(result);
-          });
+      try{
+        if (connection && connection.state === "Disconnected") {
+          await connection.start();
+          console.log("SignalR connected!");
         }
+        connection.on("loadDuAn", async () => {
+          if (id) {
+            await dispatch(fetchByIdProject(id));
+            console.log("Dự Án: " + id);
+          }
+        });
+        connection.on("loadCongViec", async () => {
+          if (id) {
+            await dispatch(fetchByIdProject(id));
+          }
+        });
+        connection.on("loadPhanCong", async () => {
+          if (id) {
+            await dispatch(fetchByIdProject(id));
+          }
+        });
+        connection.on("updateCongViec", async () => {
+          if (id) {
+            await dispatch(fetchByIdProject(id));
+            console.log("Dự Án: " + id);
+          }
+        });
+        connection.on("loadHanhDong", async () => {
+          const result = await dispatch(
+            checkPermission({
+              maQuyen: maquyen,
+              tenChucNang: "Phần Dự Án",
+            })
+          ).unwrap();
+          setpermissionAction(result);
+          console.log("hellooooo");
+        });
+        console.log("Connection update");
+      }catch (error) {
+        console.error("Connection failed: ", error);
       }
     };
     setupConnection();
@@ -156,7 +119,7 @@ const Tasks = () => {
         connection.off("loadHanhDong");
       }
     };
-  }, [connection, id, dispatch, maquyen]);
+  }, [id, dispatch, maquyen]);
   const status = id || "";
   const toggleTimelineModal = () => {
     navigate("/gant", { state: { duan } });

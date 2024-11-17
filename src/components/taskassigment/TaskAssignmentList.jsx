@@ -108,7 +108,7 @@ const TaskAssignmentList = ({ congviec }) => {
     const connection=getConnection()
     const startConnection = async () => {
       try {
-        if (connection.state === "Disconnected") {
+        if (connection && connection.state === "Disconnected") {
           await connection.start();
           console.log("Connection started");
         }
@@ -180,9 +180,6 @@ const TaskAssignmentList = ({ congviec }) => {
       }
     };
   }, [dispatch, maCongViec,maquyen]);
-  useEffect(()=>{
-
-  },[])
   if (loading) {
     return (
       <div

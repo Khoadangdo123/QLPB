@@ -25,17 +25,26 @@ const Login = () => {
         tenTaiKhoan:data.tenTaiKhoan,
         matKhau:data.matKhau
       }
+      if(AuthRequest.tenTaiKhoan.trim()===""){
+        toast.warning("Vui lòng nhập tài khoản")
+        return
+      }
+      if(AuthRequest.matKhau.trim()===""){
+        toast.warning("Vui lòng nhập mật khẩu")
+        return
+      }
       console.log(AuthRequest)
       const result = await dispath(AuthLogin(AuthRequest))
       if(result.payload && result.payload.isSuccess){
         toast.success("Đăng nhập thành công")
         navigate('/home')
       }else{
-        toast.error("Mật khẩu hoặc tài khoản không đúng")
+        toast.warning("Mật khẩu hoặc tài khoản không đúng")
+        return
       }
     }catch(e){
-      toast.error("Lỗi khi đăng nhập")
-      console.log(e);
+      toast.warning("Lỗi khi đăng nhập")
+      return
     }
   };
 
@@ -52,7 +61,7 @@ const Login = () => {
         <div className='h-full w-full lg:w-2/3 flex flex-col items-center justify-center'>
           <div className='w-full md:max-w-lg 2xl:max-w-3xl flex flex-col items-center justify-center gap-5 md:gap-y-10 2xl:-mt-20'>
             <span className='flex gap-1 py-1 px-3 border rounded-full text-sm md:text-base bordergray-300 text-gray-600'>
-              Quản lý tất cả công việc của bạn ở một nơi!
+              Quản lý phân công công việc cho phòng ban và cá nhân!
             </span>
             <p className='flex flex-col gap-0 md:gap-4 text-4xl md:text-6xl 2xl:text-7xl font-black text-center text-blue-700'>
               <span>Quản lý công việc</span>

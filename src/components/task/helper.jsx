@@ -123,7 +123,7 @@ export function initTasks() {
           name: i.tenCongViec,
           id: i.maCongViec,
           type: "task",
-          progress: Math.round(i.mucDoHoanThanh * 100) / 100,
+          progress: parseFloat((Math.round(i.mucDoHoanThanh * 100) / 100).toFixed(2)),
           isDisabled: true,
           styles: {
             progressColor: taskColor,

@@ -16,8 +16,6 @@ import getConnection from "../../hub/signalRConnection";
 
 const TaskHistory = ({ openTaskHistory, setOpenTaskHistory, maCongViec }) => {
   const dispatch = useDispatch();
-  //const [connection, setConnection] = useState(null);
-  const connection=getConnection();
   const lichsucongviec = useSelector((state) => state.taskhistories.list);
   useEffect(() => {
     const loadData = async () => {
@@ -27,30 +25,20 @@ const TaskHistory = ({ openTaskHistory, setOpenTaskHistory, maCongViec }) => {
   }, [dispatch, maCongViec]);
  
   useEffect(() => {
+    const connection=getConnection();
     const connectSignalR = async () => {
-      if(connection){
-        if (connection.state === "Disconnected") {
-          try {
-            await connection.start();
-            console.log("Connected!");
-    
-            connection.on("loadLichSuCongViec", async () => {
-              await dispatch(fetchTaskHistories());
-            });
-          } catch (error) {
-            console.error("Connection failed: ", error);
-          }
-        }else if(connection.state === "Connected"){
-          try {
-            console.log("Connected!");
-    
-            connection.on("loadLichSuCongViec", async () => {
-              await dispatch(fetchTaskHistories());
-            });
-          } catch (error) {
-            console.error("Connection failed: ", error);
-          }
+      try {
+        if (connection && connection.state === "Disconnected") {
+          await connection.start();
+          console.log("Connected!");
         }
+
+        connection.on("loadLichSuCongViec", async () => {
+          await dispatch(fetchTaskHistories());
+        });
+        console.log("Connected! update");
+      } catch (error) {
+        console.error("Connection failed: ", error);
       }
     };
     connectSignalR(); 
@@ -59,7 +47,7 @@ const TaskHistory = ({ openTaskHistory, setOpenTaskHistory, maCongViec }) => {
         connection.off("loadLichSuCongViec");
       }
     };
-  }, [dispatch, connection]);
+  }, [dispatch,maCongViec]);
   const lichsu = lichsucongviec.filter(
     (item) => item.maCongViec === maCongViec
   );

@@ -17,6 +17,10 @@ const AddSection = ({ open, setOpen,duAn}) => {
     formState: { errors },
   } = useForm();
   const submitHandler =async (data) => {
+    if(data.tenPhan===null || data.tenPhan.trim()===""){
+      toast.success("Vui lòng nhập")
+      return
+    }
     try {
         await dispatch(addSection({
           maDuAn:Number(duAn),

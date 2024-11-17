@@ -85,7 +85,6 @@ const AddTaskTransfer = ({
     var arrNhanVien = selectedCurrentEmployee.split("-");
     console.log(arrNhanVien);
     try {
-      // tùy chọn có cập nhật ngày hay không
       if (showEndDate) {
         const updateDateResult = await dispatch(
           updateTaskDay({
@@ -105,7 +104,6 @@ const AddTaskTransfer = ({
           );
         }
       }
-      // chuyển giao trong trường hợp muốn xóa( không chuyển giao nhân viên khác vào)
       if (selectedEmployees.length === 0) {
         var result = await dispatch(
           deleteAssignment(Number(arrNhanVien[0]))

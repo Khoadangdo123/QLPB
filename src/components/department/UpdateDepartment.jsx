@@ -35,13 +35,10 @@ const UpdateDepartment = ({ open, setOpen, departmentData }) => {
     }
   }, [defaultValues, reset]);
   const handleOnSubmit =async (data) => {
-    console.log("Department Data Update:",
-        {
-            id:Number(data.maPhongBan),
-            maTruongPhong:Number(data.maTruongPhong),
-            tenPhongBan:data.tenPhongBan
-        }
-    );
+    if (!data.tenPhongBan || data.tenPhongBan.trim() === "") {
+      toast.warning("Tên phòng ban không được để trống");
+      return;
+    }
     try {
         const result = await dispatch(
             updateDepartment({

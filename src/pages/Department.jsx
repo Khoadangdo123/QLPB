@@ -24,11 +24,9 @@ const Departments = () => {
   const [selected, setSelected] = useState(null);
   const [openUpdate, setOpenUpdate] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
-  //const [connection, setConnection] = useState(null);
   const [permissionAction, setpermissionAction] = useState([]);
   const maquyen=Number(localStorage.getItem("permissionId"))
   const dispatch = useDispatch();
-  const connection=getConnection()
   useEffect(() => {
     const fetchData = async () => {
       await dispatch(fetchDepartments({ search: "", page: pageSize }));
@@ -43,40 +41,25 @@ const Departments = () => {
   }, [dispatch, pageSize]);
   
   useEffect(() => {
+    const connection=getConnection()
     const connectSignalR = async () => {
-      if(connection){
-        if (connection.state === "Disconnected") {
-          try {
-            await connection.start();
-            console.log("Connected!");
-            connection.on("loadPhongBan", async () => {
-              await dispatch(fetchDepartments({ search: "", page: pageSize }));
-            });
-            connection.on("loadHanhDong", async () => {
-              const result = await dispatch(
-                checkPermission({ maQuyen: maquyen, tenChucNang: "Phòng Ban" })
-              ).unwrap();
-              setpermissionAction(result);
-            });
-          } catch (error) {
-            console.error("Connection failed: ", error);
-          }
-        }else if(connection.state === "Connected"){
-          try {
-            console.log("Connected!");
-            connection.on("loadPhongBan", async () => {
-              await dispatch(fetchDepartments({ search: "", page: pageSize }));
-            });
-            connection.on("loadHanhDong", async () => {
-              const result = await dispatch(
-                checkPermission({ maQuyen: maquyen, tenChucNang: "Phòng Ban" })
-              ).unwrap();
-              setpermissionAction(result);
-            });
-          } catch (error) {
-            console.error("Connection failed: ", error);
-          }
+      try {
+        if (connection && connection.state === "Disconnected") {
+          await connection.start();
+          console.log("Connected!"); 
         }
+        connection.on("loadPhongBan", async () => {
+          await dispatch(fetchDepartments({ search: "", page: pageSize }));
+        });
+        connection.on("loadHanhDong", async () => {
+          const result = await dispatch(
+            checkPermission({ maQuyen: maquyen, tenChucNang: "Phòng Ban" })
+          ).unwrap();
+          setpermissionAction(result);
+        });
+        console.log("Connected! update"); 
+      } catch (error) {
+        console.error("Connection failed: ", error);
       }
     };
     connectSignalR();
@@ -86,7 +69,7 @@ const Departments = () => {
         connection.off("loadHanhDong");
       }
     };
-  }, [dispatch, pageSize, connection, maquyen]);
+  }, [dispatch, pageSize,maquyen]);
 
   const departmentActionHandler = () => {};
   const deleteHandler = () => {};

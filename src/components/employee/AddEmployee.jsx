@@ -27,13 +27,36 @@ const AddEmployee = ({ open, setOpen, departmentData }) => {
   } = useForm({ defaultValues });
 
   const handleOnSubmit =async (data) => {
-    console.log("Employee Data:",{
-        maPhongBan: Number(data.maPhongBan),
-        tenChucVu: data.tenChucVu,
-        tenNhanVien: data.tenNhanVien,
-        soDienThoai: data.soDienThoai,
-        email:data.email
-    });
+    if (!data.tenNhanVien || data.tenNhanVien.trim() === "") {
+      toast.warning("Tên nhân viên không được để trống");
+      return;
+    }
+  
+    if (!data.tenChucVu || data.tenChucVu.trim() === "") {
+      toast.warning("Tên chức vụ không được để trống");
+      return;
+    }
+  
+    if (!data.soDienThoai || data.soDienThoai.trim() === "") {
+      toast.warning("Số điện thoại không được để trống");
+      return;
+    }
+  
+    if (!data.email || data.email.trim() === "") {
+      toast.warning("Email không được để trống");
+      return;
+    }
+    const phoneRegex = /^[0-9]{10,11}$/;
+    if (!phoneRegex.test(data.soDienThoai)) {
+      toast.warning("Số điện thoại không hợp lệ");
+      return;
+    }
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
+    if (!emailRegex.test(data.email)) {
+      toast.warning("Email không hợp lệ");
+      return;
+    }
+
     try {
       await dispatch(addEmployee({
         maPhongBan: Number(data.maPhongBan),

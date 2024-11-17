@@ -16,7 +16,7 @@ const AddAccount = ({ open, setOpen, accountData,account }) => {
   const employees=useSelector((state)=>state.employees.list)
   const nhomquyens=useSelector((state)=>state.permissions.list)
   useEffect(()=>{
-    dispatch(fetchEmployees({search:'',page:20}))
+    dispatch(fetchEmployees({search:'',page:30}))
     dispatch(fetchPermissions({search:'',page:20}))
   },[dispatch])
   const isLoading = false;
@@ -29,12 +29,18 @@ const AddAccount = ({ open, setOpen, accountData,account }) => {
   } = useForm({ defaultValues });
 
   const handleOnSubmit =async (data) => {
-    console.log("Employee Data:",{
-        maNhanVien: Number(data.maNhanVien),
-        maNhomQuyen: Number(data.maQuyen),
-        tenTaiKhoan: data.tenTaiKhoan,
-        matKhau: data.matKhau
-    });
+    if(data.tenTaiKhoan.trim()==="" || data.tenTaiKhoan===null){
+      toast.warning("Vui lòng nhập tên tài khoản hợp lệ")
+      return
+    }
+    if(data.matKhau.trim()==="" || data.matKhau===null){
+      toast.warning("Vui lòng nhập mật khẩu hợp lệ")
+      return
+    }
+    if (/^\d+$/.test(data.tenTaiKhoan)) { 
+      toast.warning("Tên tài khoản không được chỉ chứa số");
+      return;
+    }
     try {
       await dispatch(addAccount({
         maNhanVien: Number(data.maNhanVien),

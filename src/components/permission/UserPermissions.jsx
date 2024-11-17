@@ -27,9 +27,6 @@ const UserPermissions = ({ role, onClose }) => {
   useEffect(() => {
     const fetchPermissions = async () => {
       if (!permissionsByRole || !permissionsByRole.chiTietQuyens) return;
-  
-      //console.log("Fetched permissionsByRole:", permissionsByRole);
-      //console.log(permissionsByRole.chiTietQuyens)
       const updatedPermissions = functions.map((func) => {
         const actions = ["Xem", "Thêm", "Sửa", "Xóa"].map((action, index) => {
           const chiTietQuyen = permissionsByRole.chiTietQuyens.find(

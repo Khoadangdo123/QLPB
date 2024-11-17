@@ -20,10 +20,8 @@ const Accounts = () => {
   const [selected, setSelected] = useState(null);
   const [openUpdate, setOpenUpdate] = useState(false);
   const [selectedAccount, setSelectedAccount] = useState(null);
-  //const [connection, setConnection] = useState(null);
   const [permissionAction,setpermissionAction]=useState([])
   const maquyen=Number(localStorage.getItem("permissionId"))
-  const connection=getConnection()
   const dispatch = useDispatch();
   useEffect(() => {
     const fetchData = async () => {
@@ -41,38 +39,24 @@ const Accounts = () => {
   }, [dispatch, pageSize]);
   
   useEffect(()=>{
+    const connection=getConnection()
     const connectSignalR = async () => {
-      if(connection){
-        if (connection.state === "Disconnected") {
-          try {
-            await connection.start();
-            console.log("Connected!");
-            connection.on("loadTaiKhoan", async () => {
-              await dispatch(fetchAccounts({ search: '', page: pageSize }));
-            });
-            connection.on("loadHanhDong", async () => {
-              const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Tài Khoản" })).unwrap();
-              setpermissionAction(result);
-              console.log("account")
-            });
-          } catch (error) {
-            console.error("Connection failed: ", error);
-          }
-        }else if(connection.state === "Connected"){
-          try {
-            console.log("Connected!");
-            connection.on("loadTaiKhoan", async () => {
-              await dispatch(fetchAccounts({ search: '', page: pageSize }));
-            });
-            connection.on("loadHanhDong", async () => {
-              const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Tài Khoản" })).unwrap();
-              setpermissionAction(result);
-              console.log("account")
-            });
-          } catch (error) {
-            console.error("Connection failed: ", error);
-          }
+      try {
+        if (connection && connection.state === "Disconnected") {
+          await connection.start();
+          console.log("Connected!");
         }
+        connection.on("loadTaiKhoan", async () => {
+          await dispatch(fetchAccounts({ search: '', page: pageSize }));
+        });
+        connection.on("loadHanhDong", async () => {
+          const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Tài Khoản" })).unwrap();
+          setpermissionAction(result);
+          console.log("account")
+        });
+        console.log("Connected! update");
+      } catch (error) {
+        console.error("Connection failed: ", error);
       }
     };
   
@@ -84,7 +68,7 @@ const Accounts = () => {
         connection.off("loadHanhDong");
       }
     };
-  },[dispatch,pageSize,connection,maquyen])
+  },[dispatch,pageSize,maquyen])
   const accountActionHandler = () => {};
   const deleteHandler = () => {};
   const deleteClick = (id) => {
@@ -122,17 +106,6 @@ const Accounts = () => {
       <td className='p-2'>{account.nhomQuyen ? account.nhomQuyen.tenQuyen : "N/A"}</td>
       <td className='p-2'>{account.tenTaiKhoan}</td>
       <td className='p-2'>{account.matKhau}</td>
-      {/* <td>
-        <button
-          // onClick={() => userStatusClick(user)}
-          className={clsx(
-            "w-fit px-4 py-1 rounded-full",
-            account?.trangThai ? "bg-blue-200" : "bg-yellow-100"
-          )}
-        >
-          {account?.trangThai ? "Active" : "Disabled"}
-        </button>
-      </td> */}
       <td className='p-2 flex gap-4 justify-end'>
 
         {

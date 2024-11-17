@@ -13,9 +13,6 @@ import AddEmployee from "../components/employee/AddEmployee";
 import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
 import UpdateEmployee from "../components/employee/UpdateEmployee";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
-import { useNavigate } from "react-router-dom";
-import API_ENDPOINTS from "../constant/linkapi";
-import { toast } from "sonner";
 import getConnection from "../hub/signalRConnection";
 const Employees = () => {
   const [pageSize, setPageSize] = useState(10);
@@ -26,9 +23,7 @@ const Employees = () => {
   const [selected, setSelected] = useState(null);
   const [openUpdate, setOpenUpdate] = useState(false);
   const [selectedEmployee, setSelectedEmployee] = useState(null);
-  //const [connection, setConnection] = useState(null);
   const [permissionAction, setpermissionAction] = useState([]);
-  const connection=getConnection();
   const maquyen=Number(localStorage.getItem("permissionId"))
   const dispatch = useDispatch();
   useEffect(() => {
@@ -43,41 +38,25 @@ const Employees = () => {
     fetchData();
   }, [dispatch, pageSize]);
   useEffect(() => {
+    const connection=getConnection();
     const connectSignalR = async () => {
-      if(connection){
-        if (connection.state === "Disconnected") {
-          try {
-            await connection.start();
-            console.log("Connected!");
-            connection.on("loadEmployee",async () => {
-             await dispatch(fetchEmployees({ search: "", page: pageSize }));
-            });
-    
-            connection.on("loadHanhDong", async () => {
-              const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Nhân Viên" })).unwrap();
-              setpermissionAction(result);
-              console.log("employee")
-            });
-          } catch (error) {
-            console.error("Connection failed: ", error);
-          }
-        }else if(connection.state === "Connected"){
-          console.log("Đã kết nối")
-          try {
-            console.log("Connected!");
-            connection.on("loadEmployee",async () => {
-             await dispatch(fetchEmployees({ search: "", page: pageSize }));
-            });
-    
-            connection.on("loadHanhDong", async () => {
-              const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Nhân Viên" })).unwrap();
-              setpermissionAction(result);
-              console.log("employee")
-            });
-          } catch (error) {
-            console.error("Connection failed: ", error);
-          }
+      try {
+        if (connection && connection.state === "Disconnected") {
+          await connection.start();
+          console.log("Connected!");
         }
+        connection.on("loadEmployee",async () => {
+         await dispatch(fetchEmployees({ search: "", page: pageSize }));
+        });
+
+        connection.on("loadHanhDong", async () => {
+          const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Nhân Viên" })).unwrap();
+          setpermissionAction(result);
+          console.log("employee")
+        });
+        console.log("Connected! update");
+      } catch (error) {
+        console.error("Connection failed: ", error);
       }
     };
     connectSignalR(); 
@@ -87,7 +66,7 @@ const Employees = () => {
         connection.off("loadHanhDong");
       }
     };
-  }, [dispatch, pageSize, connection, maquyen]);
+  }, [dispatch, pageSize,maquyen]);
   const employeeActionHandler = () => {};
   const deleteHandler = () => {};
 
