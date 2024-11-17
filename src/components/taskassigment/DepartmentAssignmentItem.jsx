@@ -28,7 +28,6 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
   const dispatch = useDispatch();
   const maCongViec = congViecPhongBan.maCongViec;
   const maquyen = Number(localStorage.getItem("permissionId"));
-  const connection=getConnection()
   const vaiTro = congViecPhongBan.vaiTro;
   const maPhanCong = congViecPhongBan.maPhanCong;
   const maPhongBan = congViecPhongBan.maPhongBan;
@@ -58,73 +57,43 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
       fetchData();
     }
   }, [maCongViec, dispatch]);
-  // useEffect(() => {
-  //   const newConnection = new HubConnectionBuilder()
-  //   .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
-  //   .withAutomaticReconnect([0, 2000, 10000, 30000])
-  //   .configureLogging(LogLevel.Information)
-  //   .build();
-  //   newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
-  //   setConnection(newConnection);
-  // }, []);
   useEffect(() => {
+    const connection=getConnection()
     const startConnection = async () => {
-      if(connection){
-        if (connection.state === "Disconnected") {
-          try {
-            await connection.start();
-            console.log("Connection started");
-            connection.on("loadPhanCong", async () => {
-              setLoading(true);
-              await dispatch(fetchByIdTask(maCongViec));
-              setLoading(false);
-            });
-            connection.on("loadHanhDong", async () => {
-              const result = await dispatch(
-                checkPermission({
-                  maQuyen: maquyen,
-                  tenChucNang: "Công Việc Phòng Ban",
-                })
-              ).unwrap();
-              setpermissionAction(result);
-            });
-          } catch (err) {
-            console.error("Error while starting connection: ", err);
-          }
-        }else if(connection.state === "Connected"){
-          try {
-            console.log("Connection started");
-            connection.on("loadPhanCong", async () => {
-              setLoading(true);
-              await dispatch(fetchByIdTask(maCongViec));
-              setLoading(false);
-            });
-            connection.on("loadHanhDong", async () => {
-              const result = await dispatch(
-                checkPermission({
-                  maQuyen: maquyen,
-                  tenChucNang: "Công Việc Phòng Ban",
-                })
-              ).unwrap();
-              setpermissionAction(result);
-            });
-          } catch (err) {
-            console.error("Error while starting connection: ", err);
-          }
+      if (connection.state === "Disconnected") {
+        try {
+          await connection.start();
+          console.log("Connection started");
+          connection.on("loadPhanCong", async () => {
+            setLoading(true);
+            await dispatch(fetchByIdTask(maCongViec));
+            setLoading(false);
+          });
+          connection.on("loadHanhDong", async () => {
+            const result = await dispatch(
+              checkPermission({
+                maQuyen: maquyen,
+                tenChucNang: "Công Việc Phòng Ban",
+              })
+            ).unwrap();
+            setpermissionAction(result);
+          });
+        } catch (err) {
+          console.error("Error while starting connection: ", err);
         }
+      }
+      if(connection){
       }
     };
 
-    if (connection) {
-      startConnection();
-    }
+    startConnection();
     return () => {
       if (connection) {
         connection.off("loadPhanCong");
         connection.off("loadHanhDong");
       }
     };
-  }, [connection, dispatch, maCongViec]);
+  }, [dispatch, maCongViec]);
   if (loading) {
     return (
       <div

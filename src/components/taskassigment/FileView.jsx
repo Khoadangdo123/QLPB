@@ -19,6 +19,7 @@ import { fetchAllFile } from "../../redux/file/fileSlice";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import PdfViewer from "./PdfViewer";
 import API_ENDPOINTS from "../../constant/linkapi";
+import getConnection from "../../hub/signalRConnection";
 const FileView = () => {
   const { id } = useParams();
   const maCongViec = Number(id);
@@ -27,9 +28,10 @@ const FileView = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState("");
   const [filteredFiles, setFilteredFiles] = useState([]);
-  const [connection, setConnection] = useState(null);
+  //const [connection, setConnection] = useState(null);
   const [allFile, setAllFile] = useState([]);
   const dispatch = useDispatch();
+  const connection=getConnection()
   const phancong = useSelector((state) =>
     state.tasks.list.find((task) => task.maCongViec === maCongViec)
   );
@@ -93,82 +95,134 @@ const FileView = () => {
     }
   }, [maCongViec, dispatch]);
   useEffect(() => {
-    const newConnection = new HubConnectionBuilder()
-      .withUrl(API_ENDPOINTS.HUB_URL)
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build();
-    setConnection(newConnection);
-  }, []);
-  useEffect(() => {
     const startConnection = async () => {
-      if (connection && connection.state === "Disconnected") {
-        try {
-          await connection.start();
-          console.log("Connection started");
-          connection.on("loadFile", async () => {
-            setLoading(true);
-            try {
-              // Fetch task and files in parallel
-              const [phancongs, files] = await Promise.all([
-                dispatch(fetchByIdTask(maCongViec)).unwrap(),
-                dispatch(fetchAllFile()).unwrap(),
-              ]);
-
-              const allFiles = await Promise.all(
-                phancongs.phanCongs.map((item) =>
-                  dispatch(fetchChiTietFileByPhanCong(item.maPhanCong)).unwrap()
-                )
-              );
-
-              setAllFile(allFiles.flat());
-
-              const detailedFiles = allFiles.flat().map((fileDetail) => {
-                const relatedAssignment = phancongs.phanCongs.find(
-                  (item) => item.maPhanCong === fileDetail.maPhanCong
+      if(connection){
+        if (connection.state === "Disconnected") {
+          try {
+            await connection.start();
+            console.log("Connection started");
+            connection.on("loadFile", async () => {
+              setLoading(true);
+              try {
+                // Fetch task and files in parallel
+                const [phancongs, files] = await Promise.all([
+                  dispatch(fetchByIdTask(maCongViec)).unwrap(),
+                  dispatch(fetchAllFile()).unwrap(),
+                ]);
+  
+                const allFiles = await Promise.all(
+                  phancongs.phanCongs.map((item) =>
+                    dispatch(fetchChiTietFileByPhanCong(item.maPhanCong)).unwrap()
+                  )
                 );
-                return {
-                  ...fileDetail,
-                  tenNguoiGui:
-                    relatedAssignment?.nhanVien.maNhanVien +
-                    "-" +
-                    relatedAssignment?.nhanVien.tenNhanVien,
-                  ngayGui: fileDetail?.ngayGui
-                    ? new Date(fileDetail.ngayGui).toLocaleString()
-                    : null,
-                };
-              });
-
-              const matchingFiles = files.filter((file) =>
-                detailedFiles.some((detail) => detail.maFile === file.maFile)
-              );
-
-              const enrichedFiles = matchingFiles.map((file) => ({
-                ...file,
-                tenNguoiGui: detailedFiles.find(
-                  (detail) => detail.maFile === file.maFile
-                )?.tenNguoiGui,
-                ngayGui: detailedFiles.find(
-                  (detail) => detail.maFile === file.maFile
-                )?.ngayGui,
-              }));
-
-              setFilteredFiles(enrichedFiles);
-            } catch (error) {
-              console.error("Error fetching task:", error);
-            } finally {
-              setLoading(false);
-            }
-          });
-        } catch (err) {
-          console.error("Error while starting connection: ", err);
+  
+                setAllFile(allFiles.flat());
+  
+                const detailedFiles = allFiles.flat().map((fileDetail) => {
+                  const relatedAssignment = phancongs.phanCongs.find(
+                    (item) => item.maPhanCong === fileDetail.maPhanCong
+                  );
+                  return {
+                    ...fileDetail,
+                    tenNguoiGui:
+                      relatedAssignment?.nhanVien.maNhanVien +
+                      "-" +
+                      relatedAssignment?.nhanVien.tenNhanVien,
+                    ngayGui: fileDetail?.ngayGui
+                      ? new Date(fileDetail.ngayGui).toLocaleString()
+                      : null,
+                  };
+                });
+  
+                const matchingFiles = files.filter((file) =>
+                  detailedFiles.some((detail) => detail.maFile === file.maFile)
+                );
+  
+                const enrichedFiles = matchingFiles.map((file) => ({
+                  ...file,
+                  tenNguoiGui: detailedFiles.find(
+                    (detail) => detail.maFile === file.maFile
+                  )?.tenNguoiGui,
+                  ngayGui: detailedFiles.find(
+                    (detail) => detail.maFile === file.maFile
+                  )?.ngayGui,
+                }));
+  
+                setFilteredFiles(enrichedFiles);
+              } catch (error) {
+                console.error("Error fetching task:", error);
+              } finally {
+                setLoading(false);
+              }
+            });
+          } catch (err) {
+            console.error("Error while starting connection: ", err);
+          }
+        }else if(connection.state==="Connected"){
+          try {
+            console.log("Connection started");
+            connection.on("loadFile", async () => {
+              setLoading(true);
+              try {
+                // Fetch task and files in parallel
+                const [phancongs, files] = await Promise.all([
+                  dispatch(fetchByIdTask(maCongViec)).unwrap(),
+                  dispatch(fetchAllFile()).unwrap(),
+                ]);
+  
+                const allFiles = await Promise.all(
+                  phancongs.phanCongs.map((item) =>
+                    dispatch(fetchChiTietFileByPhanCong(item.maPhanCong)).unwrap()
+                  )
+                );
+  
+                setAllFile(allFiles.flat());
+  
+                const detailedFiles = allFiles.flat().map((fileDetail) => {
+                  const relatedAssignment = phancongs.phanCongs.find(
+                    (item) => item.maPhanCong === fileDetail.maPhanCong
+                  );
+                  return {
+                    ...fileDetail,
+                    tenNguoiGui:
+                      relatedAssignment?.nhanVien.maNhanVien +
+                      "-" +
+                      relatedAssignment?.nhanVien.tenNhanVien,
+                    ngayGui: fileDetail?.ngayGui
+                      ? new Date(fileDetail.ngayGui).toLocaleString()
+                      : null,
+                  };
+                });
+  
+                const matchingFiles = files.filter((file) =>
+                  detailedFiles.some((detail) => detail.maFile === file.maFile)
+                );
+  
+                const enrichedFiles = matchingFiles.map((file) => ({
+                  ...file,
+                  tenNguoiGui: detailedFiles.find(
+                    (detail) => detail.maFile === file.maFile
+                  )?.tenNguoiGui,
+                  ngayGui: detailedFiles.find(
+                    (detail) => detail.maFile === file.maFile
+                  )?.ngayGui,
+                }));
+  
+                setFilteredFiles(enrichedFiles);
+              } catch (error) {
+                console.error("Error fetching task:", error);
+              } finally {
+                setLoading(false);
+              }
+            });
+          } catch (err) {
+            console.error("Error while starting connection: ", err);
+          }
         }
       }
     };
 
-    if (connection) {
-      startConnection();
-    }
+    startConnection();
 
     return () => {
       if (connection) {

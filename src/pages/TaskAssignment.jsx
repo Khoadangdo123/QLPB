@@ -5,9 +5,6 @@ import {
   fetchEmployeeAssignment,
 } from "../redux/assignment/assignmentSlice";
 import TaskAssignmentList from "../components/taskassigment/TaskAssignmentList";
-import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
-import { useNavigate } from "react-router-dom";
-import API_ENDPOINTS from "../constant/linkapi";
 import getConnection from "../hub/signalRConnection";
 const TaskAssignment = () => {
   //const [connection, setConnection] = useState(null);
@@ -37,9 +34,6 @@ const TaskAssignment = () => {
               await dispatch(fetchEmployeeAssignment(maNhanVien));
               setLoading(false);
             });
-            // connection.on("task", async (message) => {
-            //   alert(message);
-            // });
           } catch (err) {
             console.error("Error while starting connection: ", err);
           }
@@ -51,9 +45,6 @@ const TaskAssignment = () => {
               await dispatch(fetchEmployeeAssignment(maNhanVien));
               setLoading(false);
             });
-            // connection.on("task", async (message) => {
-            //   alert(message);
-            // });
           } catch (err) {
             console.error("Error while starting connection: ", err);
           }
@@ -63,10 +54,7 @@ const TaskAssignment = () => {
     startConnection();
     return () => {
       if (connection) {
-        //connection.off("task");
         connection.off("loadPhanCong");
-        //connection.off("loadCongViec");
-        //connection.stop()
       }
     };
   }, [connection, dispatch, maNhanVien]);

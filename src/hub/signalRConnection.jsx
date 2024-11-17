@@ -12,8 +12,6 @@ export function getConnection() {
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
-      
-    // Set server timeout to 2 minutes (in milliseconds)
     connection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
   }
   return connection;

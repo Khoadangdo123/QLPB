@@ -25,50 +25,66 @@ const DepartmentAssignment = () => {
     };
     loadData();
   }, [maNhanVien, dispatch]);
-  // useEffect(() => {
-  //     const newConnection = new HubConnectionBuilder()
-  //     .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
-  //     .withAutomaticReconnect([0, 2000, 10000, 30000])
-  //     .configureLogging(LogLevel.Information)
-  //     .build();
-  //     newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
-  //     setConnection(newConnection);
-  //   }, []);
   useEffect(() => {
     const startConnection = async () => {
-      if (connection && connection.state === "Disconnected") {
-        try {
-          await connection.start();
-          console.log("Connection started");
-          connection.on("loadPhanCong", async () => {
-            setLoading(true);
-            await dispatch(fetchManagerDepartment(maNhanVien));
-            setLoading(false);
-          });
-          connection.on("loadCongViec", async () => {
-            setLoading(true);
-            await dispatch(fetchManagerDepartment(maNhanVien));
-            setLoading(false);
-          });
-          connection.on("loadDuAn", async () => {
-            setLoading(true);
-            await dispatch(fetchManagerDepartment(maNhanVien));
-            setLoading(false);
-          });
-          connection.on("updateCongViec", async () => {
-            setLoading(true);
-            await dispatch(fetchManagerDepartment(maNhanVien));
-            setLoading(false);
-          });
-        } catch (err) {
-          console.error("Error while starting connection: ", err);
+      if(connection){
+        if (connection.state === "Disconnected") {
+          try {
+            await connection.start();
+            console.log("Connection started");
+            connection.on("loadPhanCong", async () => {
+              setLoading(true);
+              await dispatch(fetchManagerDepartment(maNhanVien));
+              setLoading(false);
+            });
+            connection.on("loadCongViec", async () => {
+              setLoading(true);
+              await dispatch(fetchManagerDepartment(maNhanVien));
+              setLoading(false);
+            });
+            connection.on("loadDuAn", async () => {
+              setLoading(true);
+              await dispatch(fetchManagerDepartment(maNhanVien));
+              setLoading(false);
+            });
+            connection.on("updateCongViec", async () => {
+              setLoading(true);
+              await dispatch(fetchManagerDepartment(maNhanVien));
+              setLoading(false);
+            });
+          } catch (err) {
+            console.error("Error while starting connection: ", err);
+          }
+        }else if(connection.state === "Connected"){
+          try {
+            console.log("Connection started");
+            connection.on("loadPhanCong", async () => {
+              setLoading(true);
+              await dispatch(fetchManagerDepartment(maNhanVien));
+              setLoading(false);
+            });
+            connection.on("loadCongViec", async () => {
+              setLoading(true);
+              await dispatch(fetchManagerDepartment(maNhanVien));
+              setLoading(false);
+            });
+            connection.on("loadDuAn", async () => {
+              setLoading(true);
+              await dispatch(fetchManagerDepartment(maNhanVien));
+              setLoading(false);
+            });
+            connection.on("updateCongViec", async () => {
+              setLoading(true);
+              await dispatch(fetchManagerDepartment(maNhanVien));
+              setLoading(false);
+            });
+          } catch (err) {
+            console.error("Error while starting connection: ", err);
+          }
         }
       }
     };
-
-    if (connection) {
-      startConnection();
-    }
+    startConnection();
     return () => {
       if (connection) {
         connection.off("loadPhanCong");

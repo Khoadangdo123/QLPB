@@ -59,7 +59,6 @@ const TaskListItem = ({ congviec, duAn }) => {
   const [statusTask, setStatusTask] = useState(congviec.trangThaiCongViec);
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
-  const connection=getConnection();
   const maCongViec = congviec.maCongViec;
   const trangThaiCongViec = congviec.trangThaiCongViec;
   const phancong = useSelector((state) =>
@@ -86,67 +85,38 @@ const TaskListItem = ({ congviec, duAn }) => {
     fetchTask();
   }, [maCongViec]);
   useEffect(() => {
+    const connection=getConnection();
     const connectSignalR = async () => {
-      if(connection){
+      try {
         if (connection.state === "Disconnected") {
-          try {
-            await connection.start();
-            console.log("Connected!");
-            connection.on("updateCongViec", () => {
-              if (maCongViec) {
-                dispatch(fetchByIdTask(maCongViec));
-              }
-            });
-  
-            connection.on("loadPhanCong", () => {
-              if (maCongViec) {
-                dispatch(fetchByIdTask(maCongViec));
-              }
-            });
-  
-            connection.on("loadHanhDong", async () => {
-              if (maCongViec) {
-                const result = await dispatch(
-                  checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })
-                ).unwrap();
-                setpermissionAction(result);
-              }
-            });
-          } catch (error) {
-            console.error("Connection failed: ", error);
-            window.location.reload();
-          }
-        }else if(connection.state === "Connected"){
-          try {
-            console.log("Connected!")
-            connection.on("updateCongViec", () => {
-              if (maCongViec) {
-                dispatch(fetchByIdTask(maCongViec));
-              }
-            });
-  
-            connection.on("loadPhanCong", () => {
-              if (maCongViec) {
-                dispatch(fetchByIdTask(maCongViec));
-              }
-            });
-  
-            connection.on("loadHanhDong", async () => {
-              if (maCongViec) {
-                const result = await dispatch(
-                  checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })
-                ).unwrap();
-                setpermissionAction(result);
-              }
-            });
-          } catch (error) {
-            console.error("Connection failed: ", error);
-            window.location.reload();
-          }
+          await connection.start();
+          console.log("SignalR connected!");
         }
+        console.log("Connected!");
+        connection.on("updateCongViec",async () => {
+          if (maCongViec) {
+            await dispatch(fetchByIdTask(maCongViec));
+          }
+        });
+
+        connection.on("loadPhanCong", async() => {
+          if (maCongViec) {
+            await dispatch(fetchByIdTask(maCongViec));
+          }
+        });
+
+        connection.on("loadHanhDong", async () => {
+          if (maCongViec) {
+            const result = await dispatch(
+              checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })
+            ).unwrap();
+            setpermissionAction(result);
+          }
+        });
+      } catch (error) {
+        console.error("Connection failed: ", error);
       }
     };
-
     connectSignalR();
     return () => {
       if (connection) {
@@ -155,7 +125,7 @@ const TaskListItem = ({ congviec, duAn }) => {
         connection.off("updateCongViec");
       }
     };
-  }, [connection, maCongViec, dispatch, maquyen]);
+  }, [maCongViec, dispatch, maquyen]);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
     window.addEventListener("resize", handleResize);

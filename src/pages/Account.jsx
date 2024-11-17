@@ -11,6 +11,7 @@ import { fetchAccounts } from "../redux/accounts/accountSlice";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 import API_ENDPOINTS from "../constant/linkapi";
 import getConnection from "../hub/signalRConnection";
+import UpdateAccount from "../components/account/UpdateAccount";
 const Accounts = () => {
   const [pageSize, setPageSize] = useState(10);
   const accounts = useSelector((state) => state.accounts.list);
@@ -38,15 +39,7 @@ const Accounts = () => {
     
     fetchData();
   }, [dispatch, pageSize]);
-  // useEffect(()=>{
-  //   const newConnection = new HubConnectionBuilder()
-  //   .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
-  //   .withAutomaticReconnect([0, 2000, 10000, 30000])
-  //   .configureLogging(LogLevel.Information)
-  //   .build();
-  //   newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
-  //   setConnection(newConnection);
-  // },[])
+  
   useEffect(()=>{
     const connectSignalR = async () => {
       if(connection){
@@ -200,7 +193,8 @@ const Accounts = () => {
         account={accounts}
         key={new Date().getTime().toString()}
       />
-
+      <UpdateAccount  open={open}
+        setOpen={setOpen} accountData={selectedAccount}/>
       <ConfirmatioDialog
         open={openDialog}
         setOpen={setOpenDialog}

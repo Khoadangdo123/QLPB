@@ -114,7 +114,7 @@ const Sidebar = () => {
   }, [dispatch, maquyen]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-    .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
+    .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling})
     .withAutomaticReconnect([0, 2000, 10000, 30000])
     .configureLogging(LogLevel.Information)
     .build();
@@ -155,9 +155,6 @@ const Sidebar = () => {
             setViewFunction(visibleLinks);
             localStorage.setItem("acc_url", JSON.stringify(acc_link));
           });
-          connection.on("nhantin", async (message) => {
-            alert(message)
-          })
         } catch (error) {
           console.error("Connection failed: ", error);
         }

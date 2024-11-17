@@ -9,9 +9,9 @@ import { useDispatch, useSelector } from "react-redux";
 import PageSizeSelect from "../components/PageSizeSelect";
 import { fetchPermissions } from "../redux/permission/permissionSlice";
 import UserPermissions from "../components/permission/UserPermissions";
-import API_ENDPOINTS from "../constant/linkapi";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 import getConnection from "../hub/signalRConnection";
+import AddRole from "../components/permission/AddRole";
 
 const Permission = () => {
   const [pageSize, setPageSize] = useState(10);
@@ -40,16 +40,6 @@ const Permission = () => {
     fetchData();
   }, [dispatch, pageSize]);
 
-  // useEffect(() => {
-  //   const newConnection = new HubConnectionBuilder()
-  //   .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling,})
-  //   .withAutomaticReconnect([0, 2000, 10000, 30000])
-  //   .configureLogging(LogLevel.Information)
-  //   .build();
-  //   newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
-  //   setConnection(newConnection);
-  // }, []);
-
   useEffect(() => {
     const connectSignalR = async () => {
       if(connection){
@@ -58,8 +48,8 @@ const Permission = () => {
             await connection.start();
             console.log("Connected!");
     
-            connection.on("loadNhomQuyen", () => {
-              dispatch(fetchPermissions({ search: "", page: pageSize }));
+            connection.on("loadNhomQuyen",async () => {
+              await dispatch(fetchPermissions({ search: "", page: pageSize }));
             });
     
             connection.on("loadHanhDong", async () => {
@@ -74,8 +64,8 @@ const Permission = () => {
         }else if(connection.state === "Connected"){
           try {
             console.log("Connected!");
-            connection.on("loadNhomQuyen", () => {
-              dispatch(fetchPermissions({ search: "", page: pageSize }));
+            connection.on("loadNhomQuyen",async () => {
+             await dispatch(fetchPermissions({ search: "", page: pageSize }));
             });
     
             connection.on("loadHanhDong", async () => {
@@ -96,7 +86,6 @@ const Permission = () => {
       if (connection) {
         connection.off("loadNhomQuyen");
         connection.off("loadHanhDong");
-        //connection.stop();
       }
     };
   }, [dispatch, pageSize, connection, maquyen]);
@@ -193,7 +182,8 @@ const Permission = () => {
           </div>
         </div>
       </div>
-
+      <AddRole  open={open}
+        setOpen={setOpen}/>
       {/* <AddRole
         open={open}
         setOpen={setOpen}
