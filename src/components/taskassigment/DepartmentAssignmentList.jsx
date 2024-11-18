@@ -4,7 +4,7 @@ import { fetchByIdDepartment} from "../../redux/workdepartment/workdepartmentSli
 import DepartmentAssignment from "../../pages/DepartmentAssignment";
 import DepartmentAssignmentItem from "./DepartmentAssignmentItem";
 import { HubConnectionBuilder, LogLevel } from '@microsoft/signalr';
-const DepartmentAssignmentList=({phongban})=>{
+const DepartmentAssignmentList=({phongban,filter})=>{
     if (!phongban || !phongban.maPhongBan) {
         return <p>Department not found or no valid department data</p>;
     }
@@ -35,7 +35,7 @@ const DepartmentAssignmentList=({phongban})=>{
         <>
         {
             congViecPhongBans.list.map((item,index)=>{
-                return <DepartmentAssignmentItem congViecPhongBan={item} key={item.maCongViec}></DepartmentAssignmentItem>
+                return <DepartmentAssignmentItem congViecPhongBan={item} key={item.maCongViec} filterTask={filter}></DepartmentAssignmentItem>
             })
         }
         </>

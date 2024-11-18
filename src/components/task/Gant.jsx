@@ -56,39 +56,42 @@ const GanttApp = () => {
     const projectHeader =
       '<Project xmlns="http://schemas.microsoft.com/project">';
     const projectFooter = "</Project>";
-
+  
     const tasksXml = tasks
-  .map((task, index) => {
-    const startDate = new Date(task.start);
-    const endDate = new Date(task.end);
-    if (endDate <= startDate) {
-      endDate.setDate(startDate.getDate() + 1);
-    }
-    startDate.setHours(0, 0, 0, 0);
-    endDate.setHours(0, 0, 0, 0);
-
-    const durationDays = Math.ceil(
-      (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)
-    );
-
-    return `
-      <Task>
-        <UID>${index + 1}</UID>
-        <Name>${task.name}</Name>
-        <Start>${startDate.toISOString()}</Start>
-        <Finish>${endDate.toISOString()}</Finish>
-        <PercentComplete>${task.progress || 0}</PercentComplete>
-        <Duration>${10} days</Duration>
-      </Task>
-    `;
-  })
-  .join('');
-
+      .map((task, index) => {
+        const startDate = task.start;
+        const endDate = task.end;
+        if (endDate <= startDate) {
+          endDate.setDate(startDate.getDate() + 1);
+        }
+        startDate.setHours(0, 0, 0, 0);
+        endDate.setHours(0, 0, 0, 0);
+        const durationDays = Math.ceil(
+          (endDate.getTime() - startDate.getTime()) / (1000 * 3600 * 24)
+        );
+        console.log(durationDays)
+        const validDuration = durationDays > 0 ? durationDays : 1;
+        const startISO = startDate.toISOString();
+        const endISO = endDate.toISOString();
+  
+        return `
+          <Task>
+            <UID>${index + 1}</UID>
+            <Name>${task.name}</Name>
+            <Start>${startISO}</Start>
+            <Finish>${endISO}</Finish>
+            <PercentComplete>${task.progress || 0}</PercentComplete>
+            <Duration>${validDuration} days</Duration>
+          </Task>
+        `;
+      })
+      .join("");
+  
     const xmlContent = `${xmlHeader}
       ${projectHeader}
       <Tasks>${tasksXml}</Tasks>
       ${projectFooter}`;
-
+  
     const blob = new Blob([xmlContent], { type: "application/xml" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
@@ -97,9 +100,9 @@ const GanttApp = () => {
   };
   const getTaskColor = (task) => {
     const colors = {
-      "task1": "#ff9999",
-      "task2": "#99ff99",
-      "task3": "#9999ff",
+      task1: "#ff9999",
+      task2: "#99ff99",
+      task3: "#9999ff",
     };
     return colors[task.id] || "#cccccc";
   };
@@ -122,7 +125,6 @@ const GanttApp = () => {
         barColor="black"
         rowHeight={40}
         fontSize={14}
-        
       />
     </div>
   );

@@ -9,14 +9,15 @@ import ModalWrapper from "../ModalWrapper";
 import {fetchEmployees } from "../../redux/employees/employeeSlice";
 import { fetchPermissions } from "../../redux/permission/permissionSlice";
 import { addAccount, fetchAccounts } from "../../redux/accounts/accountSlice";
+import { toast } from "react-toastify";
 const AddAccount = ({ open, setOpen, accountData,account }) => {
   const defaultValues = accountData ?? {};
   const dispatch=useDispatch();
   const employees=useSelector((state)=>state.employees.list)
   const nhomquyens=useSelector((state)=>state.permissions.list)
   useEffect(()=>{
-    dispatch(fetchEmployees({search:'',page:20}))
-    dispatch(fetchPermissions({search:'',page:10}))
+    dispatch(fetchEmployees({search:'',page:30}))
+    dispatch(fetchPermissions({search:'',page:20}))
   },[dispatch])
   const isLoading = false;
   const isUpdating = false;
@@ -28,12 +29,18 @@ const AddAccount = ({ open, setOpen, accountData,account }) => {
   } = useForm({ defaultValues });
 
   const handleOnSubmit =async (data) => {
-    console.log("Employee Data:",{
-        maNhanVien: Number(data.maNhanVien),
-        maNhomQuyen: Number(data.maQuyen),
-        tenTaiKhoan: data.tenTaiKhoan,
-        matKhau: data.matKhau
-    });
+    if(data.tenTaiKhoan.trim()==="" || data.tenTaiKhoan===null){
+      toast.warning("Vui lòng nhập tên tài khoản hợp lệ")
+      return
+    }
+    if(data.matKhau.trim()==="" || data.matKhau===null){
+      toast.warning("Vui lòng nhập mật khẩu hợp lệ")
+      return
+    }
+    if (/^\d+$/.test(data.tenTaiKhoan)) { 
+      toast.warning("Tên tài khoản không được chỉ chứa số");
+      return;
+    }
     try {
       await dispatch(addAccount({
         maNhanVien: Number(data.maNhanVien),
@@ -42,8 +49,10 @@ const AddAccount = ({ open, setOpen, accountData,account }) => {
         matKhau: data.matKhau
     })); 
       await dispatch(fetchAccounts({ search: '', page: 10 }));
+      toast.success("Thêm thành công")
       setOpen(false);
     } catch (error) {
+      toast.error("Thêm thất bại")
       console.error("Failed to add employee: ", error);
     }
   };

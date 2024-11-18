@@ -7,16 +7,20 @@ import Loading from "../Loader";
 import Button from "../Button";
 import ModalWrapper from "../ModalWrapper";
 import { fetchEmployees } from "../../redux/employees/employeeSlice";
-import { addDepartment, fetchDepartments } from "../../redux/departments/departmentSlice";
+import {
+  addDepartment,
+  fetchDepartments,
+} from "../../redux/departments/departmentSlice";
+import { toast } from "react-toastify";
 
 const AddDepartment = ({ open, setOpen, employeeData }) => {
   const defaultValues = employeeData ?? {};
   //const { user } = useSelector((state) => state.auth);
-  const dispatch=useDispatch();
-  const employee=useSelector((state)=>state.employees.list)
-  useEffect(()=>{
-    dispatch(fetchEmployees({search:'',page:10}))
-  },[dispatch])
+  const dispatch = useDispatch();
+  const employee = useSelector((state) => state.employees.list);
+  useEffect(() => {
+    dispatch(fetchEmployees({ search: "", page: 10 }));
+  }, [dispatch]);
   const isLoading = false;
   const isUpdating = false;
 
@@ -26,19 +30,30 @@ const AddDepartment = ({ open, setOpen, employeeData }) => {
     formState: { errors },
   } = useForm({ defaultValues });
 
-  const handleOnSubmit =async (data) => {
-    console.log("Department Data:",{
-        tenPhongBan:data.tenPhongBan,
-        maTruongPhong:Number(data.maTruongPhong)
-    });
+  const handleOnSubmit = async (data) => {
+    if (!data.tenPhongBan || data.tenPhongBan.trim() === "") {
+      toast.warning("Vui lòng nhập tên phòng ban hợp lệ");
+      return;
+    }
+    if (/^\d+$/.test(data.tenPhongBan)) {
+      toast.warning("Tên phòng ban không được chỉ chứa số");
+      return;
+    }
+    if (isNaN(data.maTruongPhong) || Number(data.maTruongPhong) <= 0) {
+      toast.warning("Mã trưởng phòng phải là số dương hợp lệ");
+      return;
+    }
     try {
-      await dispatch(addDepartment({
-        tenPhongBan:data.tenPhongBan,
-        maTruongPhong:Number(data.maTruongPhong)
-    })); 
-      // await dispatch(fetchDepartments({ search: '', page: 10 }));
+      await dispatch(
+        addDepartment({
+          tenPhongBan: data.tenPhongBan,
+          maTruongPhong: Number(data.maTruongPhong),
+        })
+      );
+      toast.success("Thêm thành công");
       setOpen(false);
     } catch (error) {
+      toast.success("Thêm thất bại");
       console.error("Failed to add department: ", error);
     }
   };
@@ -64,8 +79,10 @@ const AddDepartment = ({ open, setOpen, employeeData }) => {
             })}
             error={errors.tenPhongBan ? errors.tenPhongBan.message : ""}
           />
-          
-          <label htmlFor="maTruongPhong" className="block text-sm font-medium text-gray-700">
+          <label
+            htmlFor="maTruongPhong"
+            className="block text-sm font-medium text-gray-700"
+          >
             Chọn Trưởng Phòng
           </label>
           <select
@@ -80,7 +97,9 @@ const AddDepartment = ({ open, setOpen, employeeData }) => {
               </option>
             ))}
           </select>
-          {errors.maTruongPhong && <span className="text-red-600">{errors.truongphong.message}</span>}
+          {errors.maTruongPhong && (
+            <span className="text-red-600">{errors.truongphong.message}</span>
+          )}
         </div>
 
         {isLoading || isUpdating ? (

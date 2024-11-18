@@ -5,6 +5,7 @@ import Textbox from "../components/Textbox";
 import Button from "../components/Button";
 import { useDispatch, useSelector } from "react-redux";
 import {AuthLogin} from "../redux/authen/authenSlice"
+import { toast } from "react-toastify";
 const Login = () => {
   //const { user } = useSelector((state) => state.auth);
   const {authUser,loading,error}=useSelector((state)=>state.authen)
@@ -18,18 +19,32 @@ const Login = () => {
   const navigate = useNavigate();
 
   const submitHandler = async (data) => {
+
     try{
       let AuthRequest={
         tenTaiKhoan:data.tenTaiKhoan,
         matKhau:data.matKhau
       }
+      if(AuthRequest.tenTaiKhoan.trim()===""){
+        toast.warning("Vui lòng nhập tài khoản")
+        return
+      }
+      if(AuthRequest.matKhau.trim()===""){
+        toast.warning("Vui lòng nhập mật khẩu")
+        return
+      }
       console.log(AuthRequest)
       const result = await dispath(AuthLogin(AuthRequest))
       if(result.payload && result.payload.isSuccess){
+        toast.success("Đăng nhập thành công")
         navigate('/home')
+      }else{
+        toast.warning("Mật khẩu hoặc tài khoản không đúng")
+        return
       }
     }catch(e){
-      console.log(e);
+      toast.warning("Lỗi khi đăng nhập")
+      return
     }
   };
 
@@ -46,7 +61,7 @@ const Login = () => {
         <div className='h-full w-full lg:w-2/3 flex flex-col items-center justify-center'>
           <div className='w-full md:max-w-lg 2xl:max-w-3xl flex flex-col items-center justify-center gap-5 md:gap-y-10 2xl:-mt-20'>
             <span className='flex gap-1 py-1 px-3 border rounded-full text-sm md:text-base bordergray-300 text-gray-600'>
-              Quản lý tất cả công việc của bạn ở một nơi!
+              Quản lý phân công công việc cho phòng ban và cá nhân!
             </span>
             <p className='flex flex-col gap-0 md:gap-4 text-4xl md:text-6xl 2xl:text-7xl font-black text-center text-blue-700'>
               <span>Quản lý công việc</span>
@@ -108,7 +123,8 @@ const Login = () => {
                 className='w-full h-10 bg-blue-700 text-white rounded-full'
               />
               {error &&(
-                <div className="alert alert-danger" role="alert">{error}</div>
+                // <div className="alert alert-danger" role="alert">{error}</div>
+                toast.error("Lỗi đăng nhập vui lòng thử lại")
               )}
             </div>
           </form>

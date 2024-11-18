@@ -5,11 +5,10 @@ import Textbox from "../Textbox";
 import { useForm } from "react-hook-form";
 import Button from "../Button";
 import { useDispatch } from "react-redux";
-import { addSection } from "../../redux/section/sectionSlice";
-import { fetchByIdProject } from "../../redux/project/projectSlice";
 import { toast } from "react-toastify";
+import { addPermission } from "../../redux/permission/permissionSlice";
 
-const AddSection = ({ open, setOpen,duAn}) => {
+const AddRole = ({ open, setOpen}) => {
   const dispatch=useDispatch();
   const {
     register,
@@ -17,16 +16,14 @@ const AddSection = ({ open, setOpen,duAn}) => {
     formState: { errors },
   } = useForm();
   const submitHandler =async (data) => {
-    if(data.tenPhan===null || data.tenPhan.trim()===""){
-      toast.success("Vui lòng nhập")
-      return
+    if(data.tenNhomQuyen===null || data.tenNhomQuyen.trim()===""){
+        toast.warning("Vui lòng nhập tên quyền")
+        return
     }
     try {
-        await dispatch(addSection({
-          maDuAn:Number(duAn),
-          tenPhan:data.tenPhan
+        await dispatch(addPermission({
+            tenQuyen:data.tenNhomQuyen
         })); 
-        await dispatch(fetchByIdProject(Number(duAn)));
         toast.success("Thêm thành công")
         setOpen(false);
     } catch (error) {
@@ -42,18 +39,18 @@ const AddSection = ({ open, setOpen,duAn}) => {
             as='h2'
             className='text-base font-bold leading-6 text-gray-900 mb-4'
           >
-            THÊM PHẦN DỰ ÁN
+            THÊM NHÓM QUYỀN
           </Dialog.Title>
 
           <div className='mt-2 flex flex-col gap-6'>
             <Textbox
-              placeholder='Phần dự án'
+              placeholder='Nhóm quyền'
               type='text'
               name='title'
-              label='Phần dự án'
+              label='Nhóm quyền'
               className='w-full rounded'
-              register={register("tenPhan", { required: "Phần Dự Án là bắt buộc" })}
-              error={errors.tenPhan ? errors.tenPhan.message : ""}
+              register={register("tenNhomQuyen", { required: "Tên Nhóm Quyền là bắt buộc" })}
+              error={errors.tenNhomQuyen ? errors.tenNhomQuyen.message : ""}
             />
             
             <div className='flex gap-4'>
@@ -76,4 +73,4 @@ const AddSection = ({ open, setOpen,duAn}) => {
   );
 };
 
-export default AddSection;
+export default AddRole;

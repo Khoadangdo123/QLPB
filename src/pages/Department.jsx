@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 //import Title from "../components/Title";
 import Button from "../components/Button";
 import { IoMdAdd } from "react-icons/io";
-import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
 import clsx from "clsx";
 import ConfirmatioDialog, { UserAction } from "../components/Dialogs";
 import Title from "../components/Title";
@@ -14,6 +14,7 @@ import UpdateDepartment from "../components/department/UpdateDepartment";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 import { useNavigate } from "react-router-dom";
 import API_ENDPOINTS from "../constant/linkapi";
+import getConnection from "../hub/signalRConnection";
 const Departments = () => {
   const [pageSize, setPageSize] = useState(10);
   const departments = useSelector((state) => state.departments.list);
@@ -23,7 +24,6 @@ const Departments = () => {
   const [selected, setSelected] = useState(null);
   const [openUpdate, setOpenUpdate] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState(null);
-  const [connection, setConnection] = useState(null);
   const [permissionAction, setpermissionAction] = useState([]);
   const maquyen=Number(localStorage.getItem("permissionId"))
   const dispatch = useDispatch();
@@ -39,46 +39,38 @@ const Departments = () => {
 
     fetchData();
   }, [dispatch, pageSize]);
+  
   useEffect(() => {
-    const newConnection = new HubConnectionBuilder()
-      .withUrl(API_ENDPOINTS.HUB_URL)
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build();
-
-    setConnection(newConnection);
-    return () => {
-      if (newConnection) {
-        newConnection.stop();
+    const connection=getConnection()
+    const connectSignalR = async () => {
+      try {
+        if (connection && connection.state === "Disconnected") {
+          await connection.start();
+          console.log("Connected!"); 
+        }
+        connection.on("loadPhongBan", async () => {
+          await dispatch(fetchDepartments({ search: "", page: pageSize }));
+        });
+        connection.on("loadHanhDong", async () => {
+          const result = await dispatch(
+            checkPermission({ maQuyen: maquyen, tenChucNang: "Phòng Ban" })
+          ).unwrap();
+          setpermissionAction(result);
+        });
+        console.log("Connected! update"); 
+      } catch (error) {
+        console.error("Connection failed: ", error);
       }
     };
-  }, []);
-  useEffect(() => {
-    if (connection && connection.state === "Disconnected") {
-      connection
-        .start()
-        .then(() => {
-          console.log("Connected!");
-          connection.on("loadEmployee", async () => {
-            await dispatch(fetchDepartments({ search: "", page: pageSize }));
-          });
-          connection.on("loadHanhDong", async () => {
-            const result = await dispatch(
-              checkPermission({ maQuyen: maquyen, tenChucNang: "Phòng Ban" })
-            ).unwrap();
-            setpermissionAction(result);
-            
-          });
-        })
-        .catch((error) => console.error("Connection failed: ", error));
-    }
+    connectSignalR();
     return () => {
       if (connection) {
-        connection.off("loadEmployee");
+        connection.off("loadPhongBan");
         connection.off("loadHanhDong");
       }
     };
-  }, [dispatch, pageSize, connection]);
+  }, [dispatch, pageSize,maquyen]);
+
   const departmentActionHandler = () => {};
   const deleteHandler = () => {};
 
@@ -113,7 +105,8 @@ const Departments = () => {
         </div>
       </td>
 
-      <td className="p-2">{department.truongPhong===null?"Chưa Có":department.truongPhong.tenNhanVien}</td>
+      <td className="p-2">{department.truongPhong?.tenNhanVien || "Chưa Có"}</td>
+
       <td>
         <button
           // onClick={() => userStatusClick(user)}

@@ -1,8 +1,9 @@
 import React from "react";
 import "gantt-task-react/dist/index.css";
 import { ViewMode } from "gantt-task-react";
+import { FaClock, FaHourglassHalf, FaCalendarDay, FaCalendarWeek, FaCalendarAlt, FaTasks } from "react-icons/fa";
 
-// Thành phần ViewSwitcher
+// Thành phần ViewSwitcher với icon từ react-icons
 export const ViewSwitcher = ({ onViewModeChange, onViewListChange, isChecked }) => {
   return (
     <div className="ViewContainer">
@@ -10,28 +11,28 @@ export const ViewSwitcher = ({ onViewModeChange, onViewListChange, isChecked }) 
         className="Button"
         onClick={() => onViewModeChange(ViewMode.QuarterDay)}
       >
-        Quarter of Day
+        <FaClock /> Quarter of Day
       </button>
       <button
         className="Button"
         onClick={() => onViewModeChange(ViewMode.HalfDay)}
       >
-        Half of Day
+        <FaHourglassHalf /> Half of Day
       </button>
       <button className="Button" onClick={() => onViewModeChange(ViewMode.Day)}>
-        Day
+        <FaCalendarDay /> Day
       </button>
       <button
         className="Button"
         onClick={() => onViewModeChange(ViewMode.Week)}
       >
-        Week
+        <FaCalendarWeek /> Week
       </button>
       <button
         className="Button"
         onClick={() => onViewModeChange(ViewMode.Month)}
       >
-        Month
+        <FaCalendarAlt /> Month
       </button>
 
       <div className="Switch">
@@ -43,7 +44,7 @@ export const ViewSwitcher = ({ onViewModeChange, onViewListChange, isChecked }) 
           />
           <span className="Slider" />
         </label>
-        Show Task List
+        <FaTasks /> Show Task List
       </div>
     </div>
   );

@@ -8,35 +8,41 @@ import { fetchByIdTask } from "../../redux/task/taskSlice";
 import DetailTask from "../task/DetailTask";
 import { BGS, formatDate } from "../../utils";
 import { updateAssignment } from "../../redux/assignment/assignmentSlice";
-import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
-import { IoMdAdd } from "react-icons/io";
+import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
+import { IoMdAdd, IoMdSwap, IoMdTime } from "react-icons/io";
 import AddTaskEmployee from "./AddTaskEmployee";
 import { useNavigate } from "react-router-dom";
 import { checkPermission } from "../../redux/permissiondetail/permissionDetailSlice";
 import API_ENDPOINTS from "../../constant/linkapi";
-const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
+import TaskHistory from "../task/TaskHistory";
+import AddTaskTransfer from "../tasktransfer/AddTaskTransfer";
+import getConnection from "../../hub/signalRConnection";
+const DepartmentAssignmentItem = ({ congViecPhongBan,filterTask}) => {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
-  const [connection, setConnection] = useState(null);
   const [permissionAction, setpermissionAction] = useState([]);
-  const navigate = useNavigate();
+  const [openTransfer, setOpenTransfer] = useState(false);
+  const [openTaskHistory, setOpenTaskHistory] = useState(false);
   const dispatch = useDispatch();
   const maCongViec = congViecPhongBan.maCongViec;
-  const maquyen=Number(localStorage.getItem("permissionId"))
+  const maquyen = Number(localStorage.getItem("permissionId"));
   const vaiTro = congViecPhongBan.vaiTro;
   const maPhanCong = congViecPhongBan.maPhanCong;
   const maPhongBan = congViecPhongBan.maPhongBan;
   const congviec = useSelector((state) =>
     state.tasks.list.find((task) => task.maCongViec === maCongViec)
   );
-  useEffect(() => {
+  useEffect(() => {      
     const fetchData = async () => {
       setLoading(true);
       try {
         await dispatch(fetchByIdTask(maCongViec));
         const result = await dispatch(
-          checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc Phòng Ban" })
+          checkPermission({
+            maQuyen: maquyen,
+            tenChucNang: "Công Việc Phòng Ban",
+          })
         ).unwrap();
         setpermissionAction(result);
       } catch (error) {
@@ -45,62 +51,46 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
         setLoading(false);
       }
     };
-
     if (maCongViec) {
       fetchData();
     }
   }, [maCongViec, dispatch]);
   useEffect(() => {
-    const newConnection = new HubConnectionBuilder()
-      .withUrl(API_ENDPOINTS.HUB_URL)
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build();
-    setConnection(newConnection);
-  }, []);
-  useEffect(() => {
+    const connection=getConnection()
     const startConnection = async () => {
-      if (connection && connection.state === "Disconnected") {
-        try {
+      try {
+        if (connection && connection.state === "Disconnected") {
           await connection.start();
           console.log("Connection started");
-          connection.on("loadPhanCong", async () => {
-            setLoading(true);
-            await dispatch(fetchByIdTask(maCongViec));
-            setLoading(false);
-          });
-          connection.on("loadHanhDong", async () => {
-            const result = await dispatch(
-              checkPermission({ maQuyen: 3, tenChucNang: "Công Việc" })
-            ).unwrap();
-            setpermissionAction(result);
-          
-          });
-          //   connection.on("loadCongViec", async () => {
-          //     setLoading(true);
-          //     await dispatch(fetchByIdTask(maCongViec));
-          //     setLoading(false);
-          //   });
-          //   connection.on("updateCongViec", async () => {
-          //     setLoading(true);
-          //     await dispatch(fetchByIdTask(maCongViec));
-          //     setLoading(false);
-          //   });
-        } catch (err) {
-          console.error("Error while starting connection: ", err);
         }
+        connection.on("loadPhanCong", async () => {
+          setLoading(true);
+          await dispatch(fetchByIdTask(maCongViec));
+          setLoading(false);
+        });
+        connection.on("loadHanhDong", async () => {
+          const result = await dispatch(
+            checkPermission({
+              maQuyen: maquyen,
+              tenChucNang: "Công Việc Phòng Ban",
+            })
+          ).unwrap();
+          setpermissionAction(result);
+        });
+        console.log("Connection started update");
+      } catch (err) {
+        console.error("Error while starting connection: ", err);
       }
     };
 
-    if (connection) {
-      startConnection();
-    }
+    startConnection();
     return () => {
       if (connection) {
         connection.off("loadPhanCong");
+        connection.off("loadHanhDong");
       }
     };
-  }, [connection, dispatch, maCongViec]);
+  }, [dispatch, maCongViec]);
   if (loading) {
     return (
       <div
@@ -127,7 +117,11 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
   if (!congviec) {
     return <p>not found</p>;
   }
-
+  if(congviec.trangThaiCongViec===false && filterTask==="completed"){
+    return null;
+  }else if(congviec.trangThaiCongViec===true && filterTask==="incomplete"){
+    return null
+  }
   const handleToggleDetail = () => {
     setExpanded(!expanded);
   };
@@ -146,6 +140,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
   const thucHien = congviec?.phanCongs?.filter(
     (m) => m.vaiTro === "Người Thực Hiện"
   );
+
   const congViecHoanThanh =
     congviec?.phanCongs?.filter((task) => task.trangThaiCongViec === true)
       .length ?? 0;
@@ -153,7 +148,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
   const completionPercent = (congViecHoanThanh / tongCongViec) * 100;
   return (
     <div className="w-full flex items-center  px-4">
-      <div className="w-full flex py-2 border-b text-sm">
+      <div className="w-full flex items-center py-2 border-b text-sm">
         <div
           className="flex-1 w-1/4 px-4 truncate cursor-pointer"
           onClick={handleToggleDetail}
@@ -179,9 +174,9 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
             {completionPercent.toFixed(2)}% Hoàn thành
           </span>
         </div>
-        <div className="flex-1 w-1/5 px-4 ">
+        {/* <div className="flex-1 w-1/5 px-4 ">
           <span>{congviec.moTa}</span>
-        </div>
+        </div> */}
         <div className="flex-1 w-1/5 px-4 ">
           <span>{congviec.mucDoUuTien}</span>
         </div>
@@ -203,7 +198,11 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
         </div>
         <div className="flex-1 px-4 text-gray-400 flex items-center">
           <button
-            className="hover:bg-gray-200 rounded-full px-2"
+            className={`hover:bg-gray-200 rounded-full px-2 ${
+              new Date(congviec.thoiGianKetThuc) < new Date()
+                ? "text-red-500"
+                : ""
+            }`}
             onClick={() => {
               alert("show calendar");
             }}
@@ -243,15 +242,34 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
               <EmployeeInfo employee={m} />
             </div>
           ))}
-           {permissionAction.includes("Thêm") && 
-          <button
+          {permissionAction.includes("Thêm") && (
+            <button
+              onClick={() => {
+                setOpen(true);
+              }}
+              className="rounded-full border-2 border-dashed size-fit p-1 ml-2 border-gray-400 text-gray-400"
+            >
+              <BiPlus />
+            </button>
+          )}
+        </div>
+        <div className="flex-1 px-4 text-center">
+          {permissionAction.includes("Sửa") && (
+            <Button
+              onClick={() => {
+                setOpenTransfer(true);
+              }}
+              icon={<IoMdSwap className="text-base" />}
+              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs h-7" // Giảm padding và xác định chiều cao
+            />
+          )}
+          <Button
             onClick={() => {
-              setOpen(true);
+              setOpenTaskHistory(true);
             }}
-            className="rounded-full border-2 border-dashed size-fit p-1 ml-2 border-gray-400 text-gray-400"
-          >
-            <BiPlus />
-          </button>}
+            icon={<IoMdTime className="text-base" />}
+            className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs h-7" // Giảm padding và xác định chiều cao
+          />
         </div>
       </div>
       {expanded && (
@@ -265,12 +283,26 @@ const DepartmentAssignmentItem = ({ congViecPhongBan }) => {
           userTeam={thucHien}
         />
       )}
+      <TaskHistory
+        openTaskHistory={openTaskHistory}
+        setOpenTaskHistory={setOpenTaskHistory}
+        maCongViec={maCongViec}
+      />
       <AddTaskEmployee
         open={open}
         setOpen={setOpen}
         maCongViec={congviec.maCongViec}
         maPhongBan={maPhongBan}
         tenCongViec={congviec.tenCongViec}
+        nhanViens={congviec?.phanCongs}
+      />
+      <AddTaskTransfer
+        openTransfer={openTransfer}
+        setOpenTransfer={setOpenTransfer}
+        maCongViec={maCongViec}
+        tenCongViec={congviec.tenCongViec}
+        maPhongBan={maPhongBan}
+        currentEmployee={congviec?.phanCongs}
       />
     </div>
   );

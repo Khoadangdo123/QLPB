@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 const barData = [
   { name: 'Lam viec', value: 4, color: '#4CAF50' },
@@ -25,6 +25,18 @@ const lollipopData = [
   { name: 'G', value: 1 },
 ];
 
+const DatePicker = ({ label, value, onChange }) => (
+  <div style={styles.datePickerContainer}>
+    <label style={styles.dateLabel}>{label}</label>
+    <input
+      type="date"
+      value={value}
+      onChange={onChange}
+      style={styles.dateInput}
+    />
+  </div>
+);
+
 const StatBox = ({ title, value, filters }) => (
   <div style={styles.statBox}>
     <h2 style={styles.statValue}>{value}</h2>
@@ -33,7 +45,6 @@ const StatBox = ({ title, value, filters }) => (
   </div>
 );
 
-//còn đang gặp bug nên chưa hoàn thành
 const BarChartComponent = () => (
   <div style={styles.chartBox}>
     <h6 style={styles.chartTitle}>Total Tasks by Section</h6>
@@ -70,13 +81,13 @@ const PieChartComponent = () => (
     <div style={styles.donutChartContainer}>
       <div style={styles.donutChart}>
         <div style={styles.donutHole}></div>
-        <div style={{...styles.donutRing, background: `conic-gradient(${pieData[0].color} 360deg, ${pieData[0].color} 360deg)`}}></div>
+        <div style={{ ...styles.donutRing, background: `conic-gradient(${pieData[0].color} 360deg, ${pieData[0].color} 360deg)` }}></div>
         <div style={styles.donutNumber}>{pieData[0].value}</div>
       </div>
     </div>
     <div style={styles.legend}>
       <div style={styles.legendItem}>
-        <div style={{...styles.legendColor, backgroundColor: pieData[0].color}}></div>
+        <div style={{ ...styles.legendColor, backgroundColor: pieData[0].color }}></div>
         <span>{pieData[0].name}</span>
       </div>
     </div>
@@ -89,7 +100,7 @@ const LollipopChartComponent = () => (
     <h6 style={styles.chartTitle}>Upcoming Tasks by Assignee</h6>
     <div style={styles.lollipopChart}>
       {lollipopData.map((item, index) => (
-        <div key={index} style={{...styles.lollipopItem, height: `${item.value * 20}px`}}>
+        <div key={index} style={{ ...styles.lollipopItem, height: `${item.value * 20}px` }}>
           <div style={styles.lollipopCircle}></div>
           <div style={styles.lollipopLine}></div>
           <span style={styles.lollipopLabel}>{item.name}</span>
@@ -111,7 +122,7 @@ const LineChartComponent = () => (
       </div>
       <div style={styles.lineChartContent}>
         {[0, 1, 2, 3].map((value) => (
-          <div key={value} style={{...styles.gridLine, bottom: `${value * 25}%`}} />
+          <div key={value} style={{ ...styles.gridLine, bottom: `${value * 25}%` }} />
         ))}
         {lineData.map((item, index) => (
           <div
@@ -136,21 +147,55 @@ const LineChartComponent = () => (
     </div>
     <div style={styles.lineLegend}>
       <span style={styles.lineLegendItem}>
-        <span style={{...styles.lineLegendColor, backgroundColor: '#E0E0E0'}}></span>
+        <span style={{ ...styles.lineLegendColor, backgroundColor: '#E0E0E0' }}></span>
         Total
       </span>
       <span style={styles.lineLegendItem}>
-        <span style={{...styles.lineLegendColor, backgroundColor: '#8884D8'}}></span>
+        <span style={{ ...styles.lineLegendColor, backgroundColor: '#8884D8' }}></span>
         Completed
       </span>
     </div>
     <p style={styles.chartFilters}>No Filters</p>
   </div>
 );
-// Component chính
+
 function App() {
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
   return (
     <div style={styles.app}>
+      {/* Nút download */}
+      <div style={styles.downloadContainer}>
+        <button
+          onClick={() => window.open('3121410169_LeNgocGiau_Seminar_BTBS(1).pdf')}
+          style={styles.downloadButton}
+        >
+          <div style={styles.downloadContent}>
+            <div style={styles.fileInfoWrapper}>
+              <span style={styles.pdfIcon}>PDF</span>
+              <span>3121410169_LeNgocGiau_Seminar_BTBS(1).pdf</span>
+              <span style={styles.fileSize}>730 KB</span>
+            </div>
+            <div style={styles.timeInfo}>49 phút trước</div>
+          </div>
+        </button>
+      </div>
+
+      <div style={styles.header}>
+        <div style={styles.datePickersWrapper}>
+          <DatePicker
+            label="From"
+            value={startDate}
+            onChange={(e) => setStartDate(e.target.value)}
+          />
+          <DatePicker
+            label="To"
+            value={endDate}
+            onChange={(e) => setEndDate(e.target.value)}
+          />
+        </div>
+      </div>
       <div style={styles.statContainer}>
         <StatBox title="Completed tasks" value={0} filters="1 Filter" />
         <StatBox title="Incomplete tasks" value={4} filters="1 Filter" />
@@ -171,15 +216,96 @@ const styles = {
   app: {
     padding: '30px',
     fontFamily: 'Arial, sans-serif',
-    backgroundColor: '#1E1E1E',
+    backgroundColor: '#EEEEEE',
     color: '#fff',
     minHeight: '100vh',
+    position: 'relative',
+  },
+  downloadContainer: {
+    position: 'absolute',
+    top: '30px',
+    left: '30px',
+  },
+  downloadButton: {
+    display: 'block',
+    padding: '8px 12px',
+    backgroundColor: '#fff',
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    color: '#333',
+    transition: 'background-color 0.2s',
+    width: 'fit-content',
+    '&:hover': {
+      backgroundColor: '#f5f5f5',
+    }
+  },
+  downloadContent: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  fileInfoWrapper: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  timeInfo: {
+    fontSize: '12px',
+    color: '#666',
+    marginLeft: '-250px',
+  },
+  pdfIcon: {
+    backgroundColor: '#f40f02',
+    color: 'white',
+    padding: '2px 4px',
+    borderRadius: '3px',
+    fontSize: '12px',
+    fontWeight: 'bold',
+  },
+  fileSize: {
+    color: '#666',
+    fontSize: '12px',
+    marginLeft: '8px',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    marginBottom: '20px',
+    width: '100%',
+  },
+  datePickersWrapper: {
+    display: 'flex',
+    gap: '15px',
+    alignItems: 'center',
+  },
+  datePickerContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  dateLabel: {
+    color: '#2D2D2D',
+    fontSize: '14px',
+    fontWeight: '500',
+  },
+  dateInput: {
+    padding: '8px 12px',
+    borderRadius: '6px',
+    border: '1px solid #3D3D3D',
+    backgroundColor: '#FFFFFF',
+    color: '#2D2D2D',
+    fontSize: '14px',
+    cursor: 'pointer',
+    outline: 'none',
   },
   statContainer: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
     gap: '25px',
     marginBottom: '30px',
+    marginTop: '40px',
   },
   statBox: {
     padding: '25px',
@@ -188,10 +314,6 @@ const styles = {
     transition: 'all 0.3s ease',
     cursor: 'pointer',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    '&:hover': {
-      transform: 'translateY(-5px)',
-      boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)',
-    },
   },
   statValue: {
     fontSize: '2.8em',
@@ -221,10 +343,6 @@ const styles = {
     position: 'relative',
     transition: 'all 0.3s ease',
     boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-    '&:hover': {
-      transform: 'translateY(-5px)',
-      boxShadow: '0 6px 12px rgba(0, 0, 0, 0.15)',
-    },
   },
   chartTitle: {
     margin: '0 0 20px',
@@ -422,6 +540,7 @@ const styles = {
     marginRight: '8px',
     borderRadius: '3px',
   },
+
 };
 
 export default App;

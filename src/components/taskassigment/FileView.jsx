@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { FiDownload, FiEye, FiFile } from "react-icons/fi";
-import { Document, Page } from 'react-pdf';
+import { Document, Page } from "react-pdf";
 import {
   AiFillFilePdf,
   AiFillFileWord,
@@ -19,6 +19,7 @@ import { fetchAllFile } from "../../redux/file/fileSlice";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import PdfViewer from "./PdfViewer";
 import API_ENDPOINTS from "../../constant/linkapi";
+import getConnection from "../../hub/signalRConnection";
 const FileView = () => {
   const { id } = useParams();
   const maCongViec = Number(id);
@@ -27,7 +28,6 @@ const FileView = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [fileContent, setFileContent] = useState("");
   const [filteredFiles, setFilteredFiles] = useState([]);
-  const [connection, setConnection] = useState(null);
   const [allFile, setAllFile] = useState([]);
   const dispatch = useDispatch();
   const phancong = useSelector((state) =>
@@ -93,82 +93,73 @@ const FileView = () => {
     }
   }, [maCongViec, dispatch]);
   useEffect(() => {
-    const newConnection = new HubConnectionBuilder()
-      .withUrl(API_ENDPOINTS.HUB_URL)
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build();
-    setConnection(newConnection);
-  }, []);
-  useEffect(() => {
+    const connection=getConnection();
     const startConnection = async () => {
-      if (connection && connection.state === "Disconnected") {
-        try {
+      try {
+        if (connection.state === "Disconnected") {
           await connection.start();
           console.log("Connection started");
-          connection.on("loadFile", async () => {
-            setLoading(true);
-            try {
-              // Fetch task and files in parallel
-              const [phancongs, files] = await Promise.all([
-                dispatch(fetchByIdTask(maCongViec)).unwrap(),
-                dispatch(fetchAllFile()).unwrap(),
-              ]);
-
-              const allFiles = await Promise.all(
-                phancongs.phanCongs.map((item) =>
-                  dispatch(fetchChiTietFileByPhanCong(item.maPhanCong)).unwrap()
-                )
-              );
-
-              setAllFile(allFiles.flat());
-
-              const detailedFiles = allFiles.flat().map((fileDetail) => {
-                const relatedAssignment = phancongs.phanCongs.find(
-                  (item) => item.maPhanCong === fileDetail.maPhanCong
-                );
-                return {
-                  ...fileDetail,
-                  tenNguoiGui:
-                    relatedAssignment?.nhanVien.maNhanVien +
-                    "-" +
-                    relatedAssignment?.nhanVien.tenNhanVien,
-                  ngayGui: fileDetail?.ngayGui
-                    ? new Date(fileDetail.ngayGui).toLocaleString()
-                    : null,
-                };
-              });
-
-              const matchingFiles = files.filter((file) =>
-                detailedFiles.some((detail) => detail.maFile === file.maFile)
-              );
-
-              const enrichedFiles = matchingFiles.map((file) => ({
-                ...file,
-                tenNguoiGui: detailedFiles.find(
-                  (detail) => detail.maFile === file.maFile
-                )?.tenNguoiGui,
-                ngayGui: detailedFiles.find(
-                  (detail) => detail.maFile === file.maFile
-                )?.ngayGui,
-              }));
-
-              setFilteredFiles(enrichedFiles);
-            } catch (error) {
-              console.error("Error fetching task:", error);
-            } finally {
-              setLoading(false);
-            }
-          });
-        } catch (err) {
-          console.error("Error while starting connection: ", err);
         }
+        connection.on("loadFile", async () => {
+          setLoading(true);
+          try {
+            // Fetch task and files in parallel
+            const [phancongs, files] = await Promise.all([
+              dispatch(fetchByIdTask(maCongViec)).unwrap(),
+              dispatch(fetchAllFile()).unwrap(),
+            ]);
+
+            const allFiles = await Promise.all(
+              phancongs.phanCongs.map((item) =>
+                dispatch(fetchChiTietFileByPhanCong(item.maPhanCong)).unwrap()
+              )
+            );
+
+            setAllFile(allFiles.flat());
+
+            const detailedFiles = allFiles.flat().map((fileDetail) => {
+              const relatedAssignment = phancongs.phanCongs.find(
+                (item) => item.maPhanCong === fileDetail.maPhanCong
+              );
+              return {
+                ...fileDetail,
+                tenNguoiGui:
+                  relatedAssignment?.nhanVien.maNhanVien +
+                  "-" +
+                  relatedAssignment?.nhanVien.tenNhanVien,
+                ngayGui: fileDetail?.ngayGui
+                  ? new Date(fileDetail.ngayGui).toLocaleString()
+                  : null,
+              };
+            });
+
+            const matchingFiles = files.filter((file) =>
+              detailedFiles.some((detail) => detail.maFile === file.maFile)
+            );
+
+            const enrichedFiles = matchingFiles.map((file) => ({
+              ...file,
+              tenNguoiGui: detailedFiles.find(
+                (detail) => detail.maFile === file.maFile
+              )?.tenNguoiGui,
+              ngayGui: detailedFiles.find(
+                (detail) => detail.maFile === file.maFile
+              )?.ngayGui,
+            }));
+
+            setFilteredFiles(enrichedFiles);
+          } catch (error) {
+            console.error("Error fetching task:", error);
+          } finally {
+            setLoading(false);
+          }
+        });
+      } catch (err) {
+        console.error("Error while starting connection: ", err);
       }
     };
 
-    if (connection) {
-      startConnection();
-    }
+    startConnection();
 
     return () => {
       if (connection) {
@@ -176,7 +167,7 @@ const FileView = () => {
         connection.off("loadCongViec");
       }
     };
-  }, [connection, dispatch, maCongViec]);
+  }, [dispatch, maCongViec]);
   if (loading) {
     return (
       <div
@@ -245,7 +236,7 @@ const FileView = () => {
       fetch(file.duongDan)
         .then((response) => response.text())
         .then((content) => setFileContent(content));
-    }else {
+    } else {
       setFileContent("");
     }
     setShowPreview(true);
@@ -281,7 +272,10 @@ const FileView = () => {
                   </p>
                   <p className="text-sm text-gray-500 mt-1">
                     <span className="font-semibold">Người gửi: </span>
-                    {file.tenNguoiGui.split("-")[0]===localStorage.getItem("userId")?"Tôi":file.tenNguoiGui || "Không có thông tin"}
+                    {file.tenNguoiGui.split("-")[0] ===
+                    localStorage.getItem("userId")
+                      ? "Tôi"
+                      : file.tenNguoiGui || "Không có thông tin"}
                   </p>
                   <p className="text-sm text-gray-500">
                     <span className="font-semibold">Thời gian gửi: </span>
@@ -290,45 +284,45 @@ const FileView = () => {
                 </div>
               </div>
               <div className="flex items-center justify-between">
-              <span
-                className={`inline-block px-2 py-1 mt-2 rounded ${
-                  file.trangThai === 1
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}
-              >
-                {file.kichThuocFile}
-              </span>
-              <div className="flex mt-4 space-x-4">
-                <button
-                  onClick={() => handlePreview(file)}
-                  className="text-blue-500 hover:text-blue-700"
+                <span
+                  className={`inline-block px-2 py-1 mt-2 rounded ${
+                    file.trangThai === 1
+                      ? "bg-green-100 text-green-800"
+                      : "bg-red-100 text-red-800"
+                  }`}
                 >
-                  <FiEye className="inline-block mr-1" />
-                </button>
-                <button
-                  onClick={async () => {
-                    try {
-                      const response = await fetch(file.duongDan);
-                      if (!response.ok) {
-                        throw new Error("Network response was not ok");
+                  {file.kichThuocFile}
+                </span>
+                <div className="flex mt-4 space-x-4">
+                  <button
+                    onClick={() => handlePreview(file)}
+                    className="text-blue-500 hover:text-blue-700"
+                  >
+                    <FiEye className="inline-block mr-1" />
+                  </button>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const response = await fetch(file.duongDan);
+                        if (!response.ok) {
+                          throw new Error("Network response was not ok");
+                        }
+                        const blob = await response.blob();
+                        const link = document.createElement("a");
+                        link.href = window.URL.createObjectURL(blob);
+                        link.download = file.tenFile;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      } catch (error) {
+                        console.error("Error downloading file:", error);
                       }
-                      const blob = await response.blob();
-                      const link = document.createElement("a");
-                      link.href = window.URL.createObjectURL(blob);
-                      link.download = file.tenFile;
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                    } catch (error) {
-                      console.error("Error downloading file:", error);
-                    }
-                  }}
-                  className="text-green-500 hover:text-green-700"
-                >
-                  <FiDownload className="inline-block mr-1" />
-                </button>
-              </div>
+                    }}
+                    className="text-green-500 hover:text-green-700"
+                  >
+                    <FiDownload className="inline-block mr-1" />
+                  </button>
+                </div>
               </div>
             </div>
           ))

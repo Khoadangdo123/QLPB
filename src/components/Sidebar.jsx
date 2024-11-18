@@ -13,11 +13,12 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { setOpenSidebar } from "../redux/slices/authSlice";
 import clsx from "clsx";
 import { addProject, fetchProjects } from "../redux/project/projectSlice";
-import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
 import { FaUserGroup } from "react-icons/fa6";
 import { GoProject } from "react-icons/go";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 import API_ENDPOINTS from "../constant/linkapi";
+import { toast } from "react-toastify";
 const Sidebar = () => {
   const dispatch = useDispatch();
   const [connection, setConnection] = useState(null);
@@ -26,7 +27,6 @@ const Sidebar = () => {
   const [permissionAction, setpermissionAction] = useState([]);
   const [viewFuntions, setViewFunction] = useState([]);
   const navigate = useNavigate();
-  //const { user } = useSelector((state) => state.authen);
   const duans = useSelector((state) => state.projects.list);
   const maquyen = Number(localStorage.getItem("permissionId"));
   const taskSubMenu = duans.map((duan) => ({
@@ -113,19 +113,17 @@ const Sidebar = () => {
       }
       setViewFunction(visibleLinks);
       localStorage.setItem("acc_url", JSON.stringify(acc_link));
-      console.log(localStorage.getItem("acc_url"));
-      console.log(acc_link);
       setLoadingProjects(false);
     };
     fetchData();
   }, [dispatch, maquyen]);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
-      .withUrl(API_ENDPOINTS.HUB_URL)
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build();
-
+    .withUrl(API_ENDPOINTS.HUB_URL,{transport:HttpTransportType.WebSockets | HttpTransportType.LongPolling})
+    .withAutomaticReconnect([0, 2000, 10000, 30000])
+    .configureLogging(LogLevel.Information)
+    .build();
+    newConnection.serverTimeoutInMilliseconds = 2 * 60 * 1000;
     setConnection(newConnection);
   }, []);
   useEffect(() => {
@@ -138,7 +136,6 @@ const Sidebar = () => {
           connection.on("loadDuAn", async () => {
             await dispatch(fetchProjects({ search: "", page: 20 }));
           });
-
           connection.on("loadHanhDong", async () => {
             const result = await dispatch(
               checkPermission({ maQuyen: maquyen, tenChucNang: "Dự Án" })
@@ -160,11 +157,8 @@ const Sidebar = () => {
                 }
               }
             }
-            console.log(visibleLinks);
             setViewFunction(visibleLinks);
             localStorage.setItem("acc_url", JSON.stringify(acc_link));
-            console.log(localStorage.getItem("acc_url"));
-            console.log(acc_link);
           });
         } catch (error) {
           console.error("Connection failed: ", error);
@@ -172,12 +166,12 @@ const Sidebar = () => {
       }
     };
     startConnection();
-    return () => {
-      if (connection) {
-        connection.off("loadDuAn");
-        connection.off("loadHanhDong");
-      }
-    };
+    // return () => {
+    //   if (connection) {
+    //     connection.off("loadDuAn");
+    //     connection.off("loadHanhDong");
+    //   }
+    // };
   }, [connection, dispatch]);
   const location = useLocation();
   const currentPath = location.pathname;
@@ -199,7 +193,7 @@ const Sidebar = () => {
   }, [isModalOpen]);
   if (loadingProjects) {
     return (
-      <div className="flex justify-center items-center h-24">
+      <div className="flex justify-center items-center h-full">
         <div className="w-10 h-10 border-4 border-gray-200 border-t-blue-500 rounded-full animate-spin"></div>
       </div>
     );
@@ -226,8 +220,10 @@ const Sidebar = () => {
       );
       console.log("Dự án được tạo:", projectName);
       setProjectName("");
+      toast.success("Thêm thành công")
       setModalOpen(false);
     } catch (e) {
+      toast.error("Thêm thất bại")
       console.log(e);
     }
   };

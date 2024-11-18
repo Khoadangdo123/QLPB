@@ -21,7 +21,6 @@ const ListView=({phanDuAn,duAn})=> {
         </div>
         {phanDuAn.map((item) => {
           return <TaskGroup key={item.maPhanDuAn} phanduan={item} duAn={duAn}/>;
-          //console.log(item,1)
         })}
       </div>
     </div>

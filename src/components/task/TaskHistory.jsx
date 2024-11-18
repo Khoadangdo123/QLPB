@@ -1,11 +1,18 @@
 import { useDispatch, useSelector } from "react-redux";
 import Button from "../Button";
 import ModalWrapper from "../ModalWrapper";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import {
+  HubConnectionBuilder,
+  LogLevel,
+  HttpTransportType,
+} from "@microsoft/signalr";
 import {
   fetchTaskHistories,
   fetchTaskHistoryById,
 } from "../../redux/taskhistory/taskhistorySlice";
+import API_ENDPOINTS from "../../constant/linkapi";
+import getConnection from "../../hub/signalRConnection";
 
 const TaskHistory = ({ openTaskHistory, setOpenTaskHistory, maCongViec }) => {
   const dispatch = useDispatch();
@@ -16,6 +23,31 @@ const TaskHistory = ({ openTaskHistory, setOpenTaskHistory, maCongViec }) => {
     };
     loadData();
   }, [dispatch, maCongViec]);
+ 
+  useEffect(() => {
+    const connection=getConnection();
+    const connectSignalR = async () => {
+      try {
+        if (connection && connection.state === "Disconnected") {
+          await connection.start();
+          console.log("Connected!");
+        }
+
+        connection.on("loadLichSuCongViec", async () => {
+          await dispatch(fetchTaskHistories());
+        });
+        console.log("Connected! update");
+      } catch (error) {
+        console.error("Connection failed: ", error);
+      }
+    };
+    connectSignalR(); 
+    return () => {
+      if (connection) {
+        connection.off("loadLichSuCongViec");
+      }
+    };
+  }, [dispatch,maCongViec]);
   const lichsu = lichsucongviec.filter(
     (item) => item.maCongViec === maCongViec
   );

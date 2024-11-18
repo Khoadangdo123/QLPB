@@ -43,6 +43,7 @@
     "react-router-dom": "^6.22.0",
     "react-scripts": "^5.0.1",
     "react-slick": "^0.30.2",
+    "react-toastify": "^10.0.6",
     "react-vertical-timeline-component": "^3.6.0",
     "react-vis": "^1.12.1",
     "react-visjs-timeline": "^1.6.0",

@@ -9,12 +9,13 @@ import { fetchByIdTask } from "../../redux/task/taskSlice";
 import DetailTask from "../task/DetailTask";
 import { BGS, formatDate } from "../../utils";
 import { updateAssignment } from "../../redux/assignment/assignmentSlice";
-import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
 import { addTaskHistory } from "../../redux/taskhistory/taskhistorySlice";
 import FileUpload from "./FileUpload";
-import { IoMdCloudUpload} from "react-icons/io";
+import { IoMdCloudUpload } from "react-icons/io";
 import { fetchAllFile } from "../../redux/file/fileSlice";
 import { AiFillFile, AiFillDelete, AiOutlineDownload } from "react-icons/ai";
+import getConnection from "../../hub/signalRConnection";
 import {
   FaFilePdf,
   FaFileWord,
@@ -25,10 +26,14 @@ import {
   FaFileAlt,
   FaFile,
 } from "react-icons/fa";
-import { deleteChiTietFile, fetchChiTietFileByPhanCong } from "../../redux/fileassignment/fileassignmentSlice";
+import {
+  deleteChiTietFile,
+  fetchChiTietFileByPhanCong,
+} from "../../redux/fileassignment/fileassignmentSlice";
 import { useNavigate } from "react-router-dom";
 import { checkPermission } from "../../redux/permissiondetail/permissionDetailSlice";
 import API_ENDPOINTS from "../../constant/linkapi";
+import { toast } from "react-toastify";
 const TaskAssignmentList = ({ congviec }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -36,15 +41,17 @@ const TaskAssignmentList = ({ congviec }) => {
   const [expanded, setExpanded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [completed, setCompleted] = useState(congviec.trangThaiCongViec);
-  const [connection, setConnection] = useState(null);
+  //const [connection, setConnection] = useState(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [selectedFileUrl, setSelectedFileUrl] = useState("");
   const [filteredFiles, setFilteredFiles] = useState([]);
   const [fileDetails, setFileDetails] = useState([]);
-  const [permissionAction,setpermissionAction]=useState([])
+  const [permissionAction, setpermissionAction] = useState([]);
+  const [setDay,setStatusDay]=useState(true)
+
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const maquyen=Number(localStorage.getItem("permissionId"))
+  const maquyen = Number(localStorage.getItem("permissionId"));
   const maCongViec = congviec.maCongViec;
   const vaiTro = congviec.vaiTro;
   const maPhanCong = congviec.maPhanCong;
@@ -58,24 +65,32 @@ const TaskAssignmentList = ({ congviec }) => {
         dispatch(fetchByIdTask(maCongViec)),
         dispatch(fetchAllFile()).unwrap(),
         dispatch(fetchChiTietFileByPhanCong(maPhanCong)).unwrap(),
-        dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })).unwrap()
+        dispatch(
+          checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })
+        ).unwrap(),
       ])
-        .then(([taskResponse, files, result,permission]) => {
+        .then(([taskResponse, files, result, permission]) => {
           const matchingFiles = files.filter((file) =>
             result.some((detail) => detail.maFile === file.maFile)
           );
           const filesWithDetails = matchingFiles.map((file) => {
-            const correspondingDetail = result.find(detail => detail.maFile === file.maFile);
-            const correspondingStatus = result.find(detail => detail.maFile === file.maFile)?.trangThai;
+            const correspondingDetail = result.find(
+              (detail) => detail.maFile === file.maFile
+            );
+            const correspondingStatus = result.find(
+              (detail) => detail.maFile === file.maFile
+            )?.trangThai;
             return {
               ...file,
-              maChiTietFile: correspondingDetail ? correspondingDetail.maChiTietFile : null,
-              trangThaiFile:correspondingStatus
+              maChiTietFile: correspondingDetail
+                ? correspondingDetail.maChiTietFile
+                : null,
+              trangThaiFile: correspondingStatus,
             };
           });
 
           setFilteredFiles(filesWithDetails);
-          setpermissionAction(permission)
+          setpermissionAction(permission);
         })
         .catch((error) => {
           console.error("Error fetching task:", error);
@@ -90,83 +105,81 @@ const TaskAssignmentList = ({ congviec }) => {
     }
   }, [maCongViec, dispatch]);
   useEffect(() => {
-    const newConnection = new HubConnectionBuilder()
-      .withUrl(API_ENDPOINTS.HUB_URL)
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build();
-    setConnection(newConnection);
-  }, []);
-  useEffect(() => {
+    const connection=getConnection()
     const startConnection = async () => {
-      if (connection && connection.state === "Disconnected") {
-        try {
+      try {
+        if (connection && connection.state === "Disconnected") {
           await connection.start();
           console.log("Connection started");
-          connection.on("loadPhanCong", async () => {
-            setLoading(true);
-            await dispatch(fetchByIdTask(maCongViec));
-            setLoading(false);
-          });
-          //
-          connection.on("loadCongViec", async () => {
-            setLoading(true);
-            await dispatch(fetchByIdTask(maCongViec));
-            setLoading(false);
-          });
-          connection.on("loadHanhDong",async () => {
-            const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })).unwrap();
-            setpermissionAction(result);
-          });
-          connection.on("loadFile", async () => {
-            setLoading(true);
-            return Promise.all([
-              dispatch(fetchByIdTask(maCongViec)),
-              dispatch(fetchAllFile()).unwrap(),
-              dispatch(fetchChiTietFileByPhanCong(maPhanCong)).unwrap(),
-            ])
-              .then(([taskResponse, files, result]) => {
-                const matchingFiles = files.filter((file) =>
-                  result.some((detail) => detail.maFile === file.maFile)
-                );
-                const filesWithDetails = matchingFiles.map((file) => {
-                  const correspondingDetail = result.find(detail => detail.maFile === file.maFile);
-                  const correspondingStatus = result.find(detail => detail.maFile === file.maFile)?.trangThai;
-                  return {
-                    ...file,
-                    maChiTietFile: correspondingDetail ? correspondingDetail.maChiTietFile : null,
-                    trangThaiFile:correspondingStatus
-                  };
-                });
-      
-                setFilteredFiles(filesWithDetails);
-              })
-              .catch((error) => {
-                console.error("Error fetching task:", error);
-              })
-              .finally(() => {
-                setLoading(false);
-              });
-          });
-        } catch (err) {
-          console.error("Error while starting connection: ", err);
         }
+        connection.on("loadPhanCong", async () => {
+          setLoading(true);
+          await dispatch(fetchByIdTask(maCongViec));
+          setLoading(false);
+        });
+        //
+        connection.on("loadCongViec", async () => {
+          setLoading(true);
+          await dispatch(fetchByIdTask(maCongViec));
+          setLoading(false);
+        });
+        connection.on("loadHanhDong", async () => {
+          const result = await dispatch(
+            checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })
+          ).unwrap();
+          setpermissionAction(result);
+        });
+        connection.on("loadFile", async () => {
+          setLoading(true);
+          return Promise.all([
+            dispatch(fetchByIdTask(maCongViec)),
+            dispatch(fetchAllFile()).unwrap(),
+            dispatch(fetchChiTietFileByPhanCong(maPhanCong)).unwrap(),
+          ])
+            .then(([taskResponse, files, result]) => {
+              const matchingFiles = files.filter((file) =>
+                result.some((detail) => detail.maFile === file.maFile)
+              );
+              const filesWithDetails = matchingFiles.map((file) => {
+                const correspondingDetail = result.find(
+                  (detail) => detail.maFile === file.maFile
+                );
+                const correspondingStatus = result.find(
+                  (detail) => detail.maFile === file.maFile
+                )?.trangThai;
+                return {
+                  ...file,
+                  maChiTietFile: correspondingDetail
+                    ? correspondingDetail.maChiTietFile
+                    : null,
+                  trangThaiFile: correspondingStatus,
+                };
+              });
+
+              setFilteredFiles(filesWithDetails);
+            })
+            .catch((error) => {
+              console.error("Error fetching task:", error);
+            })
+            .finally(() => {
+              setLoading(false);
+            });
+        });
+        console.log("connected---")
+      } catch (err) {
+        console.error("Error while starting connection: ", err);
       }
     };
-
-    if (connection) {
-      startConnection();
-    }
-
+    startConnection();
     return () => {
       if (connection) {
         connection.off("loadFile");
         connection.off("loadCongViec");
         connection.off("loadPhanCong");
-        connection.off("loadHanhDong")
+        connection.off("loadHanhDong");
       }
     };
-  }, [connection, dispatch, maCongViec]);
+  }, [dispatch, maCongViec,maquyen]);
   if (loading) {
     return (
       <div
@@ -220,10 +233,12 @@ const TaskAssignmentList = ({ congviec }) => {
     setIsViewerOpen(true);
   };
   const handleDeleteFile = async (fileId) => {
-    const isConfirmed = window.confirm("Bạn có chắc chắn muốn xóa file này? "+fileId);
+    const isConfirmed = window.confirm(
+      "Bạn có chắc chắn muốn xóa file này? " + fileId
+    );
     if (isConfirmed) {
       try {
-        await dispatch(deleteChiTietFile(fileId))
+        await dispatch(deleteChiTietFile(fileId));
       } catch (error) {
         console.error("Error deleting file:", error);
         alert("Có lỗi xảy ra khi xóa file");
@@ -235,7 +250,26 @@ const TaskAssignmentList = ({ congviec }) => {
       prevFiles.filter((file) => file.name !== fileName)
     );
   };
-
+  const confirmToast = (message, onConfirm) => {
+    toast.info(message, {
+      position: "top-center",
+      autoClose: false,
+      closeOnClick: false,
+      draggable: false,
+      hideProgressBar: true,
+      className: "confirm-toast",
+      // Tạo các nút Yes/No
+      render: () => (
+        <div className="toast-confirm">
+          <p>{message}</p>
+          <div className="toast-buttons">
+            <button onClick={() => onConfirm(true)}>Yes</button>
+            <button onClick={() => onConfirm(false)}>No</button>
+          </div>
+        </div>
+      ),
+    });
+  };
   const handleCheckboxChange = async (event) => {
     const isConfirmed = window.confirm(
       "Bạn có chắc chắn muốn đánh dấu công việc đã hoàn thành?"
@@ -250,41 +284,43 @@ const TaskAssignmentList = ({ congviec }) => {
         trangThaiCongViec: checked,
       };
       try {
-        await dispatch(
+        var result=await dispatch(
           updateAssignment({ id: maPhanCong, assignment: PhanCong })
-        );
-        await dispatch(
-          addTaskHistory({
-            maCongViec: PhanCong.maCongViec,
-            ngayCapNhat: new Date().toISOString(),
-            noiDung: `${new Date().toISOString()}: Nhân Viên ${localStorage.getItem(
-              "name"
-            )} đã hoàn thành nhiệm vụ được giao của công việc ${
-              phancong.tenCongViec
-            }`,
-          })
-        );
+        )
+        if(result.payload === true){
+          await dispatch(
+            addTaskHistory({
+              maCongViec: PhanCong.maCongViec,
+              ngayCapNhat: new Date().toISOString(),
+              noiDung: `${new Date().toISOString()}: Nhân Viên ${localStorage.getItem(
+                "name"
+              )} đã hoàn thành nhiệm vụ được giao của công việc ${
+                phancong.tenCongViec
+              }`,
+            })
+          );
+          toast.success("Đánh dấu thành công")
+        }
         console.log("Updateeeeee");
       } catch (e) {
         console.error("Error updating assignment:", error);
-        alert("Có lỗi xảy ra trong quá trình cập nhật.");
+        toast.error("Đánh dấu không thành công")
       }
     } else {
       event.target.checked = !event.target.checked;
     }
   };
-  const phanCongs = phancong?.phanCongs?.filter((task) => task.trangThai === true) || [];
+  const phanCongs =
+    phancong?.phanCongs?.filter((task) => task.trangThai === true) || [];
   const chiuTrachNhiem = phanCongs?.filter(
     (m) => m.vaiTro === "Người Chịu Trách Nhiệm"
   );
-  const thucHien = phanCongs?.filter(
-    (m) => m.vaiTro === "Người Thực Hiện"
-  );
+  const thucHien = phanCongs?.filter((m) => m.vaiTro === "Người Thực Hiện");
   return (
     <div className="w-full flex items-center  px-4">
-      <div className="w-full flex py-2 border-b text-sm">
+      <div className="w-full flex items-center py-2 border-b text-sm">
         <div
-          className="flex-1 w-2/12 px-4 truncate text-left cursor-pointer"
+          className="flex-1 w-2/12 px-4 truncate text-left cursor-pointer break-words max-w-xs"
           onClick={handleToggleDetail}
         >
           <span className="line-clamp-2">{phancong.tenCongViec}</span>
@@ -306,7 +342,15 @@ const TaskAssignmentList = ({ congviec }) => {
         </div>
         <div className="flex-1 w-1/12 px-4 text-center">
           {phancong.thoiGianKetThuc ? (
-            formatDate(new Date(phancong.thoiGianKetThuc))
+            <span
+              className={`${
+                new Date(phancong.thoiGianKetThuc) < new Date()
+                  ? "text-red-500"
+                  : "text-green-500"
+              }`}
+            >
+              {formatDate(new Date(phancong.thoiGianKetThuc))}
+            </span>
           ) : (
             <div className="p-1 w-fit border-2 border-dashed rounded-full border-gray-400">
               <BiCalendar size={20} />
@@ -344,21 +388,21 @@ const TaskAssignmentList = ({ congviec }) => {
             type="checkbox"
             checked={completed}
             onChange={handleCheckboxChange}
-            className="w-6 h-6"
+            className="w-4 h-4 transform scale-40"
           />
         </div>
         <div className="flex-1 w-1/12 px-4 text-center">
           <div className="flex space-x-2">
             {" "}
-            {permissionAction.includes("Thêm") && 
-            <Button
-              onClick={() => setIsModalOpen(true)}
-              icon={<IoMdCloudUpload className="text-lg" />}
-              className="flex flex-row-reverse items-center bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
-            >
-              Tải lên
-            </Button>
-            }
+            {permissionAction.includes("Thêm") && (
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                icon={<IoMdCloudUpload className="text-lg" />}
+                className="flex flex-row-reverse items-center bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded"
+              >
+                Tải lên
+              </Button>
+            )}
             {(vaiTro === "Người Chịu Trách Nhiệm" ||
               vaiTro === "Chịu Trách Nhiệm") && (
               <Button
@@ -370,49 +414,55 @@ const TaskAssignmentList = ({ congviec }) => {
               ></Button>
             )}
           </div>
-          {permissionAction.includes("Thêm") &&<div className="flex flex-col w-full">
-            {filteredFiles.length > 0 && (
-              <ul className="mt-2 list-disc">
-                {filteredFiles.filter(file => file.trangThaiFile !== false).map((file, index) => {
-                  const extension = file.loaiFile;
-                  const { icon, color } = getFileIcon(`.${extension}`);
+          {permissionAction.includes("Thêm") && (
+            <div className="flex flex-col w-full">
+              {filteredFiles.length > 0 && (
+                <ul className="mt-2 list-disc">
+                  {filteredFiles
+                    .filter((file) => file.trangThaiFile !== false)
+                    .map((file, index) => {
+                      const extension = file.loaiFile;
+                      const { icon, color } = getFileIcon(`.${extension}`);
 
-                  return (
-                    <li
-                      key={index}
-                      className="flex flex-col items-start gap-2 text-gray-700 text-sm"
-                    >
-                      <div className="flex items-center relative group">
-                        <span className={`${color} relative`}>
-                          {icon}
-                        
-                        </span>
-                        <button>
-                          <AiFillDelete
-                            size={20}
-                            onClick={() => handleDeleteFile(file.maChiTietFile)}
-                            className="text-red-500 cursor-pointer ml-2"
-                          />
-                        </button>
-                        <button>
-                          <AiOutlineDownload
-                            size={20}
-                            onClick={() =>
-                              handleDownloadFile(file.duongDan, file.tenFile)
-                            }
-                            className="text-blue-500 cursor-pointer"
-                          />
-                        </button>
-                      </div>
-                      <span className="w-full overflow-hidden truncate">
-                        {file.tenFile}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            )}
-          </div>}
+                      return (
+                        <li
+                          key={index}
+                          className="flex flex-col items-start gap-2 text-gray-700 text-sm"
+                        >
+                          <div className="flex items-center relative group">
+                            <span className={`${color} relative`}>{icon}</span>
+                            <button>
+                              <AiFillDelete
+                                size={20}
+                                onClick={() =>
+                                  handleDeleteFile(file.maChiTietFile)
+                                }
+                                className="text-red-500 cursor-pointer ml-2"
+                              />
+                            </button>
+                            <button>
+                              <AiOutlineDownload
+                                size={20}
+                                onClick={() =>
+                                  handleDownloadFile(
+                                    file.duongDan,
+                                    file.tenFile
+                                  )
+                                }
+                                className="text-blue-500 cursor-pointer"
+                              />
+                            </button>
+                          </div>
+                          <span className="w-full overflow-hidden truncate">
+                            {file.tenFile}
+                          </span>
+                        </li>
+                      );
+                    })}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
       </div>
       {expanded && (

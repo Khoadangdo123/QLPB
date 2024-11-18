@@ -2,10 +2,19 @@
 import React, { useEffect, useState } from "react";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import Picker from "emoji-picker-react";
-import { FaSmile } from "react-icons/fa";
+import { FaFileUpload, FaSmile } from "react-icons/fa";
 import { FaPaperclip } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
 import API_ENDPOINTS from "../../constant/linkapi";
+import {
+  FaFileAlt,
+  FaFilePdf,
+  FaFileImage,
+  FaFileWord,
+  FaFileExcel,
+  FaFileVideo,
+} from "react-icons/fa";
+import axios from "axios";
 const DetailTask = ({
   expanded,
   setExpanded,
@@ -23,66 +32,91 @@ const DetailTask = ({
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedFiles, setSelectedFiles] = useState([]);
+  const [progress, setProgress] = useState([]);
+  const [uploadStatus, setUploadStatus] = useState("");
   const [showComments, setShowComment] = useState(true);
+  const [dragging, setDragging] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]); 
+  // console.log(userTeam)
+  // console.log(roleTeam)
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
       .withUrl(API_ENDPOINTS.HUB_URL)
       .withAutomaticReconnect()
       .configureLogging(LogLevel.Information)
       .build();
-    newConnection
-      .start()
-      .then(() => {
+
+    const startConnection = async () => {
+      try {
+        await newConnection.start();
         console.log("Connected!");
         setConnection(newConnection);
-
-        // Tham gia nhóm
-        newConnection
-          .invoke("ThamGiaNhom", maCongViec)
-          .then(() => {
-            console.log(`Joined group: ${maCongViec}`);
-          })
-          .catch((err) => console.error("Error joining group: ", err));
-        //newConnection.off("ReceiveMessage");
+        await newConnection.invoke("ThamGiaNhom", maCongViec);
+        console.log(`Joined group: ${maCongViec}`);
+        newConnection.off("ReceiveMessage");
+        newConnection.off("UserJoined");
         newConnection.on("ReceiveMessage", (user, message) => {
           const newMessage = { user, message };
-          console.log(newMessage);
           setMessages((prevMessages) => [...prevMessages, newMessage]);
-          console.log(newMessage);
+          console.log("Received message:", newMessage);
         });
+
         newConnection.on("UserJoined", (message) => {
-          console.log(message);
+          console.log("User joined message:", message);
         });
-      })
-      .catch((err) => console.error("Connection failed: ", err));
+      } catch (err) {
+        console.error("Connection failed: ", err);
+      }
+    };
+
+    startConnection();
+
     return () => {
       if (newConnection) {
+        newConnection.off("ReceiveMessage");
+        newConnection.off("UserJoined");
         newConnection.stop();
         console.log("Connection stopped.");
       }
     };
   }, [maCongViec]);
   const handleSendComment = async () => {
-    if (newComment.trim() === "") return;
-    
-    const messageContent = selectedFile
-      ? `Uploaded file: ${selectedFile.name}`
-      : newComment;
+    if (newComment.trim() === "" && selectedFiles.length === 0) return;
     try {
-      await connection.invoke(
-        "TraoDoiThongTin",
-        maCongViec,
-        localStorage.getItem("name"),
-        messageContent
-      );
-      setNewComment("");
-      setSelectedFile(null);
+      if (selectedFiles.length > 0) {
+        const uploadedFiles = await handleUpload();
+        for (const file of uploadedFiles) {
+          await connection.invoke(
+            "TraoDoiThongTin",
+            maCongViec,
+            localStorage.getItem("name"),
+            //`File uploaded: ${file.name} (${file.url})`
+            `<div>
+            <h4>File uploaded:</h4>
+            <div style="display: flex; align-items: center;">
+              <span style="margin-right: 8px;">${getSendFileIcon(file.extension)}</span>
+              <p>${file.name} (${file.size})</p>
+            </div>
+            <a href="${file.url}" target="_blank">Download</a>
+          </div>`
+          );
+        }
+        setSelectedFiles([]);
+      }
+
+      if (newComment.trim() !== "") {
+        await connection.invoke(
+          "TraoDoiThongTin",
+          maCongViec,
+          localStorage.getItem("name"),
+          newComment
+        );
+        setNewComment("");
+      }
+
       setShowEmojiPicker(false);
     } catch (err) {
       console.error("Error sending message: ", err);
-      setErrorMessage("Failed to send message.");
-    } finally {
-      //setLoading(false);
     }
   };
   const onEmojiClick = (emoji) => {
@@ -92,6 +126,106 @@ const DetailTask = ({
   const handleFileChange = (event) => {
     //setSelectedFile(event.target.files[0]);
     setSelectedFiles([...selectedFiles, ...event.target.files]);
+    console.log(selectedFiles)
+  };
+  const handleUpload = async () => {
+    try {
+      setUploadStatus("Uploading...");
+      const newProgress = Array(selectedFiles.length).fill(0);
+      setProgress(newProgress);
+      const responses = [];
+
+      const uploadPromises = selectedFiles.map((file, index) => {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        return axios
+          .post("https://localhost:7131/api/FileUpload/Upload", formData, {
+            onUploadProgress: (progressEvent) => {
+              const percentCompleted = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              setProgress((prev) => {
+                const updated = [...prev];
+                updated[index] = percentCompleted;
+                return updated;
+              });
+            },
+          })
+          .then((response) => {
+            responses.push({
+              name: file.name,
+              url: response.data.url,
+              extension: file.name.split(".").pop(),
+              size: formatFileSize(file.size),
+            });
+          });
+      });
+      await Promise.all(uploadPromises);
+      setUploadStatus("Upload Successful");
+      return responses;
+    } catch (error) {
+      console.error(error);
+      setUploadStatus("Upload Failed");
+      return [];
+    }
+  };
+  const removeFile = (index) => {
+    setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
+  };
+  const getFileIcon = (fileName) => {
+    const ext = fileName.toLowerCase()
+
+    switch (ext) {
+      case "pdf":
+        return <FaFilePdf />;
+      case "jpg":
+      case "jpeg":
+      case "png":
+        return <FaFileImage />;
+      case "doc":
+      case "docx":
+        return <FaFileWord />;
+      case "xls":
+      case "xlsx":
+        return <FaFileExcel />;
+      case "mp4":
+        return <FaFileVideo />;
+      default:
+        return <FaFileAlt />;
+    }
+  };
+  const getSendFileIcon = (extension) => {
+    const ext = extension.toLowerCase();
+    switch (ext) {
+      case "pdf":
+        return `<i class="fas fa-file-pdf" style="color: red;"></i>`;
+      case "jpg":
+      case "jpeg":
+      case "png":
+        return `<i class="fas fa-file-image" style="color: green;"></i>`;
+      case "doc":
+      case "docx":
+        return `<i class="fas fa-file-word" style="color: blue;"></i>`;
+      case "xls":
+      case "xlsx":
+        return `<i class="fas fa-file-excel" style="color: green;"></i>`;
+      case "mp4":
+        return `<i class="fas fa-file-video" style="color: purple;"></i>`;
+      default:
+        return `<i class="fas fa-file-alt" style="color: gray;"></i>`;
+    }
+  };
+
+  const formatFileSize = (size) => {
+    if (size < 1024) return `${size} B`;
+    else if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
+    else if (size < 1024 * 1024 * 1024) return `${(size / (1024 * 1024)).toFixed(2)} MB`;
+    else return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+  };
+  const isImage = (file) => {
+    const imageTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    return imageTypes.includes(file.type);
   };
   return (
     <>
@@ -122,6 +256,7 @@ const DetailTask = ({
         <div className="mb-4 px-6">
           <h2 className="text-2xl font-semibold text-gray-800">{titleTask}</h2>
         </div>
+
         {/* Assignee and Due Date */}
         <div className="mb-4 px-6 flex justify-between items-center">
           <div className="flex items-center">
@@ -144,6 +279,7 @@ const DetailTask = ({
             </span>
           </div>
         </div>
+
         <div className="mb-6 px-6">
           <p className="text-gray-700 font-medium">Mô Tả</p>
           <textarea
@@ -183,9 +319,10 @@ const DetailTask = ({
             </div>
           </div>
         </div>
+
         <div className="mb-4 px-6 bg-gray-100">
           <div
-            className=" rounded border-t-2"
+            className="rounded border-t-2"
             style={{ maxHeight: "200px", overflowY: "auto" }} // Thanh trượt
           >
             <div className="border">
@@ -219,10 +356,14 @@ const DetailTask = ({
                           {comment.user.slice(0, 2)}
                         </div>
                         <span className="ml-3 text-gray-700">
-                          {comment.user===localStorage.getItem("name")?"Bạn":comment.user}
+                          {comment.user === localStorage.getItem("name")
+                            ? "Bạn"
+                            : comment.user}
                         </span>
                       </div>
-                      <span className="text-sm text-gray-500">{new Date().toISOString()}</span>
+                      <span className="text-sm text-gray-500">
+                        {new Date().toISOString()}
+                      </span>
                     </div>
                     <p className="ml-11 text-gray-600">{comment.message}</p>
                   </div>
@@ -234,7 +375,47 @@ const DetailTask = ({
           </div>
         </div>
 
+        {/* Files Section */}
+        
+
+        {/* Phần Emoji Picker và Comment Input không thay đổi */}
         <div className="mb-4 px-6 absolute bottom-0 w-full">
+        <div>
+          {/* Hiển thị các tệp đã chọn */}
+          {selectedFiles.length > 0 && (
+          <div className="mb-4 flex flex-wrap">
+            {selectedFiles.map((file, index) => (
+              <div
+                key={index}
+                className="flex items-center space-x-2 mb-2 mr-2 border rounded p-2"
+              >
+                {/* Hiển thị file icon hoặc hình ảnh */}
+                {isImage(file) ? (
+                  <img
+                    src={URL.createObjectURL(file)}
+                    alt={file.name}
+                    className="w-12 h-12 object-cover rounded"
+                  />
+                ) : (
+                  <div className="text-lg">{getFileIcon(file.name)}</div>
+                )}
+                <span>{file.name}</span>
+                <div className="text-gray-500 text-sm">
+                  {formatFileSize(file.size)}
+                </div>
+                <button
+                  className="text-red-500"
+                  onClick={() => removeFile(index)} // Xóa tệp khi nhấn "X"
+                >
+                  ✖️
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+
+          {/* Thay đổi nút chọn file thành icon */}
+        </div>
           <div className="flex items-center">
             <input
               value={newComment}
@@ -242,7 +423,7 @@ const DetailTask = ({
               className="w-full bg-gray-50 p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Add a comment"
             />
-            {newComment.trim() === "" ? (
+            {newComment.trim() === "" && selectedFiles.length === 0 ? (
               <button
                 className=" text-gray-400 px-4 py-2 rounded-full ml-3 focus:outline-none"
                 disabled
@@ -258,23 +439,22 @@ const DetailTask = ({
               </button>
             )}
             {/* Emoji Picker Toggle */}
+            <label htmlFor="file-upload" className="cursor-pointer text-xl">
+              <FaFileUpload />
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              multiple
+              onChange={handleFileChange}
+              className="hidden"
+            />
             <button
               className="ml-3 focus:outline-none"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             >
               <FaSmile className="text-2xl text-gray-600" />
             </button>
-            <label className="ml-3 cursor-pointer">
-              <FaPaperclip className="text-2xl text-gray-600" />
-              <input
-                type="file"
-                onChange={handleFileChange}
-                className="hidden"
-                onClick={(e) => {
-                  e.stopPropagation();
-                }}
-              />
-            </label>
             {/* Emoji Picker */}
             {showEmojiPicker && (
               <div
@@ -289,35 +469,6 @@ const DetailTask = ({
       </div>
     </>
   );
-};
-const handleUpload = async () => {
-  try {
-    const newProgress = Array(selectedFiles.length).fill(0);
-    setProgress(newProgress);
-    const responses = [];
-
-    const uploadPromises = selectedFiles.map((file, index) => {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      return axios
-        .post("https://localhost:7131/api/FileUpload/Upload", formData)
-        .then((response) => {
-          responses.push({
-            name: file.name,
-            url: response.data.url,
-            extension: file.name.split(".").pop(),
-            size: formatFileSize(file.size),
-          });
-        });
-    });
-    await Promise.all(uploadPromises);
-    return responses;
-  } catch (error) {
-    console.error(error);
-    setUploadStatus("select");
-    return [];
-  }
 };
 
 export default DetailTask;

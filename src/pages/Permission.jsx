@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Button from "../components/Button";
 import { IoMdAdd } from "react-icons/io";
-import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
+import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
 import clsx from "clsx";
 import ConfirmatioDialog, { UserAction } from "../components/Dialogs";
 import Title from "../components/Title";
@@ -9,8 +9,9 @@ import { useDispatch, useSelector } from "react-redux";
 import PageSizeSelect from "../components/PageSizeSelect";
 import { fetchPermissions } from "../redux/permission/permissionSlice";
 import UserPermissions from "../components/permission/UserPermissions";
-import API_ENDPOINTS from "../constant/linkapi";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
+import getConnection from "../hub/signalRConnection";
+import AddRole from "../components/permission/AddRole";
 
 const Permission = () => {
   const [pageSize, setPageSize] = useState(10);
@@ -23,7 +24,6 @@ const Permission = () => {
   const [selectedRole, setSelectedRole] = useState(null);
   const [selectedRolePermissions, setSelectedRolePermissions] = useState(null);
   const [openPermissionModal, setOpenPermissionModal] = useState(false);
-  const [connection, setConnection] = useState(null);
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [roleCode, setRoleCode] = useState("Admin");
   const [permissionAction,setpermissionAction]=useState([])
@@ -39,35 +39,37 @@ const Permission = () => {
   }, [dispatch, pageSize]);
 
   useEffect(() => {
-    const newConnection = new HubConnectionBuilder()
-      .withUrl(API_ENDPOINTS.HUB_URL)
-      .withAutomaticReconnect()
-      .configureLogging(LogLevel.Information)
-      .build();
+    const connection=getConnection()
+    const connectSignalR = async () => {
+      try {
+        if (connection && connection.state === "Disconnected") {
+          await connection.start();
+          console.log("Connected!"); 
+        }
+        connection.on("loadNhomQuyen",async () => {
+          await dispatch(fetchPermissions({ search: "", page: pageSize }));
+        });
 
-    setConnection(newConnection);
-  }, []);
-
-  useEffect(() => {
-    if (connection && connection.state === "Disconnected") {
-      connection
-        .start()
-        .then(() => {
-          console.log("Connected!");
-          connection.on("loadNhomQuyen", () => {
-            dispatch(fetchPermissions({ search: "", page: pageSize }));
-          });
-          connection.on("loadHanhDong", async () => {
-            const result = await dispatch(
-              checkPermission({ maQuyen: maquyen, tenChucNang: "Phân Quyền" })
-            ).unwrap();
-            setpermissionAction(result);
-            
-          });
-        })
-        .catch((error) => console.error("Connection failed: ", error));
-    }
-  }, [dispatch, pageSize, connection]);
+        connection.on("loadHanhDong", async () => {
+          const result = await dispatch(
+            checkPermission({ maQuyen: maquyen, tenChucNang: "Phân Quyền" })
+          ).unwrap();
+          setpermissionAction(result);
+        });
+        console.log("Connected! update"); 
+      } catch (error) {
+        console.error("Connection failed: ", error);
+      }
+    };
+  
+    connectSignalR(); 
+    return () => {
+      if (connection) {
+        connection.off("loadNhomQuyen");
+        connection.off("loadHanhDong");
+      }
+    };
+  }, [dispatch, pageSize,maquyen]);
   const roleActionHandler = () => {};
   const deleteHandler = () => {};
 
@@ -161,7 +163,8 @@ const Permission = () => {
           </div>
         </div>
       </div>
-
+      <AddRole  open={open}
+        setOpen={setOpen}/>
       {/* <AddRole
         open={open}
         setOpen={setOpen}

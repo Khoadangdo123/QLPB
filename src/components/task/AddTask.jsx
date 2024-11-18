@@ -18,6 +18,7 @@ import {
   fetchTaskHistories,
 } from "../../redux/taskhistory/taskhistorySlice";
 import { sendNotification } from "../../redux/scheduling/schedulingSlice";
+import { toast } from "react-toastify";
 const LISTS = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const PRIORITY = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 
@@ -43,19 +44,38 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
   const lichSuCongViec = useSelector((state) => state.taskhistories.list);
   const submitHandler = async (data) => {
     console.log(congViecCha, duAn);
+    if (data.thoiGianBatDau > data.thoiGianKetThuc) {
+      toast.warning("Vui lòng chọn ngày kết thúc lớn hơn ngày bắt đầu")
+      return;
+    }
+    if(selectedDepartment.length===0 && selectedEmployees.length===0){
+      toast.warning("Vui lòng chọn nhân viên hoặc phòng ban")
+      return;
+    }
+    if(selectedDepartment.length>0){
+      const missingRoles = selectedEmployees.some(
+        (employee) => !employee.vaiTro || employee.vaiTro.trim() === ""
+      );
+      if (missingRoles) {
+        toast.warning("Vui lòng chọn vai trò cho tất cả nhân viên");
+        return;
+      }
+    }
+    if(data.moTa.trim()==="" || data.tenCongViec.trim()===""){
+      toast.warning("Vui lòng nhập")
+      return
+    }
     let CongViec = {
       maPhanDuAn: Number(phanDuAn),
       maCongViecCha: congViecCha === false ? null : congViecCha,
       tenCongViec: data.tenCongViec,
       moTa: data.moTa,
       mucDoUuTien: stage,
+      thoiGianBatDau: data.thoiGianBatDau,
       thoiGianKetThuc: data.thoiGianKetThuc,
       trangThaiCongViec: false,
       mucDoHoanThanh: 0,
     };
-    console.log(selectedEmployees);
-    console.log(selectedDepartment);
-    console.log(CongViec.tenCongViec);
     try {
       const result = await dispatch(addTask(CongViec)).unwrap();
       if (Array.isArray(selectedDepartment) && selectedDepartment.length > 0) {
@@ -87,26 +107,35 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
                 } chịu trách nhiệm`,
               })
             );
-            await dispatch(
+          }
+        );
+        await Promise.all(departmentPromises);
+        console.log(await dispatch(
+          sendNotification({
+            maCongViec: result.maCongViec,
+            tenCongViec: CongViec.tenCongViec,
+            noiDung: generateDeadlineNotification(
+              CongViec.tenCongViec,
+              CongViec.thoiGianKetThuc
+            ),
+            thoiGianKetThuc: CongViec.thoiGianKetThuc,
+            email: selectedDepartment.map((item) => item.email).join(","),
+          })
+        ));
+        setTimeout(async () => {
+          const emailPromises = selectedDepartment.map((department) =>
+            dispatch(
               sendGmail({
                 name: department.responsiblePerson,
                 toGmail: department.email,
                 subject: "Thông Tin Phân Công Dự Án",
                 body: generateEmailTemplateForManager(department, CongViec),
               })
-            );
-          }
-        );
-        await Promise.all(departmentPromises);
-        await dispatch(
-          sendNotification({
-            maCongViec: 1,
-            tenCongViec: CongViec.tenCongViec,
-            noiDung: generateDeadlineNotification(CongViec.tenCongViec, CongViec.thoiGianKetThuc),
-            thoiGianKetThuc: CongViec.thoiGianKetThuc,
-            email:selectedDepartment.map(item=>item.email).join(","),
-          })
-        );
+            )
+          );
+          await Promise.all(emailPromises);
+          console.log("Email đã được gửi!");
+        }, 5000);
       }
       if (Array.isArray(selectedEmployees) && selectedEmployees.length > 0) {
         const employeePromises = selectedEmployees.map(async (employee) => {
@@ -128,30 +157,41 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
               } với vai trò ${employee.vaiTro}`,
             })
           );
-          await dispatch(
-            sendGmail({
-              name: employee.tenNhanVien,
-              toGmail: employee.email,
-              subject: "Thông Tin Phân Công Dự Án",
-              body: generateEmailTemplate(employee, CongViec),
-            })
-          );
         });
         await Promise.all(employeePromises);
         await dispatch(
           sendNotification({
-            maCongViec: 1,
+            maCongViec: result.maCongViec,
             tenCongViec: CongViec.tenCongViec,
-            noiDung: generateDeadlineNotification(CongViec.tenCongViec, CongViec.thoiGianKetThuc),
+            noiDung: generateDeadlineNotification(
+              CongViec.tenCongViec,
+              CongViec.thoiGianKetThuc
+            ),
             thoiGianKetThuc: CongViec.thoiGianKetThuc,
-            email:selectedEmployees.map(item=>item.email).join(","),
+            email: selectedEmployees.map((item) => item.email).join(","),
           })
         );
+        setTimeout(async () => {
+          const employeeEmailPromises = selectedEmployees.map((employee) =>
+            dispatch(
+              sendGmail({
+                name: employee.tenNhanVien,
+                toGmail: employee.email,
+                subject: "Thông Tin Phân Công Dự Án",
+                body: generateEmailTemplate(employee, CongViec),
+              })
+            )
+          );
+          await Promise.all(employeeEmailPromises);
+          console.log("Email đã được gửi!");
+        }, 5000);
       }
       await dispatch(fetchByIdProject(Number(duAn)));
+      toast.success("Thêm thành công")
       setOpen(false);
     } catch (e) {
-      console.log(e);
+      toast.error("Thêm thất bại")
+
     }
   };
 
@@ -204,6 +244,41 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
                 selected={selectedDepartment}
                 setSelected={setSelectedDepartment}
               />
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="w-full sm:w-1/2">
+                  <Textbox
+                    placeholder="Ngày bắt đầu"
+                    type="datetime-local"
+                    name="date"
+                    label="Ngày bắt đầu"
+                    className="w-full rounded"
+                    register={register("thoiGianBatDau", {
+                      required: "Ngày là bắt buộc!",
+                    })}
+                    error={
+                      errors.thoiGianBatDau ? errors.thoiGianBatDau.message : ""
+                    }
+                  />
+                </div>
+
+                <div className="w-full sm:w-1/2">
+                  <Textbox
+                    placeholder="Ngày kết thúc"
+                    type="datetime-local"
+                    name="date"
+                    label="Ngày kết thúc"
+                    className="w-full rounded"
+                    register={register("thoiGianKetThuc", {
+                      required: "Ngày là bắt buộc!",
+                    })}
+                    error={
+                      errors.thoiGianKetThuc
+                        ? errors.thoiGianKetThuc.message
+                        : ""
+                    }
+                  />
+                </div>
+              </div>
               <div className="flex gap-4">
                 <SelectList
                   label="Mức Độ Ưu Tiên"
@@ -211,20 +286,6 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
                   selected={stage}
                   setSelected={setStage}
                 />
-
-                <div className="w-full">
-                  <Textbox
-                    placeholder="Ngày"
-                    type="datetime-local"
-                    name="date"
-                    label="Ngày hoàn thành"
-                    className="w-full rounded"
-                    register={register("thoiGianKetThuc", {
-                      required: "Ngày là bắt buộc!",
-                    })}
-                    error={errors.date ? errors.date.message : ""}
-                  />
-                </div>
               </div>
 
               <div className="bg-gray-50 py-6 sm:flex sm:flex-row-reverse gap-4">

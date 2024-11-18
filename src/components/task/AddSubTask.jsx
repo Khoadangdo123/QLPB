@@ -11,16 +11,6 @@ const AddSubTask = ({ open, setOpen, id }) => {
     formState: { errors },
   } = useForm();
   const handleOnSubmit = async (data) => {
-    // try {
-    //   const res = await addSbTask({ data, id }).unwrap();
-    //   toast.success(res.message);
-    //   setTimeout(() => {
-    //     setOpen(false);
-    //   }, 500);
-    // } catch (err) {
-    //   console.log(err);
-    //   toast.error(err?.data?.message || err.error);
-    // }
   };
 
   return (

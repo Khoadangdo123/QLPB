@@ -42,8 +42,10 @@ const store = configureStore({
     tasktransfer:taskTransferReducer,
     scheduling:schedulingReducer
   },
-  // middleware: (getDefaultMiddleware) =>
-  //   getDefaultMiddleware().concat(apiSlice.middleware),
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck:false
+    }),
   devTools: true,
 });
 
