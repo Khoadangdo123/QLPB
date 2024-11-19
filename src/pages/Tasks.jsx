@@ -20,6 +20,7 @@ import Timeline from "../components/task/TimeLine";
 import ModalWrapper from "../components/ModalWrapper";
 import { checkPermission } from "../redux/permissiondetail/permissionDetailSlice";
 import getConnection from "../hub/signalRConnection";
+import { toast } from "react-toastify";
 const TABS = [
   { title: "Chế độ danh sách", icon: <MdGridView /> },
   { title: "Chế độ bảng", icon: <FaList /> },
@@ -122,7 +123,14 @@ const Tasks = () => {
   }, [id, dispatch, maquyen]);
   const status = id || "";
   const toggleTimelineModal = () => {
-    navigate("/gant", { state: { duan } });
+    if(duan.phanDuAn===null || duan.phanDuAn.length==0){
+      toast.warning("Chưa có dữ liệu phần dự án")
+    }else if(duan.phanDuAn.some(phan => phan.congViecs?.length > 0)){
+      navigate("/gant", { state: { duan } });
+    }
+    else{
+      toast.warning("Chưa có dữ liệu công việc")
+    }
   };
   return loading ? (
     <div className="py-10">

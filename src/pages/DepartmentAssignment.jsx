@@ -65,7 +65,7 @@ const DepartmentAssignment = () => {
         connection.off("deletePhanCong")
       }
     };
-  }, [dispatch, maNhanVien]);
+  }, [dispatch, maNhanVien,filter]);
   if (loading) {
     return (
       <div className="flex justify-center items-center h-24">

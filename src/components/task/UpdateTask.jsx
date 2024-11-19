@@ -64,60 +64,13 @@ const UpdateTask = ({ openUpdate, setOpenUpdate, phanDuAn,duAn, task,phanCong })
     let CongViec = {
       maPhanDuAn: Number(phanDuAn),
       maCongViec:task.maCongViec,
-      maCongViecCha:task.maCongViecCha,
       tenCongViec: data.tenCongViec,
       moTa: data.moTa,
       mucDoUuTien: stage,
-      thoiGianKetThuc: data.thoiGianKetThuc,
-      trangThaiCongViec: task ? task.trangThaiCongViec : false,
-      mucDoHoanThanh: task ? task.mucDoHoanThanh : 0,
+      thoiGianKetThuc: data.thoiGianKetThuc
     };
-    console.log(selectedEmployees)
+    console.log(CongViec)
     try {
-    //   let result;
-    //   if (task) {
-    //     // Update the task if it's an existing one
-    //     result = await dispatch(updateTask({ ...CongViec, maCongViec: task.maCongViec })).unwrap();
-    //   } else {
-    //     // Create new task
-    //     result = await dispatch(addTask(CongViec)).unwrap();
-    //   }
-
-    //   // Proceed with adding departments and assignments similar to before
-    //   if (Array.isArray(selectedDepartment) && selectedDepartment.length > 0) {
-    //     const departmentPromises = selectedDepartment.map(async (department) => {
-    //       await dispatch(addWorkDepartment({
-    //         maCongViec: result.maCongViec,
-    //         maPhongBan: Number(department.maPhongBan),
-    //       }));
-
-    //       await dispatch(addAssignment({
-    //         maCongViec: result.maCongViec,
-    //         maNhanVien: Number(department.maTruongPhong),
-    //         vaiTro: "Người Chịu Trách Nhiệm",
-    //       }));
-    //     });
-    //     await Promise.all(departmentPromises);
-    //   }
-
-    //   if (Array.isArray(selectedEmployees) && selectedEmployees.length > 0) {
-    //     const employeePromises = selectedEmployees.map(async (employee) => {
-    //       await dispatch(addAssignment({
-    //         maCongViec: result.maCongViec,
-    //         maNhanVien: Number(employee.maNhanVien),
-    //         vaiTro: employee.vaiTro,
-    //       }));
-    //       await dispatch(sendGmail({
-    //         name: employee.tenNhanVien,
-    //         toGmail: employee.email,
-    //         subject: "Thông Tin Phân Công Dự Án",
-    //         body: generateEmailTemplate(employee, CongViec),
-    //       }));
-    //     });
-    //     await Promise.all(employeePromises);
-    //   }
-
-    //   setOpenUpdate(false);
     } catch (e) {
       console.log(e);
     }

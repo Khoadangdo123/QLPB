@@ -8,6 +8,10 @@ import EmployeeSelectDepartment from "./EmployeeSelectDepartment";
 import { addAssignment } from "../../redux/assignment/assignmentSlice";
 import { addTaskHistory } from "../../redux/taskhistory/taskhistorySlice";
 import { toast } from "react-toastify";
+import { generateEmailTemplate } from "../../utils/emailTemplates";
+import { generateDeadlineNotification } from "../../utils/emailDealineTemplates";
+import { sendNotification } from "../../redux/scheduling/schedulingSlice";
+import { sendGmail } from "../../redux/sendgmail/sendgmailSlice";
 const LISTS = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const PRIORITY = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const uploadedFileURLs = [];
@@ -18,6 +22,7 @@ const AddTaskEmployee = ({
   maPhongBan,
   tenCongViec,
   nhanViens,
+  thoiGianKetThuc
 }) => {
   const task = "";
   const {
@@ -45,21 +50,21 @@ const AddTaskEmployee = ({
       toast.warning("Vui lòng chọn vai trò cho tất cả nhân viên");
       return;
     }
+
     try {
+      console.log(maCongViec)
+      console.log(tenCongViec)
+      console.log(selectedEmployees)
+      console.log(selectedEmployees.map((item) => item.email).join(","))
       if (Array.isArray(selectedEmployees) && selectedEmployees.length > 0) {
         const employeePromises = selectedEmployees.map(async (employee) => {
-          console.log({
-            maCongViec: maCongViec,
-            maNhanVien: Number(employee.maNhanVien),
-            vaiTro: employee.vaiTro,
-          });
-          await dispatch(
+          console.log(await dispatch(
             addAssignment({
               maCongViec: maCongViec,
               maNhanVien: Number(employee.maNhanVien),
               vaiTro: employee.vaiTro,
             })
-          );
+          ));
           await dispatch(
             addTaskHistory({
               maCongViec: maCongViec,
@@ -69,14 +74,31 @@ const AddTaskEmployee = ({
               } được phân công việc ${tenCongViec}`,
             })
           );
-          // await dispatch(sendGmail({
-          //   name: employee.tenNhanVien,
-          //   toGmail: employee.email,
-          //   subject: "Thông Tin Phân Công Dự Án",
-          //   body: generateEmailTemplate(employee)
-          // }));
         });
         await Promise.all(employeePromises);
+        await dispatch(
+          sendNotification({
+            maCongViec: maCongViec,
+            tenCongViec: tenCongViec,
+            noiDung: generateDeadlineNotification(tenCongViec, thoiGianKetThuc),
+            thoiGianKetThuc: thoiGianKetThuc,
+            email: selectedEmployees.map((item) => item.email).join(","),
+          })
+        );
+        setTimeout(async () => {
+          const employeeEmailPromises = selectedEmployees.map((employee) => 
+            dispatch(
+              sendGmail({
+                name: employee.tenNhanVien,
+                toGmail: employee.email,
+                subject: "Thông Tin Phân Công Dự Án",
+                body: generateEmailTemplate(employee),
+              })
+            )
+          )
+          await Promise.all(employeeEmailPromises);
+          console.log("Email đã được gửi!");
+        },5000);
       }
       toast.success("Thêm thành công");
       setOpen(false);

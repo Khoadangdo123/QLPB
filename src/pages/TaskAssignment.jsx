@@ -38,12 +38,6 @@ const TaskAssignment = () => {
         connection.on("updateCongViec", async () => {
           await dispatch(fetchEmployeeAssignment(maNhanVien));
         });
-        connection.on("loadDuAn", async () => {
-          await dispatch(fetchEmployeeAssignment(maNhanVien));
-        });
-        connection.on("deletePhanCong", async () => {
-          await dispatch(fetchEmployeeAssignment(maNhanVien));
-        });
         console.log("Connection update"); 
         connection.onclose(async (error) => {
           console.error("Connection closed due to error: ", error);
@@ -58,18 +52,25 @@ const TaskAssignment = () => {
     startConnection();
     return () => {
       if (connection) {
+        console.log("off")
         connection.off("loadCongViec");
         connection.off("loadPhanCong");
         connection.off("updateCongViec");
-        connection.off("deletePhanCong");
-        connection.off("loadDuAn");
       }
     };
-  }, [dispatch, maNhanVien]);
+  }, [dispatch, maNhanVien,phancongs.list,filter]);
+  const filteredAssignments = phancongs.list.filter((item) => item.trangThai === true).filter((item) => {
+    if (filter === "incomplete") {
+      return item.trangThaiCongViec === false;
+    }
+    if (filter === "completed") {
+      return item.trangThaiCongViec === true;
+    }
+    return true;
+  });
   const handleFilterChange = (event) => {
     setFilter(event.target.value);
   };
-  console.log(phancongs.list)
   return (
     <div className="w-full bg-transparent">
       <div className="text-lg bg-transparent">
@@ -96,7 +97,7 @@ const TaskAssignment = () => {
           <div className="flex-1 px-2">File</div>
         </div>
         <div className="bg-slate-50 rounded-md shadow-md p-4 space-y-2">
-          {phancongs.list.map((item, index) => (
+          {filteredAssignments.map((item, index) => (
             <TaskAssignmentList congviec={item} filterTask={filter} key={index} />
           ))}
         </div>

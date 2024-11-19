@@ -72,6 +72,11 @@ const DepartmentAssignmentItem = ({ congViecPhongBan, filterTask }) => {
           await dispatch(fetchByIdTask(maCongViec));
           setLoading(false);
         });
+        // connection.on("updateCongViec", async () => {
+        //   setLoading(true);
+        //   await dispatch(fetchByIdTask(maCongViec));
+        //   setLoading(false);
+        // });
         connection.on("loadHanhDong", async () => {
           const result = await dispatch(
             checkPermission({
@@ -92,9 +97,10 @@ const DepartmentAssignmentItem = ({ congViecPhongBan, filterTask }) => {
       if (connection) {
         connection.off("loadPhanCong");
         connection.off("loadHanhDong");
+        // connection.off("updateCongViec");
       }
     };
-  }, [dispatch, maCongViec]);
+  }, [dispatch, maCongViec,congviec]);
   if (loading) {
     return (
       <div
@@ -141,17 +147,16 @@ const DepartmentAssignmentItem = ({ congViecPhongBan, filterTask }) => {
       return "bg-green-500";
     }
   };
-  const chiuTrachNhiem = congviec?.phanCongs?.filter(
+  const phanCongs =congviec?.phanCongs?.filter((task) => task.trangThai === true) || [];
+  console.log(phanCongs)
+  const chiuTrachNhiem = phanCongs?.filter(
     (m) => m.vaiTro === "Người Chịu Trách Nhiệm"
   );
-  const thucHien = congviec?.phanCongs?.filter(
+  const thucHien =phanCongs?.filter(
     (m) => m.vaiTro === "Người Thực Hiện"
   );
-
-  const congViecHoanThanh =
-    congviec?.phanCongs?.filter((task) => task.trangThaiCongViec === true)
-      .length ?? 0;
-  const tongCongViec = congviec?.phanCongs?.length || 1;
+  const congViecHoanThanh =phanCongs?.filter((task) => task.trangThaiCongViec === true).length ?? 0;
+  const tongCongViec =phanCongs?.length || 1;
   const completionPercent = (congViecHoanThanh / tongCongViec) * 100;
   return (
     <div className="w-full flex items-center  px-4">
@@ -311,6 +316,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan, filterTask }) => {
         maPhongBan={maPhongBan}
         tenCongViec={congviec.tenCongViec}
         nhanViens={congviec?.phanCongs}
+        thoiGianKetThuc={congviec.thoiGianKetThuc}
       />
       <AddTaskTransfer
         openTransfer={openTransfer}

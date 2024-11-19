@@ -110,7 +110,7 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
           }
         );
         await Promise.all(departmentPromises);
-        console.log(await dispatch(
+        await dispatch(
           sendNotification({
             maCongViec: result.maCongViec,
             tenCongViec: CongViec.tenCongViec,
@@ -121,7 +121,7 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
             thoiGianKetThuc: CongViec.thoiGianKetThuc,
             email: selectedDepartment.map((item) => item.email).join(","),
           })
-        ));
+        )
         setTimeout(async () => {
           const emailPromises = selectedDepartment.map((department) =>
             dispatch(

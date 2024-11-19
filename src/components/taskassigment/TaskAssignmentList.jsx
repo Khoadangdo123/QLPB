@@ -44,7 +44,7 @@ const TaskAssignmentList = ({ congviec, filterTask }) => {
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  //const [completed, setCompleted] = useState(congviec.trangThaiCongViec);
+  const [completed, setCompleted] = useState(congviec.trangThaiCongViec);
   //const [connection, setConnection] = useState(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [selectedFileUrl, setSelectedFileUrl] = useState("");
@@ -118,15 +118,15 @@ const TaskAssignmentList = ({ congviec, filterTask }) => {
           await dispatch(fetchByIdTask(maCongViec));
         });
         //
-        connection.on("deletePhanCong", async () => {
-          await dispatch(fetchByIdTask(maCongViec));
-        });
-        connection.on("loadDuAn", async () => {
-          await dispatch(fetchByIdTask(maCongViec));
-        });
-        connection.on("loadLichSuCongViec", async () => {
-          await dispatch(fetchByIdTask(maCongViec));
-        });
+        // connection.on("deletePhanCong", async () => {
+        //   await dispatch(fetchByIdTask(maCongViec));
+        // });
+        // connection.on("loadDuAn", async () => {
+        //   await dispatch(fetchByIdTask(maCongViec));
+        // });
+        // connection.on("loadLichSuCongViec", async () => {
+        //   await dispatch(fetchByIdTask(maCongViec));
+        // });
         connection.on("loadCongViec", async () => {
           await dispatch(fetchByIdTask(maCongViec));
         });
@@ -187,9 +187,9 @@ const TaskAssignmentList = ({ congviec, filterTask }) => {
         connection.off("loadCongViec");
         connection.off("loadPhanCong");
         connection.off("loadHanhDong");
-        connection.off("deletePhanCong");
-        connection.off("loadLichSuCongViec");
-        connection.off("loadDuAn");
+        // connection.off("deletePhanCong");
+        // connection.off("loadLichSuCongViec");
+        // connection.off("loadDuAn");
       }
     };
   }, [dispatch, maCongViec, maquyen]);
@@ -218,14 +218,6 @@ const TaskAssignmentList = ({ congviec, filterTask }) => {
   }
   if (!phancong) {
     return <p>not found</p>;
-  }
-  if (filterTask === "incomplete" && congviec.trangThaiCongViec === true) {
-    return null;
-  } else if (
-    filterTask === "completed" &&
-    congviec.trangThaiCongViec === false
-  ) {
-    return null;
   }
   const handleToggleDetail = () => {
     setExpanded(!expanded);
@@ -300,12 +292,11 @@ const TaskAssignmentList = ({ congviec, filterTask }) => {
               }`,
             })
           );
-          setCompleted(true);
           toast.success("Đánh dấu thành công");
         }
         console.log("Updateeeeee");
-      } catch (e) {
-        console.error("Error updating assignment:", error);
+      } catch (error) {
+        console.log(error)
         toast.error("Đánh dấu không thành công");
       }
     } else {

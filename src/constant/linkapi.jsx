@@ -1,5 +1,6 @@
 const API_URL="https://localhost:7131/api"
 const HUB="https://localhost:7131/hub"
+const EMAIL="https://localhost:7131"
 const API_ENDPOINTS = {
     NHAVIEN:`${API_URL}/NhanVien`,
     PHONGBAN:`${API_URL}/PhongBan`,
@@ -18,6 +19,7 @@ const API_ENDPOINTS = {
     FILES:`${API_URL}/Files`,
     CHITIETFILE:`${API_URL}/ChiTietFile`,
     HUB_URL:HUB,
-    URL:API_URL
+    URL:API_URL,
+    EMAIL:EMAIL
 };
 export default API_ENDPOINTS;

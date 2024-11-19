@@ -129,7 +129,7 @@ const Sidebar = () => {
           console.log("Connected!");
 
           connection.on("loadDuAn", async () => {
-            await dispatch(fetchProjects({ search: "", page: 20 }));
+            await dispatch(fetchProjects({ search: "", page: 30 }));
           });
           connection.on("loadHanhDong", async () => {
             const result = await dispatch(
