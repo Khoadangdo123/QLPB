@@ -52,7 +52,7 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
       toast.warning("Vui lòng chọn nhân viên hoặc phòng ban")
       return;
     }
-    if(selectedDepartment.length>0){
+    if(selectedEmployees.length>0){
       const missingRoles = selectedEmployees.some(
         (employee) => !employee.vaiTro || employee.vaiTro.trim() === ""
       );

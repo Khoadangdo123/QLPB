@@ -13,6 +13,7 @@ import { useDispatch } from "react-redux";
 import { addFile} from "../../redux/file/fileSlice";
 import { createChiTietFile } from "../../redux/fileassignment/fileassignmentSlice";
 import API_ENDPOINTS from "../../constant/linkapi";
+import { toast } from "react-toastify";
 const FileUpload = ({ isOpen, onRequestClose, maPhanCong,maCongViec}) => {
   const inputRef = useRef();
   const dropRef = useRef();
@@ -113,11 +114,14 @@ const FileUpload = ({ isOpen, onRequestClose, maPhanCong,maCongViec}) => {
             );
           } catch (e) {
             console.error("Error adding file or file details:", e);
+            toast.error("Upload file thất bại")
+            return
           }
         })
       );
       console.log(responses)
       setUploadStatus("done");
+      toast.error("Upload file thành công")
     } catch (error) {
       console.error(error);
       setUploadStatus("select");

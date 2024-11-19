@@ -40,6 +40,11 @@ const DepartmentAssignment = () => {
           await dispatch(fetchManagerDepartment(maNhanVien));
           setLoading(false);
         });
+        connection.on("deletePhanCong", async () => {
+          setLoading(true);
+          await dispatch(fetchManagerDepartment(maNhanVien));
+          setLoading(false);
+        });
         connection.on("updateCongViec", async () => {
           setLoading(true);
           await dispatch(fetchManagerDepartment(maNhanVien));
@@ -57,6 +62,7 @@ const DepartmentAssignment = () => {
         connection.off("updateCongViec");
         connection.off("loadDuAn")
         connection.off("loadCongViec")
+        connection.off("deletePhanCong")
       }
     };
   }, [dispatch, maNhanVien]);

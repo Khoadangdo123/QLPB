@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { Login as LoginAPI, RefreshToken as RefreshTokenAPI} from "./authenAPI";
 export const AuthLogin = createAsyncThunk('auth/login', async (AuthRequest) => {
-  localStorage.setItem("name",AuthRequest.tenTaiKhoan)
   const response = await LoginAPI(AuthRequest);
   localStorage.setItem("authUser",JSON.stringify(response))
+  var temp=JSON.parse(localStorage.getItem("authUser"))
+  var res=JSON.parse(atob(temp.token.split('.')[1]))
+  localStorage.setItem("name",decodeURIComponent(escape(res.TenNhanVien)))
   return response;
 });
 

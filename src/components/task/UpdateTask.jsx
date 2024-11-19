@@ -156,7 +156,7 @@ const UpdateTask = ({ openUpdate, setOpenUpdate, phanDuAn,duAn, task,phanCong })
               error={errors.moTa ? errors.moTa.message : ""}
             />
 
-            <EmployeeSelect
+            {/* <EmployeeSelect
               selectedEmployees={selectedEmployees}
               setSelectedEmployees={setSelectedEmployees}
             />
@@ -164,7 +164,7 @@ const UpdateTask = ({ openUpdate, setOpenUpdate, phanDuAn,duAn, task,phanCong })
             <DepartmentSelect
               selected={selectedDepartment}
               setSelected={setSelectedDepartment}
-            />
+            /> */}
             <div className="flex gap-4">
               <SelectList
                 label="Mức Độ Ưu Tiên"

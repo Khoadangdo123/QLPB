@@ -9,7 +9,11 @@ import { fetchByIdTask } from "../../redux/task/taskSlice";
 import DetailTask from "../task/DetailTask";
 import { BGS, formatDate } from "../../utils";
 import { updateAssignment } from "../../redux/assignment/assignmentSlice";
-import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
+import {
+  HubConnectionBuilder,
+  LogLevel,
+  HttpTransportType,
+} from "@microsoft/signalr";
 import { addTaskHistory } from "../../redux/taskhistory/taskhistorySlice";
 import FileUpload from "./FileUpload";
 import { IoMdCloudUpload } from "react-icons/io";
@@ -34,20 +38,20 @@ import { useNavigate } from "react-router-dom";
 import { checkPermission } from "../../redux/permissiondetail/permissionDetailSlice";
 import API_ENDPOINTS from "../../constant/linkapi";
 import { toast } from "react-toastify";
-const TaskAssignmentList = ({ congviec }) => {
+const TaskAssignmentList = ({ congviec, filterTask }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  const [completed, setCompleted] = useState(congviec.trangThaiCongViec);
+  //const [completed, setCompleted] = useState(congviec.trangThaiCongViec);
   //const [connection, setConnection] = useState(null);
   const [isViewerOpen, setIsViewerOpen] = useState(false);
   const [selectedFileUrl, setSelectedFileUrl] = useState("");
   const [filteredFiles, setFilteredFiles] = useState([]);
   const [fileDetails, setFileDetails] = useState([]);
   const [permissionAction, setpermissionAction] = useState([]);
-  const [setDay,setStatusDay]=useState(true)
+  const [setDay, setStatusDay] = useState(true);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -59,20 +63,93 @@ const TaskAssignmentList = ({ congviec }) => {
     state.tasks.list.find((task) => task.maCongViec === maCongViec)
   );
   useEffect(() => {
-    const fetchData = () => {
+    const fetchData = async () => {
       setLoading(true);
-      return Promise.all([
-        dispatch(fetchByIdTask(maCongViec)),
-        dispatch(fetchAllFile()).unwrap(),
-        dispatch(fetchChiTietFileByPhanCong(maPhanCong)).unwrap(),
-        dispatch(
-          checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })
-        ).unwrap(),
-      ])
-        .then(([taskResponse, files, result, permission]) => {
+      try {
+        const [taskResponse, files, result, permission] = await Promise.all([
+          dispatch(fetchByIdTask(maCongViec)),
+          dispatch(fetchAllFile()).unwrap(),
+          dispatch(fetchChiTietFileByPhanCong(maPhanCong)).unwrap(),
+          dispatch(
+            checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })
+          ).unwrap(),
+        ]);
+
+        const matchingFiles = files.filter((file) =>
+          result.some((detail) => detail.maFile === file.maFile)
+        );
+
+        const filesWithDetails = matchingFiles.map((file) => {
+          const correspondingDetail = result.find(
+            (detail) => detail.maFile === file.maFile
+          );
+          const correspondingStatus = result.find(
+            (detail) => detail.maFile === file.maFile
+          )?.trangThai;
+          return {
+            ...file,
+            maChiTietFile: correspondingDetail
+              ? correspondingDetail.maChiTietFile
+              : null,
+            trangThaiFile: correspondingStatus,
+          };
+        });
+
+        setFilteredFiles(filesWithDetails);
+        setpermissionAction(permission);
+      } catch (error) {
+        console.error("Error fetching task:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [maCongViec, dispatch, maPhanCong, maquyen]);
+  useEffect(() => {
+    const connection = getConnection();
+    const startConnection = async () => {
+      try {
+        if (connection && connection.state === "Disconnected") {
+          await connection.start();
+          console.log("Connection started");
+        }
+        connection.on("loadPhanCong", async () => {
+          await dispatch(fetchByIdTask(maCongViec));
+        });
+        //
+        connection.on("deletePhanCong", async () => {
+          await dispatch(fetchByIdTask(maCongViec));
+        });
+        connection.on("loadDuAn", async () => {
+          await dispatch(fetchByIdTask(maCongViec));
+        });
+        connection.on("loadLichSuCongViec", async () => {
+          await dispatch(fetchByIdTask(maCongViec));
+        });
+        connection.on("loadCongViec", async () => {
+          await dispatch(fetchByIdTask(maCongViec));
+        });
+        connection.on("loadHanhDong", async () => {
+          const result = await dispatch(
+            checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })
+          ).unwrap();
+          setpermissionAction(result);
+        });
+        connection.on("loadFile", async () => {
+          const [taskResponse, files, result, permission] = await Promise.all([
+            dispatch(fetchByIdTask(maCongViec)),
+            dispatch(fetchAllFile()).unwrap(),
+            dispatch(fetchChiTietFileByPhanCong(maPhanCong)).unwrap(),
+            dispatch(
+              checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })
+            ).unwrap(),
+          ]);
+
           const matchingFiles = files.filter((file) =>
             result.some((detail) => detail.maFile === file.maFile)
           );
+
           const filesWithDetails = matchingFiles.map((file) => {
             const correspondingDetail = result.find(
               (detail) => detail.maFile === file.maFile
@@ -91,81 +168,14 @@ const TaskAssignmentList = ({ congviec }) => {
 
           setFilteredFiles(filesWithDetails);
           setpermissionAction(permission);
-        })
-        .catch((error) => {
-          console.error("Error fetching task:", error);
-        })
-        .finally(() => {
-          setLoading(false);
         });
-    };
-
-    if (maCongViec) {
-      fetchData();
-    }
-  }, [maCongViec, dispatch]);
-  useEffect(() => {
-    const connection=getConnection()
-    const startConnection = async () => {
-      try {
-        if (connection && connection.state === "Disconnected") {
-          await connection.start();
-          console.log("Connection started");
-        }
-        connection.on("loadPhanCong", async () => {
-          setLoading(true);
-          await dispatch(fetchByIdTask(maCongViec));
-          setLoading(false);
+        connection.onclose(async (error) => {
+          console.error("Connection closed due to error: ", error);
+          setTimeout(() => {
+            startConnection();
+          }, 2000);
         });
-        //
-        connection.on("loadCongViec", async () => {
-          setLoading(true);
-          await dispatch(fetchByIdTask(maCongViec));
-          setLoading(false);
-        });
-        connection.on("loadHanhDong", async () => {
-          const result = await dispatch(
-            checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })
-          ).unwrap();
-          setpermissionAction(result);
-        });
-        connection.on("loadFile", async () => {
-          setLoading(true);
-          return Promise.all([
-            dispatch(fetchByIdTask(maCongViec)),
-            dispatch(fetchAllFile()).unwrap(),
-            dispatch(fetchChiTietFileByPhanCong(maPhanCong)).unwrap(),
-          ])
-            .then(([taskResponse, files, result]) => {
-              const matchingFiles = files.filter((file) =>
-                result.some((detail) => detail.maFile === file.maFile)
-              );
-              const filesWithDetails = matchingFiles.map((file) => {
-                const correspondingDetail = result.find(
-                  (detail) => detail.maFile === file.maFile
-                );
-                const correspondingStatus = result.find(
-                  (detail) => detail.maFile === file.maFile
-                )?.trangThai;
-                return {
-                  ...file,
-                  maChiTietFile: correspondingDetail
-                    ? correspondingDetail.maChiTietFile
-                    : null,
-                  trangThaiFile: correspondingStatus,
-                };
-              });
-
-              setFilteredFiles(filesWithDetails);
-            })
-            .catch((error) => {
-              console.error("Error fetching task:", error);
-            })
-            .finally(() => {
-              setLoading(false);
-            });
-        });
-        console.log("connected---")
+        console.log("connected---");
       } catch (err) {
         console.error("Error while starting connection: ", err);
       }
@@ -177,9 +187,12 @@ const TaskAssignmentList = ({ congviec }) => {
         connection.off("loadCongViec");
         connection.off("loadPhanCong");
         connection.off("loadHanhDong");
+        connection.off("deletePhanCong");
+        connection.off("loadLichSuCongViec");
+        connection.off("loadDuAn");
       }
     };
-  }, [dispatch, maCongViec,maquyen]);
+  }, [dispatch, maCongViec, maquyen]);
   if (loading) {
     return (
       <div
@@ -205,6 +218,14 @@ const TaskAssignmentList = ({ congviec }) => {
   }
   if (!phancong) {
     return <p>not found</p>;
+  }
+  if (filterTask === "incomplete" && congviec.trangThaiCongViec === true) {
+    return null;
+  } else if (
+    filterTask === "completed" &&
+    congviec.trangThaiCongViec === false
+  ) {
+    return null;
   }
   const handleToggleDetail = () => {
     setExpanded(!expanded);
@@ -250,33 +271,13 @@ const TaskAssignmentList = ({ congviec }) => {
       prevFiles.filter((file) => file.name !== fileName)
     );
   };
-  const confirmToast = (message, onConfirm) => {
-    toast.info(message, {
-      position: "top-center",
-      autoClose: false,
-      closeOnClick: false,
-      draggable: false,
-      hideProgressBar: true,
-      className: "confirm-toast",
-      // Tạo các nút Yes/No
-      render: () => (
-        <div className="toast-confirm">
-          <p>{message}</p>
-          <div className="toast-buttons">
-            <button onClick={() => onConfirm(true)}>Yes</button>
-            <button onClick={() => onConfirm(false)}>No</button>
-          </div>
-        </div>
-      ),
-    });
-  };
   const handleCheckboxChange = async (event) => {
     const isConfirmed = window.confirm(
       "Bạn có chắc chắn muốn đánh dấu công việc đã hoàn thành?"
     );
     if (isConfirmed) {
       const checked = event.target.checked;
-      setCompleted(checked);
+      //setCompleted(checked);
       let PhanCong = {
         maCongViec: maCongViec,
         maNhanVien: Number(localStorage.getItem("userId")),
@@ -284,10 +285,10 @@ const TaskAssignmentList = ({ congviec }) => {
         trangThaiCongViec: checked,
       };
       try {
-        var result=await dispatch(
+        var result = await dispatch(
           updateAssignment({ id: maPhanCong, assignment: PhanCong })
-        )
-        if(result.payload === true){
+        );
+        if (result.payload === true) {
           await dispatch(
             addTaskHistory({
               maCongViec: PhanCong.maCongViec,
@@ -299,19 +300,22 @@ const TaskAssignmentList = ({ congviec }) => {
               }`,
             })
           );
-          toast.success("Đánh dấu thành công")
+          setCompleted(true);
+          toast.success("Đánh dấu thành công");
         }
         console.log("Updateeeeee");
       } catch (e) {
         console.error("Error updating assignment:", error);
-        toast.error("Đánh dấu không thành công")
+        toast.error("Đánh dấu không thành công");
       }
     } else {
       event.target.checked = !event.target.checked;
     }
   };
+  //console.log(phancong)
   const phanCongs =
     phancong?.phanCongs?.filter((task) => task.trangThai === true) || [];
+  //console.log(phanCongs);
   const chiuTrachNhiem = phanCongs?.filter(
     (m) => m.vaiTro === "Người Chịu Trách Nhiệm"
   );
@@ -325,11 +329,20 @@ const TaskAssignmentList = ({ congviec }) => {
         >
           <span className="line-clamp-2">{phancong.tenCongViec}</span>
         </div>
-        {/* <div className="flex-1 w-2/12 px-4 text-left">
-          <span>{phancong.moTa}</span>
-        </div> */}
         <div className="flex-1 w-1/12 px-4 text-center">
-          <span>{phancong.mucDoUuTien}</span>
+          <span
+            className={`px-2 py-1 rounded-full border-1 ${
+              phancong.mucDoUuTien === "CAO"
+                ? "text-red-500 border-red-500 bg-red-100"
+                : phancong.mucDoUuTien === "TRUNG BÌNH"
+                ? "text-orange-500 border-orange-500 bg-orange-100"
+                : phancong.mucDoUuTien === "BÌNH THƯỜNG"
+                ? "text-blue-500 border-blue-500 bg-blue-100"
+                : "text-green-500 border-green-500 bg-green-100"
+            }`}
+          >
+            {phancong.mucDoUuTien}
+          </span>
         </div>
         <div className="flex-1 w-1/12 px-4 text-center">
           {phancong.thoiGianBatDau ? (
@@ -386,7 +399,7 @@ const TaskAssignmentList = ({ congviec }) => {
         <div className="flex-1 w-1/12 px-4 text-center">
           <input
             type="checkbox"
-            checked={completed}
+            checked={congviec.trangThaiCongViec}
             onChange={handleCheckboxChange}
             className="w-4 h-4 transform scale-40"
           />

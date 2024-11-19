@@ -18,11 +18,6 @@ import DetailTask from "./DetailTask";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchByIdTask, updateCompleteTask } from "../../redux/task/taskSlice";
 import EmployeeInfo from "../EmployeeInfo";
-import {
-  HubConnectionBuilder,
-  LogLevel,
-  HttpTransportType,
-} from "@microsoft/signalr";
 import UpdateTask from "./UpdateTask";
 import AddTaskTransfer from "../tasktransfer/AddTaskTransfer";
 import TaskHistory from "./TaskHistory";
@@ -82,9 +77,9 @@ const TaskListItem = ({ congviec, duAn }) => {
     };
 
     fetchTask();
-  }, [maCongViec]);
+  }, [dispatch, maCongViec]);
   useEffect(() => {
-    const connection=getConnection();
+    const connection = getConnection();
     const connectSignalR = async () => {
       try {
         if (connection && connection.state === "Disconnected") {
@@ -92,13 +87,13 @@ const TaskListItem = ({ congviec, duAn }) => {
           console.log("SignalR connected!");
         }
         console.log("Connected! update");
-        connection.on("updateCongViec",async () => {
+        connection.on("updateCongViec", async () => {
           if (maCongViec) {
             await dispatch(fetchByIdTask(maCongViec));
           }
         });
 
-        connection.on("loadPhanCong", async() => {
+        connection.on("loadPhanCong", async () => {
           if (maCongViec) {
             await dispatch(fetchByIdTask(maCongViec));
           }
@@ -112,10 +107,10 @@ const TaskListItem = ({ congviec, duAn }) => {
             setpermissionAction(result);
           }
         });
-        // connection.onclose(() => {
-        //   console.error("Connection lost, trying to reconnect...");
-        //   setTimeout(() => connectSignalR(), 5000); // Thử kết nối lại sau 5 giây
-        // });
+        connection.onclose(() => {
+          console.error("Connection lost, trying to reconnect...");
+          setTimeout(() => connectSignalR(), 3000);
+        });
       } catch (error) {
         console.error("Connection failed: ", error);
       }
@@ -156,20 +151,20 @@ const TaskListItem = ({ congviec, duAn }) => {
           updateCompleteTask({
             id: maCongViec,
             task: true,
-            mucDo:100
+            mucDo: 100,
           })
         ).unwrap();
         setStatusTask(true);
       } catch (e) {
         console.log(e);
       }
-    }else if(completionPercent < 100 && trangThaiCongViec === false){
+    } else if (completionPercent < 100 && trangThaiCongViec === false) {
       try {
         const result = dispatch(
           updateCompleteTask({
             id: maCongViec,
             task: false,
-            mucDo:completionPercent
+            mucDo: completionPercent,
           })
         ).unwrap();
         setStatusTask(false);
@@ -236,12 +231,32 @@ const TaskListItem = ({ congviec, duAn }) => {
             {completionPercent.toFixed(2)}% Hoàn thành
           </span>
         </div>
-        <div className="flex-1 w-1/5 px-4 ">
-          <span>{congviec.mucDoUuTien}</span>
+        <div className="flex-1 w-1/5 px-4">
+          <span
+            className={`px-2 py-1 rounded-full border-1 ${
+              congviec.mucDoUuTien === "CAO"
+                ? "text-red-500 border-red-500 bg-red-100"
+                : congviec.mucDoUuTien === "TRUNG BÌNH"
+                ? "text-orange-500 border-orange-500 bg-orange-100"
+                : congviec.mucDoUuTien === "BÌNH THƯỜNG"
+                ? "text-blue-500 border-blue-500 bg-blue-100"
+                : "text-green-500 border-green-500 bg-green-100"
+            }`}
+          >
+            {congviec.mucDoUuTien}
+          </span>
         </div>
-        <div className="flex-1 px-4 text-gray-400 flex items-center">
+        <div className="flex-1 px-4 text-gray-400 flex flex-col items-start">
+          {/* Hiển thị thời gian bắt đầu */}
+          {congviec.thoiGianBatDau && (
+            <span className="text-gray-500">
+              {formatDate(new Date(congviec.thoiGianBatDau))}
+            </span>
+          )}
+
+          {/* Hiển thị thời gian kết thúc */}
           <button
-            className="hover:bg-gray-200 rounded-full px-2"
+            className="hover:bg-gray-200 rounded-full px-2 mt-2"
             onClick={() => {
               alert("show calendar");
             }}
@@ -263,6 +278,7 @@ const TaskListItem = ({ congviec, duAn }) => {
             )}
           </button>
         </div>
+
         <div className="flex-1 px-4 flex items-center">
           {chiuTrachNhiem?.map((m, index) => (
             <div

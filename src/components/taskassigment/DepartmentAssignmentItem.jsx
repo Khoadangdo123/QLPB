@@ -8,7 +8,11 @@ import { fetchByIdTask } from "../../redux/task/taskSlice";
 import DetailTask from "../task/DetailTask";
 import { BGS, formatDate } from "../../utils";
 import { updateAssignment } from "../../redux/assignment/assignmentSlice";
-import { HubConnectionBuilder, LogLevel,HttpTransportType } from "@microsoft/signalr";
+import {
+  HubConnectionBuilder,
+  LogLevel,
+  HttpTransportType,
+} from "@microsoft/signalr";
 import { IoMdAdd, IoMdSwap, IoMdTime } from "react-icons/io";
 import AddTaskEmployee from "./AddTaskEmployee";
 import { useNavigate } from "react-router-dom";
@@ -17,7 +21,7 @@ import API_ENDPOINTS from "../../constant/linkapi";
 import TaskHistory from "../task/TaskHistory";
 import AddTaskTransfer from "../tasktransfer/AddTaskTransfer";
 import getConnection from "../../hub/signalRConnection";
-const DepartmentAssignmentItem = ({ congViecPhongBan,filterTask}) => {
+const DepartmentAssignmentItem = ({ congViecPhongBan, filterTask }) => {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -33,7 +37,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan,filterTask}) => {
   const congviec = useSelector((state) =>
     state.tasks.list.find((task) => task.maCongViec === maCongViec)
   );
-  useEffect(() => {      
+  useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
@@ -56,7 +60,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan,filterTask}) => {
     }
   }, [maCongViec, dispatch]);
   useEffect(() => {
-    const connection=getConnection()
+    const connection = getConnection();
     const startConnection = async () => {
       try {
         if (connection && connection.state === "Disconnected") {
@@ -117,10 +121,13 @@ const DepartmentAssignmentItem = ({ congViecPhongBan,filterTask}) => {
   if (!congviec) {
     return <p>not found</p>;
   }
-  if(congviec.trangThaiCongViec===false && filterTask==="completed"){
+  if (congviec.trangThaiCongViec === false && filterTask === "completed") {
     return null;
-  }else if(congviec.trangThaiCongViec===true && filterTask==="incomplete"){
-    return null
+  } else if (
+    congviec.trangThaiCongViec === true &&
+    filterTask === "incomplete"
+  ) {
+    return null;
   }
   const handleToggleDetail = () => {
     setExpanded(!expanded);
@@ -174,11 +181,20 @@ const DepartmentAssignmentItem = ({ congViecPhongBan,filterTask}) => {
             {completionPercent.toFixed(2)}% Hoàn thành
           </span>
         </div>
-        {/* <div className="flex-1 w-1/5 px-4 ">
-          <span>{congviec.moTa}</span>
-        </div> */}
         <div className="flex-1 w-1/5 px-4 ">
-          <span>{congviec.mucDoUuTien}</span>
+          <span
+            className={`px-2 py-1 rounded-full border-1 ${
+              congviec.mucDoUuTien === "CAO"
+                ? "text-red-500 border-red-500 bg-red-100"
+                : congviec.mucDoUuTien === "TRUNG BÌNH"
+                ? "text-orange-500 border-orange-500 bg-orange-100"
+                : congviec.mucDoUuTien === "BÌNH THƯỜNG"
+                ? "text-blue-500 border-blue-500 bg-blue-100"
+                : "text-green-500 border-green-500 bg-green-100"
+            }`}
+          >
+            {congviec.mucDoUuTien}
+          </span>
         </div>
         <div className="flex-1 px-4 text-gray-400 flex items-center">
           <button

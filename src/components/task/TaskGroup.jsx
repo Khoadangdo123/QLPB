@@ -15,7 +15,6 @@ const TaskGroup = ({ phanduan, duAn }) => {
   const [taskRoot, setTaskRoot] = useState(false);
   const [permissionAction,setpermissionAction]=useState([])
   const maquyen=Number(localStorage.getItem("permissionId"))
-  const connection=getConnection()
   const dispatch=useDispatch();
   const { id } = useParams();
   useEffect(()=>{
@@ -26,40 +25,24 @@ const TaskGroup = ({ phanduan, duAn }) => {
     fetchData();
   },[dispatch])
   useEffect(() => {
+    const connection=getConnection()
     const connectSignalR = async () => {
-      if(connection){
+      try {
         if (connection.state === "Disconnected") {
-          try {
-            await connection.start();
-            console.log("Connected!");
-    
-            connection.on("loadHanhDong", async () => {
-              try {
-                const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })).unwrap();
-                setpermissionAction(result);
-              } catch (error) {
-                console.error("Error when checking permission: ", error);
-              }
-            });
-          } catch (error) {
-            console.error("Connection failed: ", error);
-          }
-        }else if(connection.state === "Connected"){
-          try {
-            console.log("Connected!");
-    
-            connection.on("loadHanhDong", async () => {
-              try {
-                const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })).unwrap();
-                setpermissionAction(result);
-              } catch (error) {
-                console.error("Error when checking permission: ", error);
-              }
-            });
-          } catch (error) {
-            console.error("Connection failed: ", error);
-          }
+          await connection.start();
+          console.log("Connected!"); 
         }
+        connection.on("loadHanhDong", async () => {
+          try {
+            const result = await dispatch(checkPermission({ maQuyen: maquyen, tenChucNang: "Công Việc" })).unwrap();
+            setpermissionAction(result);
+          } catch (error) {
+            console.error("Error when checking permission: ", error);
+          }
+        });
+        console.log("Connected! update");
+      } catch (error) {
+        console.error("Connection failed: ", error);
       }
     };
     connectSignalR(); 
@@ -68,7 +51,7 @@ const TaskGroup = ({ phanduan, duAn }) => {
         connection.off("loadHanhDong");
       }
     };
-  }, [dispatch, connection, maquyen]);
+  }, [dispatch, maquyen]);
   const groupedTasks = (phanduan.congViecs || []).reduce((acc, task) => {
     const parentId = task.maCongViecCha || 'root'; 
     if (!acc[parentId]) {

@@ -15,7 +15,6 @@ const EmployeeSelectDepartment = ({ selectedEmployees, setSelectedEmployees,maPh
         const selectedEmployee = nhanviens.find((item) => item.maNhanVien === Number(maNhanVien));
 
         if (!selectedEmployee) return;
-
         if (selectedEmployees.some(item => item.maNhanVien === maNhanVien)) {
             setSelectedEmployees(selectedEmployees.filter(item => item.maNhanVien !== maNhanVien));
         } else {

@@ -11,7 +11,6 @@ const UserAvatar = () => {
   const [openPassword, setOpenPassword] = useState(false); 
   const user = useSelector((state) => state.authen.user);
   localStorage.setItem("authToken",user.token)
-  const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const logoutHandler = () => {
@@ -26,7 +25,7 @@ const UserAvatar = () => {
           <div>
             <Menu.Button className='w-10 h-10 2xl:w-12 2xl:h-12 items-center justify-center rounded-full bg-blue-600'>
               <span className='text-white font-semibold'>
-                {getInitials(user?.refreshToken)}
+                {getInitials(localStorage.getItem("name"))}
               </span>
             </Menu.Button>
           </div>
@@ -54,7 +53,7 @@ const UserAvatar = () => {
                   )}
                 </Menu.Item>
 
-                <Menu.Item>
+                {/* <Menu.Item>
                   {({ active }) => (
                     <button
                       onClick={() => setOpenPassword(true)}
@@ -64,7 +63,7 @@ const UserAvatar = () => {
                       Thay đổi mật khẩu
                     </button>
                   )}
-                </Menu.Item>
+                </Menu.Item> */}
 
                 <Menu.Item>
                   {({ active }) => (

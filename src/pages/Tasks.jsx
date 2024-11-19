@@ -131,7 +131,7 @@ const Tasks = () => {
   ) : (
     <div className="w-full">
       <div className="flex items-center justify-between mb-4">
-        <Title title={status ? `Trạng thái công việc` : "Các công việc"} />
+        <Title title={status ? `công việc` : "Các công việc"} />
 
         {status && (
           <div className="flex gap-4">
@@ -143,14 +143,14 @@ const Tasks = () => {
                 className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 2xl:py-2.5"
               />
             )}
-            {permissionAction.includes("Thêm") && (
+            {/* {permissionAction.includes("Thêm") && (
               <Button
                 onClick={() => setOpen(true)}
                 label="Tạo nhắc hẹn"
                 icon={<IoMdClock className="text-lg" />}
                 className="flex flex-row-reverse gap-1 items-center bg-blue-600 text-white rounded-md py-2 2xl:py-2.5"
               />
-            )}
+            )} */}
             <Button
               onClick={toggleTimelineModal}
               label="Sơ đồ gant"
@@ -164,7 +164,7 @@ const Tasks = () => {
       <Tabs tabs={TABS} setSelected={setSelected}>
         {selected !== 0 ? (
           <BoardView tasks={tasks} />
-        ) : // <ListView phanDuAn={duan.phanDuAn} duAn={id}/>
+        ) :
         duan ? (
           <ListView phanDuAn={duan.phanDuAn} duAn={id} />
         ) : (
