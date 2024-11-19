@@ -164,7 +164,7 @@ const FileView = () => {
     return () => {
       if (connection) {
         connection.off("loadFile");
-        connection.off("loadCongViec");
+        //connection.off("loadCongViec");
       }
     };
   }, [dispatch, maCongViec]);

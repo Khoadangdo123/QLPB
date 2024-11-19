@@ -25,6 +25,8 @@ import { checkPermission } from "../../redux/permissiondetail/permissionDetailSl
 import API_ENDPOINTS from "../../constant/linkapi";
 import getConnection from "../../hub/signalRConnection";
 import AddAssignmentTask from "./AddAssignmentTask";
+import { useNavigate } from "react-router-dom";
+import { CiViewList } from "react-icons/ci";
 const priorities = [
   { id: "low", name: "Thấp" },
   { id: "medium", name: "Trung Bình" },
@@ -55,6 +57,7 @@ const TaskListItem = ({ congviec, duAn }) => {
   const [statusTask, setStatusTask] = useState(congviec.trangThaiCongViec);
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
+  const navigate = useNavigate()
   const maCongViec = congviec.maCongViec;
   const trangThaiCongViec = congviec.trangThaiCongViec;
   const phancong = useSelector((state) =>
@@ -353,6 +356,13 @@ const TaskListItem = ({ congviec, duAn }) => {
             </button>
           ) : (
             <>
+            <Button
+              onClick={() =>
+                navigate("/taskassignment/fileView/" + maCongViec)
+              }
+              icon={<CiViewList className="text-base" />}
+              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs h-7"
+            ></Button>
               {permissionAction.includes("Thêm") && (
                 <Button
                   onClick={() => {
@@ -411,6 +421,7 @@ const TaskListItem = ({ congviec, duAn }) => {
               >
                 <IoMdAdd className="inline mr-2" /> Thêm
               </button>
+              
             )}
             {permissionAction.includes("Sửa") && (
               <button
