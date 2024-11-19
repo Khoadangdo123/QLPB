@@ -73,7 +73,7 @@ const Accounts = () => {
   const deleteHandler = () => {};
   const deleteClick = (id) => {
     setSelected(id);
-    setOpenDialog(true);
+    //setOpenDialog(true);
   };
   const editClick = (account) => {
     setSelectedAccount(account);
@@ -166,19 +166,19 @@ const Accounts = () => {
         account={accounts}
         key={new Date().getTime().toString()}
       />
-      <UpdateAccount  open={open}
-        setOpen={setOpen} accountData={selectedAccount}/>
-      <ConfirmatioDialog
+      <UpdateAccount  openUpdate={openUpdate}
+        setOpenUpdate={setOpenUpdate} accountData={selectedAccount}/>
+      {/* <ConfirmatioDialog
         open={openDialog}
         setOpen={setOpenDialog}
         onClick={deleteHandler}
-      />
+      /> */}
 
-      <UserAction
+      {/* <UserAction
         open={openUpdate}
         setOpen={setOpenUpdate}
         onClick={accountActionHandler}
-      />
+      /> */}
     </>
   );
 };

@@ -7,13 +7,17 @@ import UserList from "./UserList";
 import SelectList from "../SelectList";
 import Button from "../Button";
 import { useDispatch } from "react-redux";
-import { updateTask, addTask } from "../../redux/task/taskSlice";
 import DepartmentSelect from "./DepartmentTask";
 import EmployeeSelect from "./EmployeeTask";
 import { addAssignment } from "../../redux/assignment/assignmentSlice";
 import { sendGmail } from "../../redux/sendgmail/sendgmailSlice";
 import { addWorkDepartment } from "../../redux/workdepartment/workdepartmentSlice";
-
+import { toast } from "react-toastify";
+import { sendNotification } from "../../redux/scheduling/schedulingSlice";
+import { updateTask } from "../../redux/task/taskSlice";
+import { addTaskHistory } from "../../redux/taskhistory/taskhistorySlice";
+import { generateDeadlineNotification } from "../../utils/emailDealineTemplates";
+import { generateEmailTemplate } from "../../utils/emailTemplates";
 const LISTS = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const PRIORITY = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const UpdateTask = ({ openUpdate, setOpenUpdate, phanDuAn,duAn, task,phanCong }) => {
@@ -32,8 +36,6 @@ const UpdateTask = ({ openUpdate, setOpenUpdate, phanDuAn,duAn, task,phanCong })
   const [priority, setPriority] = useState(task?.priority?.toUpperCase() || PRIORITY[2]);
   const [assets, setAssets] = useState([]);
   const [uploading, setUploading] = useState(false);
-
-  // Load initial values for editing
   useEffect(() => {
     const loadData = async () => {
       if (task) {
@@ -57,22 +59,74 @@ const UpdateTask = ({ openUpdate, setOpenUpdate, phanDuAn,duAn, task,phanCong })
       }
     };
 
-    loadData(); // Gọi hàm bất đồng bộ để load dữ liệu
+    loadData();
   }, [task, phanCong, reset]);
 
   const submitHandler = async (data) => {
+    if(data.thoiGianBatDau>data.thoiGianKetThuc){
+      toast.warning("Ngày bắt đầu không được lớn hơn ngày kết thúc")
+      return
+    }
+    if(data.moTa.trim()==="" || data.tenCongViec.trim()===""){
+      toast.warning("Vui lòng nhập")
+      return
+    }
     let CongViec = {
-      maPhanDuAn: Number(phanDuAn),
       maCongViec:task.maCongViec,
       tenCongViec: data.tenCongViec,
       moTa: data.moTa,
       mucDoUuTien: stage,
+      thoiGianBatDau:data.thoiGianBatDau,
       thoiGianKetThuc: data.thoiGianKetThuc
     };
     console.log(CongViec)
+    console.log(selectedEmployees)
+    console.log(selectedEmployees.map((item) => item.email).join(","))
     try {
+      var result=await dispatch(updateTask({id:CongViec.maCongViec,task:CongViec}))
+      console.log(result)
+      if(result.payload===true){
+        await dispatch(
+          addTaskHistory({
+            maCongViec: CongViec.maCongViec,
+            ngayCapNhat: new Date().toISOString(),
+            noiDung: `Cập nhật công việc: công việc ${
+              CongViec.tenCongViec
+            } đã được cập nhật xin bạn vui lòng truy cập vào hệ thống để xem chi tiết`,
+          })
+        );
+        await dispatch(
+          sendNotification({
+            maCongViec: CongViec.maCongViec,
+            tenCongViec: CongViec.tenCongViec,
+            noiDung: generateDeadlineNotification(
+              CongViec.tenCongViec,
+              CongViec.thoiGianKetThuc
+            ),
+            thoiGianKetThuc: CongViec.thoiGianKetThuc,
+            email: selectedEmployees.map((item) => item.email).join(","),
+          })
+        );
+        setTimeout(async () => {
+          const employeeEmailPromises = selectedEmployees.map((employee) =>
+            dispatch(
+              sendGmail({
+                name: employee.tenNhanVien,
+                toGmail: employee.email,
+                subject: "Thông Tin Phân Công Dự Án",
+                body: generateEmailTemplate(employee),
+              })
+            )
+          );
+          await Promise.all(employeeEmailPromises);
+          console.log("Email đã được gửi!");
+        }, 5000);
+      }
+      toast.success("Cập Nhật Thành Công")
+      setOpenUpdate(false)
     } catch (e) {
       console.log(e);
+      toast.success("Cập Nhật Không Thành Công")
     }
   };
 
@@ -145,7 +199,7 @@ const UpdateTask = ({ openUpdate, setOpenUpdate, phanDuAn,duAn, task,phanCong })
                   placeholder="Ngày"
                   type="datetime-local"
                   name="thoiGianKetThuc"
-                  label="Ngày hoàn thành"
+                  label="Ngày Kết Thúc"
                   className="w-full rounded"
                   register={register("thoiGianKetThuc", {
                     required: "Ngày là bắt buộc!",

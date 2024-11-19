@@ -40,7 +40,7 @@ const TaskGroup = ({ phanduan, duAn }) => {
             console.error("Error when checking permission: ", error);
           }
         });
-        console.log("Connected! update");
+        //console.log("Connected! update");
       } catch (error) {
         console.error("Connection failed: ", error);
       }

@@ -121,7 +121,7 @@ const FileUpload = ({ isOpen, onRequestClose, maPhanCong,maCongViec}) => {
       );
       console.log(responses)
       setUploadStatus("done");
-      toast.error("Upload file thành công")
+      toast.success("Upload file thành công")
     } catch (error) {
       console.error(error);
       setUploadStatus("select");

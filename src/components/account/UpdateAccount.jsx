@@ -15,7 +15,8 @@ import {
 import Employees from "../../pages/Employee";
 import { toast } from "react-toastify";
 import { fetchPermissions } from "../../redux/permission/permissionSlice";
-const UpdateAccount = ({ open, setOpen, accountData }) => {
+import { fetchAccounts, updateAccount } from "../../redux/accounts/accountSlice";
+const UpdateAccount = ({ openUpdate, setOpenUpdate, accountData }) => {
   const defaultValues = accountData ?? {};
   //const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
@@ -37,49 +38,33 @@ const UpdateAccount = ({ open, setOpen, accountData }) => {
     }
   }, [defaultValues, reset]);
   const handleOnSubmit = async (data) => {
-    if (!data.tenNhanVien || data.tenNhanVien.trim() === "") {
-      toast.warning("Vui lòng nhập tên nhân viên hợp lệ");
+    if (!data.tenTaiKhoan || data.tenTaiKhoan.trim() === "") {
+      toast.warning("Vui lòng nhập tên tài khoản hợp lệ");
       return;
     }
-    if (/^\d+$/.test(data.tenNhanVien)) {
-      toast.warning("Tên nhân viên không được chỉ chứa số");
+    if (!data.matKhau || data.matKhau.trim() === "") {
+      toast.warning("Vui lòng nhập tên tài khoản hợp lệ");
       return;
     }
-    if (!/^\d{9,11}$/.test(data.soDienThoai)) {
-      toast.warning("Số điện thoại không hợp lệ (phải từ 9-11 chữ số)");
-      return;
-    }
-    if (
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email) ||
-      data.email.trim() === ""
-    ) {
-      toast.warning("Email không hợp lệ");
-      return;
-    }
-    if (isNaN(data.maPhongBan) || Number(data.maPhongBan) <= 0) {
-      toast.warning("Mã phòng ban phải là số dương");
-      return;
-    }
-    if (isNaN(data.maNhanVien) || Number(data.maNhanVien) <= 0) {
-      toast.warning("Mã nhân viên phải là số dương");
+    if (/^\d+$/.test(data.tenTaiKhoan)) {
+      toast.warning("Tài khoảng không được chỉ chứa số");
       return;
     }
     try {
       await dispatch(
-        updateEmployee({
+        updateAccount({
           id: Number(data.maNhanVien),
-          employee: {
-            maPhongBan: Number(data.maPhongBan),
-            tenChucVu: data.tenChucVu,
-            tenNhanVien: data.tenNhanVien,
-            soDienThoai: data.soDienThoai,
-            email: data.email,
+          account: {
+            maNhanVien: Number(data.maNhanVien),
+            maNhomQuyen: Number(data.maNhomQuyen),
+            tenTaiKhoan: data.tenTaiKhoan,
+            matKhau:data.matKhau
           },
         })
       );
-      await dispatch(fetchEmployees({ search: "", page: 10 }));
+      await dispatch(fetchAccounts({ search: "", page: 10 }));
       toast.success("Cập nhật thành công");
-      setOpen(false);
+      setOpenUpdate(false);
     } catch (error) {
       toast.error("Cập nhật thất bại");
       console.error("Failed to update employee: ", error);
@@ -87,7 +72,7 @@ const UpdateAccount = ({ open, setOpen, accountData }) => {
   };
 
   return (
-    <ModalWrapper open={open} setOpen={setOpen}>
+    <ModalWrapper open={openUpdate} setOpen={setOpenUpdate}>
       <form onSubmit={handleSubmit(handleOnSubmit)} className="">
         <Dialog.Title
           as="h2"
@@ -95,17 +80,17 @@ const UpdateAccount = ({ open, setOpen, accountData }) => {
         >
           CẬP NHẬT NHÓM QUYỀN
         </Dialog.Title>
-        <div className="mt-2 flex flex-col gap-6">
+        <div className="mt-2 flex flex-col gap-6 pointer-events-none">
           <Textbox
             placeholder="Mã Tài Khoản"
             type="text"
-            name="maTaiKhoan"
+            name="maNhanVien"
             label="Mã Tài Khoản"
             className="w-full rounded"
-            register={register("maTaiKhoan", {
+            register={register("maNhanVien", {
               required: "Mã Nhân Viên is required!",
             })}
-            error={errors.maTaiKhoan ? errors.maTaiKhoan.message : ""}
+            error={errors.maNhanVien ? errors.maNhanVien.message : ""}
           />
         </div>
         <label
@@ -134,7 +119,7 @@ const UpdateAccount = ({ open, setOpen, accountData }) => {
             name="tenTaiKhoan"
             label="Tên Tài Khoản"
             className="w-full rounded"
-            register={register("tenChucVu", {
+            register={register("tenTaiKhoan", {
               required: "Tên tài khoản is required!",
             })}
             error={errors.tenTaiKhoan ? errors.tenTaiKhoan.message : ""}
@@ -168,7 +153,7 @@ const UpdateAccount = ({ open, setOpen, accountData }) => {
             <Button
               type="button"
               className="bg-white px-5 text-sm font-semibold text-gray-900 sm:w-auto"
-              onClick={() => setOpen(false)}
+              onClick={() => setOpenUpdate(false)}
               label="Cancel"
             />
           </div>

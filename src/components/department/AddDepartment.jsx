@@ -98,7 +98,7 @@ const AddDepartment = ({ open, setOpen, employeeData }) => {
             ))}
           </select>
           {errors.maTruongPhong && (
-            <span className="text-red-600">{errors.truongphong.message}</span>
+            <span className="text-red-600">{errors.maTruongPhong.message}</span>
           )}
         </div>
 

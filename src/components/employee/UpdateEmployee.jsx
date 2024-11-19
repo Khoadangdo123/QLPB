@@ -96,7 +96,7 @@ const UpdateEmployee = ({ open, setOpen, employeeData }) => {
         >
           UPDATE EMPLOYEE
         </Dialog.Title>
-        <div className="mt-2 flex flex-col gap-6">
+        <div className="mt-2 flex flex-col gap-6 pointer-events-none">
           <Textbox
             placeholder="Mã Nhân Viên"
             type="text"

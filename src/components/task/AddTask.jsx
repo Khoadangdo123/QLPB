@@ -19,6 +19,7 @@ import {
 } from "../../redux/taskhistory/taskhistorySlice";
 import { sendNotification } from "../../redux/scheduling/schedulingSlice";
 import { toast } from "react-toastify";
+import API_ENDPOINTS from "../../constant/linkapi";
 const LISTS = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 const PRIORITY = ["CAO", "TRUNG BÌNH", "BÌNH THƯỜNG", "THẤP"];
 
@@ -98,7 +99,7 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
               addTaskHistory({
                 maCongViec: result.maCongViec,
                 ngayCapNhat: new Date().toISOString(),
-                noiDung: `${new Date().toISOString()}: Phòng ban ${
+                noiDung: `Phòng ban ${
                   department.tenPhongBan
                 } phân công thực hiện công việc ${
                   CongViec.tenCongViec
@@ -150,7 +151,7 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
             addTaskHistory({
               maCongViec: result.maCongViec,
               ngayCapNhat: new Date().toISOString(),
-              noiDung: `${new Date().toISOString()}: Nhân viên ${
+              noiDung: `Nhân viên ${
                 employee.tenNhanVien
               } được phân công vào công việc ${
                 CongViec.tenCongViec
@@ -239,6 +240,7 @@ const AddTask = ({ open, setOpen, phanDuAn, congViecCha, duAn }) => {
               <EmployeeSelect
                 selectedEmployees={selectedEmployees}
                 setSelectedEmployees={setSelectedEmployees}
+                nhanViens={null}
               />
               <DepartmentSelect
                 selected={selectedDepartment}
@@ -510,7 +512,7 @@ function generateDeadlineNotification(taskName, dueDate) {
               Vui lòng kiểm tra lại và hoàn tất công việc trước thời hạn để đảm bảo
               tiến độ dự án.
             </p>
-            <a href="http://localhost:3000/taskassignment" class="cta-button"
+            <a href="${API_ENDPOINTS.EMAIL}/taskassignment" class="cta-button"
               >Xem Chi Tiết Công Việc</a>
           </div>
           <div class="footer">

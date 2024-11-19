@@ -36,7 +36,7 @@ const TaskHistory = ({ openTaskHistory, setOpenTaskHistory, maCongViec }) => {
         connection.on("loadLichSuCongViec", async () => {
           await dispatch(fetchTaskHistories());
         });
-        console.log("Connected! update");
+        //console.log("Connected! update");
       } catch (error) {
         console.error("Connection failed: ", error);
       }
@@ -83,9 +83,7 @@ const TaskHistory = ({ openTaskHistory, setOpenTaskHistory, maCongViec }) => {
               <ul className="space-y-6">
                 {lichsu.map((item) => (
                   <li key={item.maLichSuCongViec} className="relative flex items-center">
-                    {/* Dòng nối giữa các mục */}
                     <div className="absolute left-2 top-0 bottom-0 border-l border-gray-300"></div>
-                    {/* Thời gian và nội dung */}
                     <div className="pl-4">
                       <div className="flex items-center">
                         <span className={`w-3 h-3 rounded-full ${getItemClassName(item.noiDung)}`}></span>

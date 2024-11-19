@@ -24,6 +24,7 @@ import TaskHistory from "./TaskHistory";
 import { checkPermission } from "../../redux/permissiondetail/permissionDetailSlice";
 import API_ENDPOINTS from "../../constant/linkapi";
 import getConnection from "../../hub/signalRConnection";
+import AddAssignmentTask from "./AddAssignmentTask";
 const priorities = [
   { id: "low", name: "Thấp" },
   { id: "medium", name: "Trung Bình" },
@@ -39,6 +40,7 @@ const stages = [
 const TaskListItem = ({ congviec, duAn }) => {
   const [open, setOpen] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
+  const [openAssignment,setopenAssignment]=useState(false)
   const [openTransfer, setOpenTransfer] = useState(false);
   const [openTaskHistory, setOpenTaskHistory] = useState(false);
   const [taskRoot, setTaskRoot] = useState(false);
@@ -84,9 +86,9 @@ const TaskListItem = ({ congviec, duAn }) => {
       try {
         if (connection && connection.state === "Disconnected") {
           await connection.start();
-          console.log("SignalR connected!");
+          //console.log("SignalR connected!");
         }
-        console.log("Connected! update");
+        //console.log("Connected! update");
         connection.on("updateCongViec", async () => {
           if (maCongViec) {
             await dispatch(fetchByIdTask(maCongViec));
@@ -293,7 +295,7 @@ const TaskListItem = ({ congviec, duAn }) => {
           ))}
           <button
             onClick={() => {
-              alert("assign");
+              setopenAssignment(true);
             }}
             className="rounded-full border-2 border-dashed size-fit p-1 ml-2 border-gray-400 text-gray-400"
           >
@@ -314,7 +316,7 @@ const TaskListItem = ({ congviec, duAn }) => {
           ))}
           <button
             onClick={() => {
-              alert("assign");
+              setopenAssignment(true);
             }}
             className="rounded-full border-2 border-dashed size-fit p-1 ml-2 border-gray-400 text-gray-400"
           >
@@ -322,7 +324,6 @@ const TaskListItem = ({ congviec, duAn }) => {
           </button>
         </div>
         <div className="flex-1 px-4 ">
-          {/* <Selection items={stages} selectedItem={congviec.trangThaiCongViec} /> */}
           <span
             className={`${
               statusTask === true
@@ -483,6 +484,14 @@ const TaskListItem = ({ congviec, duAn }) => {
         setOpenTaskHistory={setOpenTaskHistory}
         maCongViec={maCongViec}
       />
+      <AddAssignmentTask
+       openAssignment={openAssignment}
+       setopenAssignment={setopenAssignment}
+       maCongViec={maCongViec}
+       tenCongViec={congviec.tenCongViec}
+       nhanViens={phancong?.phanCongs}
+       thoiGianKetThuc={congviec.thoiGianKetThuc}
+       />
       {expanded && (
         <DetailTask
           expanded={expanded}

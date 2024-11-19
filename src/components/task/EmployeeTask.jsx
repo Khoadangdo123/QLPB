@@ -1,15 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchEmployees } from '../../redux/employees/employeeSlice';
-
-const EmployeeSelect = ({ selectedEmployees, setSelectedEmployees }) => {
+const EmployeeSelect = ({ selectedEmployees, setSelectedEmployees,nhanViens}) => {
     const dispatch = useDispatch();
     const nhanviens = useSelector((state) => state.employees.list);
 
     useEffect(() => {
         dispatch(fetchEmployees({ search: '', page: 30 }));
     }, [dispatch]);
-
+    const filteredNhanViens = !nhanViens || nhanViens.length === 0
+        ? nhanviens
+        : nhanviens.filter(
+            (item) => !nhanViens.some((nv) => nv.maNhanVien === item.maNhanVien)
+        );
     const handleSelectChange = (e) => {
         const maNhanVien = e.target.value;
         const selectedEmployee = nhanviens.find((item) => item.maNhanVien === Number(maNhanVien));
@@ -49,7 +52,7 @@ const EmployeeSelect = ({ selectedEmployees, setSelectedEmployees }) => {
                 className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             >
                 <option value="">Chọn nhân viên</option>
-                {nhanviens.map((item) => (
+                {filteredNhanViens.map((item) => (
                     <option key={item.maNhanVien} value={item.maNhanVien}>
                         {item.tenNhanVien}
                     </option>
