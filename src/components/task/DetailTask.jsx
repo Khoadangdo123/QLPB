@@ -2,7 +2,13 @@
 import React, { useEffect, useState } from "react";
 import { HubConnectionBuilder, LogLevel } from "@microsoft/signalr";
 import Picker from "emoji-picker-react";
-import { FaFileUpload, FaSmile } from "react-icons/fa";
+import {
+  FaFileArchive,
+  FaFileUpload,
+  FaProjectDiagram,
+  FaSmile,
+  FaVideo,
+} from "react-icons/fa";
 import { FaPaperclip } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
 import API_ENDPOINTS from "../../constant/linkapi";
@@ -19,6 +25,17 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { findExchangeByTask } from "../../redux/exchange/exchangeSlice";
+import { fetchAllFile } from "../../redux/file/fileSlice";
+import {
+  AiFillFileExcel,
+  AiFillFileImage,
+  AiFillFilePdf,
+  AiFillFilePpt,
+  AiFillFileWord,
+} from "react-icons/ai";
+import { FiFile } from "react-icons/fi";
+import { FaFileZipper } from "react-icons/fa6";
+import { AttachFile } from "@mui/icons-material";
 const DetailTask = ({
   expanded,
   setExpanded,
@@ -44,11 +61,12 @@ const DetailTask = ({
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const dispatch = useDispatch();
   const exchanges = useSelector((state) => state.exchanges.list);
-  const files=useSelector((state)=>state.file)
+  const files = useSelector((state) => state.file.list);
   useEffect(() => {
     const loadData = async () => {
       setIsLoading(true);
       try {
+        await dispatch(fetchAllFile());
         await dispatch(findExchangeByTask(task.maCongViec));
       } catch (error) {
         console.log(error);
@@ -58,6 +76,7 @@ const DetailTask = ({
     };
     loadData();
   }, [dispatch, task.maCongViec]);
+  console.log(files);
   console.log(exchanges);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
@@ -76,20 +95,21 @@ const DetailTask = ({
         newConnection.off("ReceiveMessage");
         newConnection.off("UserJoined");
         newConnection.on("ReceiveMessage", (user, message) => {
-          var date = new Date()
-            .toLocaleString("en-GB", {
-              day: "2-digit",
-              month: "2-digit",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-              hour12: false,
-            })
-            .toString();
-          const newMessage = { user, message, date };
-          setMessages((prevMessages) => [...prevMessages, newMessage]);
-          console.log("Received message:", newMessage);
+          // var date = new Date()
+          //   .toLocaleString("en-GB", {
+          //     day: "2-digit",
+          //     month: "2-digit",
+          //     year: "numeric",
+          //     hour: "2-digit",
+          //     minute: "2-digit",
+          //     second: "2-digit",
+          //     hour12: false,
+          //   })
+          //   .toString();
+          // const newMessage = { user, message, date };
+          // setMessages((prevMessages) => [...prevMessages, newMessage]);
+          // console.log("Received message:", newMessage);
+          
         });
 
         newConnection.on("UserJoined", (message) => {
@@ -117,18 +137,18 @@ const DetailTask = ({
       if (selectedFiles.length > 0) {
         const uploadedFiles = await handleUpload();
         for (const file of uploadedFiles) {
-          const fileHTML = `
-          <div>
-            <h4>File uploaded:</h4>
-            <div style="display: flex; align-items: center;">
-              <span style="margin-right: 8px;">${getSendFileIcon(
-                file.extension
-              )}</span>
-              <p>${file.name} (${file.size})</p>
-            </div>
-            <a href="${file.url}" target="_blank">Download</a>
-          </div>
-        `;
+        //   const fileHTML = `
+        //   <div>
+        //     <h4>File uploaded:</h4>
+        //     <div style="display: flex; align-items: center;">
+        //       <span style="margin-right: 8px;">${getSendFileIcon(
+        //         file.extension
+        //       )}</span>
+        //       <p>${file.name} (${file.size})</p>
+        //     </div>
+        //     <a href="${file.url}" target="_blank">Download</a>
+        //   </div>
+        // `;
           await connection.invoke(
             "TraoDoiThongTin",
             maCongViec,
@@ -210,25 +230,39 @@ const DetailTask = ({
     setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
   const getFileIcon = (fileName) => {
-    const ext = fileName.toLowerCase();
-
-    switch (ext) {
+    const extension = fileName;
+    switch (extension) {
       case "pdf":
-        return <FaFilePdf />;
+        return <AiFillFilePdf className="text-red-500 text-4xl" />;
+      case "doc":
+      case "docx":
+        return <AiFillFileWord className="text-blue-500 text-4xl" />;
+      case "xls":
+      case "xlsx":
+        return <AiFillFileExcel className="text-green-500 text-4xl" />;
+      case "ppt":
+      case "pptx":
+        return <AiFillFilePpt className="text-orange-500 text-4xl" />;
+      case "txt":
+        return <FiFile className="text-gray-500 text-4xl" />;
       case "jpg":
       case "jpeg":
       case "png":
-        return <FaFileImage />;
-      case "doc":
-      case "docx":
-        return <FaFileWord />;
-      case "xls":
-      case "xlsx":
-        return <FaFileExcel />;
+      case "gif":
+        return <AiFillFileImage className="text-purple-500 text-4xl" />; // Icon cho file ảnh
       case "mp4":
-        return <FaFileVideo />;
+      case "avi":
+      case "mov":
+      case "wmv":
+        return <FaVideo className="text-blue-500 text-4xl" />; // Icon cho video
+      case "zip":
+        return <FaFileZipper className="text-yellow-500 text-4xl" />; // Icon cho file ZIP
+      case "rar":
+        return <FaFileArchive className="text-orange-500 text-4xl" />; // Icon cho file RAR
+      case "mpp":
+        return <FaProjectDiagram className="text-teal-500 text-4xl" />;
       default:
-        return <FaFileAlt />;
+        return <FiFile className="text-gray-500 text-4xl" />;
     }
   };
   const getSendFileIcon = (extension) => {
@@ -361,7 +395,7 @@ const DetailTask = ({
         <div className="mb-4 px-6 bg-gray-300">
           <div
             className="rounded border-t-2"
-            style={{ maxHeight: "250px", overflowY: "auto" }}
+            style={{ maxHeight: "320px", overflowY: "auto" }}
           >
             <div className="py-2">
               {exchanges.map((comment, index) => (
@@ -402,55 +436,80 @@ const DetailTask = ({
                   <p className="ml-11 text-gray-600 text-sm">
                     {comment.noiDungTraoDoi}
                   </p>
-                  {/* {comment.chiTietTraoDoiThongTins &&
+                  {comment.chiTietTraoDoiThongTins &&
                     comment.chiTietTraoDoiThongTins.length > 0 && (
                       <div className="mt-2 space-y-2">
                         {comment.chiTietTraoDoiThongTins.map(
-                          (fileDetail, idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center space-x-2"
-                            >
-                              {fileDetail.Files &&
-                              fileDetail.Files.LoaiFile.startsWith("image/") ? (
-                                <div className="relative group">
-                                  <img
-                                    src={fileDetail.Files.DuongDan}
-                                    alt={fileDetail.Files.TenFile}
-                                    className="max-w-xs rounded-md cursor-pointer"
-                                  />
-                                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-center p-1 rounded-b-md opacity-0 group-hover:opacity-100 transition-opacity">
-                                    Xem hình ảnh
+                          (fileDetail, idx) => {
+                            // Tìm file từ danh sách files theo maFile
+                            const file = files.find(
+                              (f) => f.maFile === fileDetail.maFile
+                            );
+                            if (!file) return null;
+                            const fileExtension = file.loaiFile.toLowerCase();
+                            return (
+                              <div
+                                key={idx}
+                                className="flex items-center space-x-2"
+                              >
+                                {["jpg", "jpeg", "png"].includes(
+                                  fileExtension
+                                ) ? (
+                                  <div className="relative group">
+                                    <img
+                                      src={file.duongDan}
+                                      alt={file.tenFile}
+                                      className="max-w-xs rounded-md cursor-pointer"
+                                    />
+                                    <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-center p-1 rounded-b-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                      Xem hình ảnh
+                                    </div>
                                   </div>
-                                </div>
-                              ) : (
-                                <div className="flex items-center bg-gray-100 p-2 rounded-md shadow-sm w-max">
-                                  <a
-                                    href={fileDetail.Files.DuongDan}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-800 flex items-center space-x-2"
-                                  >
-                                    <span className="material-icons text-sm">
-                                      file_download
-                                    </span>
-                                    <span className="text-sm">
-                                      {fileDetail.Files.TenFile}
-                                    </span>
-                                  </a>
-                                </div>
-                              )}
-                            </div>
-                          )
+                                ) : (
+                                  // Hiển thị icon cho các loại file khác (pdf, docx, txt, ...)
+                                  <div className="flex items-center bg-blue-200 p-2 rounded-md shadow-sm w-max">
+                                    <a
+                                      href={file.duongDan}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:text-blue-800 flex items-center space-x-2"
+                                    >
+                                      {/* Dùng hàm getIcon để lấy icon theo loại file */}
+                                      <span className="material-icons text-sm">
+                                        {getFileIcon(fileExtension)}
+                                      </span>
+                                      <span className="text-sm text-black">
+                                        {file.tenFile}
+                                      </span>
+                                      {file.kichThuocFile && (
+                                        <span className="ml-2 text-xs text-blue-800">
+                                          ({file.kichThuocFile})
+                                        </span>
+                                      )}
+                                    </a>
+                                    <a
+                                      href={file.duongDan}
+                                      download={file.tenFile}
+                                      className="ml-3 text-gray-600 hover:text-blue-800 p-2 rounded focus:outline-none"
+                                    >
+                                      <span className="material-icons text-xl">
+                                        download
+                                      </span>
+                                    </a>
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          }
                         )}
                       </div>
-                    )} */}
+                    )}
                 </div>
               ))}
             </div>
           </div>
         </div>
-        <div className="mb-4 px-6 absolute bottom-0 w-full ">
+        <div className="mb-2 px-6 absolute bottom-0 w-full bg-blue-300">
           <div>
             {/* Hiển thị các tệp đã chọn */}
             {selectedFiles.length > 0 && (
@@ -470,7 +529,7 @@ const DetailTask = ({
                       />
                     ) : (
                       <div className="text-lg text-gray-600">
-                        {getFileIcon(file.name)}
+                        {getFileIcon(file.name.split(".").pop().toLowerCase())}
                       </div>
                     )}
                     <div className="flex flex-col justify-center">
@@ -494,12 +553,12 @@ const DetailTask = ({
             <input
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              className="w-full bg-gray-50 p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Add a comment"
+              className="w-full bg-gray-100 p-3 rounded border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Tin nhắn"
             />
             {newComment.trim() === "" && selectedFiles.length === 0 ? (
               <button
-                className=" text-gray-400 px-4 py-2 rounded-full ml-3 focus:outline-none"
+                className=" text-gray-600 px-4 py-2 rounded-full ml-3 focus:outline-none"
                 disabled
               >
                 <IoMdSend size={30} />
@@ -514,7 +573,7 @@ const DetailTask = ({
             )}
             {/* Emoji Picker Toggle */}
             <label htmlFor="file-upload" className="cursor-pointer text-xl">
-              <FaFileUpload />
+              <AttachFile />
             </label>
             <input
               id="file-upload"
@@ -527,7 +586,7 @@ const DetailTask = ({
               className="ml-3 focus:outline-none"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
             >
-              <FaSmile className="text-2xl text-gray-600" />
+              <FaSmile className="text-2xl text-gray-700" />
             </button>
             {/* Emoji Picker */}
             {showEmojiPicker && (
