@@ -13,19 +13,14 @@ import { FaPaperclip } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
 import API_ENDPOINTS from "../../constant/linkapi";
 import { format } from "date-fns";
-import {
-  FaFileAlt,
-  FaFilePdf,
-  FaFileImage,
-  FaFileWord,
-  FaFileExcel,
-  FaFileVideo,
-} from "react-icons/fa";
 import axios from "axios";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
-import { findExchangeByTask } from "../../redux/exchange/exchangeSlice";
-import { fetchAllFile } from "../../redux/file/fileSlice";
+import {
+  addExchange,
+  findExchangeByTask,
+} from "../../redux/exchange/exchangeSlice";
+import { addFile, fetchAllFile } from "../../redux/file/fileSlice";
 import {
   AiFillFileExcel,
   AiFillFileImage,
@@ -36,6 +31,8 @@ import {
 import { FiFile } from "react-icons/fi";
 import { FaFileZipper } from "react-icons/fa6";
 import { AttachFile } from "@mui/icons-material";
+import { toast } from "react-toastify";
+import { addDetailExchange } from "../../redux/detailexchange/detailexchangeSlice";
 const DetailTask = ({
   expanded,
   setExpanded,
@@ -76,8 +73,6 @@ const DetailTask = ({
     };
     loadData();
   }, [dispatch, task.maCongViec]);
-  console.log(files);
-  console.log(exchanges);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
       .withUrl(API_ENDPOINTS.HUB_URL)
@@ -94,24 +89,10 @@ const DetailTask = ({
         console.log(`Joined group: ${maCongViec}`);
         newConnection.off("ReceiveMessage");
         newConnection.off("UserJoined");
-        newConnection.on("ReceiveMessage", (user, message) => {
-          // var date = new Date()
-          //   .toLocaleString("en-GB", {
-          //     day: "2-digit",
-          //     month: "2-digit",
-          //     year: "numeric",
-          //     hour: "2-digit",
-          //     minute: "2-digit",
-          //     second: "2-digit",
-          //     hour12: false,
-          //   })
-          //   .toString();
-          // const newMessage = { user, message, date };
-          // setMessages((prevMessages) => [...prevMessages, newMessage]);
-          // console.log("Received message:", newMessage);
-          
+        newConnection.on("ReceiveMessage", async () => {
+          await dispatch(fetchAllFile());
+          await dispatch(findExchangeByTask(task.maCongViec));
         });
-
         newConnection.on("UserJoined", (message) => {
           console.log("User joined message:", message);
         });
@@ -126,7 +107,6 @@ const DetailTask = ({
       if (newConnection) {
         newConnection.off("ReceiveMessage");
         newConnection.off("UserJoined");
-        newConnection.stop();
         console.log("Connection stopped.");
       }
     };
@@ -134,43 +114,55 @@ const DetailTask = ({
   const handleSendComment = async () => {
     if (newComment.trim() === "" && selectedFiles.length === 0) return;
     try {
-      if (selectedFiles.length > 0) {
-        const uploadedFiles = await handleUpload();
-        for (const file of uploadedFiles) {
-        //   const fileHTML = `
-        //   <div>
-        //     <h4>File uploaded:</h4>
-        //     <div style="display: flex; align-items: center;">
-        //       <span style="margin-right: 8px;">${getSendFileIcon(
-        //         file.extension
-        //       )}</span>
-        //       <p>${file.name} (${file.size})</p>
-        //     </div>
-        //     <a href="${file.url}" target="_blank">Download</a>
-        //   </div>
-        // `;
-          await connection.invoke(
-            "TraoDoiThongTin",
-            maCongViec,
-            localStorage.getItem("name"),
-            //`File uploaded: ${file.name} (${file.url})`
-            fileHTML
-          );
+      if (newComment.trim() !== "" || selectedFiles.length > 0) {
+        var result = await dispatch(
+          addExchange({
+            maCongViec: task.maCongViec,
+            maNhanVien: Number(localStorage.getItem("userId")),
+            tenNhanVien: localStorage.getItem("name"),
+            noiDungTraoDoi: newComment,
+          })
+        ).unwrap();
+        if (result != 0) {
+          try {
+            const uploadedFiles = await handleUpload();
+            if (uploadedFiles.length !== 0) {
+              const addFilePromises = uploadedFiles.map((file) =>
+                dispatch(
+                  addFile({
+                    tenFile: file.name,
+                    duongDan: file.url,
+                    loaiFile: file.extension,
+                    kichThuocFile: file.size,
+                  })
+                ).unwrap()
+              );
+              const addedFiles = await Promise.all(addFilePromises);
+              const addedFileIds = addedFiles
+                .filter((file) => file !== null)
+                .map((file) => file.maFile);
+              const addDetailPromises = addedFileIds.map((maFile) =>
+                dispatch(
+                  addDetailExchange({
+                    maTraoDoi: result,
+                    maFile: maFile,
+                  })
+                )
+              );
+              await Promise.all(addDetailPromises);
+              setSelectedFiles([]);
+            }
+            await connection.invoke("TraoDoiThongTin", maCongViec);
+          } catch (err) {
+            toast.warning("Upload File Thất Bại");
+            return;
+          }
+          await connection.invoke("TraoDoiThongTin", maCongViec);
         }
-        setSelectedFiles([]);
-      }
-
-      if (newComment.trim() !== "") {
-        await connection.invoke(
-          "TraoDoiThongTin",
-          maCongViec,
-          localStorage.getItem("name"),
-          newComment
-        );
         setNewComment("");
       }
-
       setShowEmojiPicker(false);
+      //await connection.invoke("TraoDoiThongTin", maCongViec);
     } catch (err) {
       console.error("Error sending message: ", err);
     }
@@ -229,6 +221,25 @@ const DetailTask = ({
   const removeFile = (index) => {
     setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index));
   };
+  const handleDownloadFile = async (filePath, fileName) => {
+    try {
+      const response = await fetch(filePath);
+
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+
+      const blob = await response.blob();
+      const link = document.createElement("a");
+      link.href = window.URL.createObjectURL(blob);
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (error) {
+      console.error("Error downloading file:", error);
+    }
+  };
   const getFileIcon = (fileName) => {
     const extension = fileName;
     switch (extension) {
@@ -263,27 +274,6 @@ const DetailTask = ({
         return <FaProjectDiagram className="text-teal-500 text-4xl" />;
       default:
         return <FiFile className="text-gray-500 text-4xl" />;
-    }
-  };
-  const getSendFileIcon = (extension) => {
-    const ext = extension.toLowerCase();
-    switch (ext) {
-      case "pdf":
-        return `<i class="fas fa-file-pdf" style="color: red;"></i>`;
-      case "jpg":
-      case "jpeg":
-      case "png":
-        return `<i class="fas fa-file-image" style="color: green;"></i>`;
-      case "doc":
-      case "docx":
-        return `<i class="fas fa-file-word" style="color: blue;"></i>`;
-      case "xls":
-      case "xlsx":
-        return `<i class="fas fa-file-excel" style="color: green;"></i>`;
-      case "mp4":
-        return `<i class="fas fa-file-video" style="color: purple;"></i>`;
-      default:
-        return `<i class="fas fa-file-alt" style="color: gray;"></i>`;
     }
   };
   const formatFileSize = (size) => {
@@ -427,10 +417,12 @@ const DetailTask = ({
                       </span>
                     </div>
                     <span className="text-sm text-gray-500">
-                      {format(
-                        new Date(comment.thoiGianGui),
-                        "dd/MM/yyyy HH:mm:ss"
-                      )}
+                      {comment.thoiGianGui
+                        ? format(
+                            new Date(comment.thoiGianGui),
+                            "dd/MM/yyyy HH:mm:ss"
+                          )
+                        : "Invalid date"}
                     </span>
                   </div>
                   <p className="ml-11 text-gray-600 text-sm">
@@ -452,9 +444,18 @@ const DetailTask = ({
                                 key={idx}
                                 className="flex items-center space-x-2"
                               >
-                                {["jpg", "jpeg", "png"].includes(
-                                  fileExtension
-                                ) ? (
+                                {[
+                                  "jpg",
+                                  "jpeg",
+                                  "png",
+                                  "gif",
+                                  "svg",
+                                  "webp",
+                                  "bmp",
+                                  "ico",
+                                  "apng",
+                                  "jfif",
+                                ].includes(fileExtension) ? (
                                   <div className="relative group">
                                     <img
                                       src={file.duongDan}
@@ -487,15 +488,19 @@ const DetailTask = ({
                                         </span>
                                       )}
                                     </a>
-                                    <a
-                                      href={file.duongDan}
-                                      download={file.tenFile}
+                                    <button
+                                      onClick={() =>
+                                        handleDownloadFile(
+                                          file.duongDan,
+                                          file.tenFile
+                                        )
+                                      }
                                       className="ml-3 text-gray-600 hover:text-blue-800 p-2 rounded focus:outline-none"
                                     >
                                       <span className="material-icons text-xl">
                                         download
                                       </span>
-                                    </a>
+                                    </button>
                                   </div>
                                 )}
                               </div>

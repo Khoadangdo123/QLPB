@@ -20,6 +20,7 @@ import reminderReducer from "./reminder/reminderSlice"
 import taskTransferReducer from "./tasktransfer/tasktranferSlice"
 import schedulingReducer from  "./scheduling/schedulingSlice"
 import exchangeReducer from "./exchange/exchangeSlice"
+import detailexchangeReducer from "./detailexchange/detailexchangeSlice"
 const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
@@ -42,7 +43,8 @@ const store = configureStore({
     reminders:reminderReducer,
     tasktransfer:taskTransferReducer,
     scheduling:schedulingReducer,
-    exchanges:exchangeReducer
+    exchanges:exchangeReducer,
+    detailexchanges:detailexchangeReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
