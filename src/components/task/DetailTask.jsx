@@ -6,6 +6,7 @@ import { FaFileUpload, FaSmile } from "react-icons/fa";
 import { FaPaperclip } from "react-icons/fa";
 import { IoMdSend } from "react-icons/io";
 import API_ENDPOINTS from "../../constant/linkapi";
+import { format } from "date-fns";
 import {
   FaFileAlt,
   FaFilePdf,
@@ -15,6 +16,9 @@ import {
   FaFileVideo,
 } from "react-icons/fa";
 import axios from "axios";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import { findExchangeByTask } from "../../redux/exchange/exchangeSlice";
 const DetailTask = ({
   expanded,
   setExpanded,
@@ -36,9 +40,25 @@ const DetailTask = ({
   const [uploadStatus, setUploadStatus] = useState("");
   const [showComments, setShowComment] = useState(true);
   const [dragging, setDragging] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
-  console.log(userTeam);
-  console.log(roleTeam);
+  const dispatch = useDispatch();
+  const exchanges = useSelector((state) => state.exchanges.list);
+  const files=useSelector((state)=>state.file)
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        await dispatch(findExchangeByTask(task.maCongViec));
+      } catch (error) {
+        console.log(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, [dispatch, task.maCongViec]);
+  console.log(exchanges);
   useEffect(() => {
     const newConnection = new HubConnectionBuilder()
       .withUrl(API_ENDPOINTS.HUB_URL)
@@ -56,16 +76,18 @@ const DetailTask = ({
         newConnection.off("ReceiveMessage");
         newConnection.off("UserJoined");
         newConnection.on("ReceiveMessage", (user, message) => {
-          var date=new Date().toLocaleString("en-GB", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-            hour12: false,
-          }).toString()
-          const newMessage = { user, message,date };
+          var date = new Date()
+            .toLocaleString("en-GB", {
+              day: "2-digit",
+              month: "2-digit",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+              hour12: false,
+            })
+            .toString();
+          const newMessage = { user, message, date };
           setMessages((prevMessages) => [...prevMessages, newMessage]);
           console.log("Received message:", newMessage);
         });
@@ -99,7 +121,9 @@ const DetailTask = ({
           <div>
             <h4>File uploaded:</h4>
             <div style="display: flex; align-items: center;">
-              <span style="margin-right: 8px;">${getSendFileIcon(file.extension)}</span>
+              <span style="margin-right: 8px;">${getSendFileIcon(
+                file.extension
+              )}</span>
               <p>${file.name} (${file.size})</p>
             </div>
             <a href="${file.url}" target="_blank">Download</a>
@@ -228,13 +252,12 @@ const DetailTask = ({
         return `<i class="fas fa-file-alt" style="color: gray;"></i>`;
     }
   };
-
   const formatFileSize = (size) => {
-    if (size < 1024) return `${size} B`;
-    else if (size < 1024 * 1024) return `${(size / 1024).toFixed(2)} KB`;
-    else if (size < 1024 * 1024 * 1024)
-      return `${(size / (1024 * 1024)).toFixed(2)} MB`;
-    else return `${(size / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+    if (size === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    const i = Math.floor(Math.log(size) / Math.log(k));
+    return parseFloat((size / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
   };
   const isImage = (file) => {
     const imageTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -266,35 +289,32 @@ const DetailTask = ({
         </div>
 
         {/* Task Title */}
-        <div className="mb-4 px-6">
-          <h2 className="text-2xl font-semibold text-gray-800">Tên Công Việc: {titleTask}</h2>
+        <div className="mb-3 px-6">
+          <h3 className="text-2xl font-semibold text-gray-800">
+            Tên Công Việc: {titleTask}
+          </h3>
         </div>
 
         {/* Assignee and Due Date */}
-        <div className="mb-4 px-6 flex justify-between items-center">
-          <div className="grid grid-cols-4 gap-1 px-4">
-            {roleTeam.map((member, index) => (
-              <div
-                key={index}
-                className="p-1 bg-white shadow-md rounded-md flex flex-col items-center text-center hover:bg-gray-100 transition duration-200"
-              >
-                {/* Avatar */}
-                <div
-                  className="rounded-full h-8 w-8 bg-purple-600 flex items-center justify-center text-xs text-white mb-1"
-                  title={member.nhanVien?.email || "No email available"}
-                >
-                  {member.nhanVien?.tenNhanVien?.[0]?.toUpperCase() || "?"}
+        <div className="mb-1 px-6 flex justify-between items-center">
+          <div className="mb-6 px-6">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center">
+                <span className="text-gray-700 text-sm font-medium">
+                  Chịu Trách Nhiệm
+                </span>
+                <div className="flex space-x-2 ml-3">
+                  {roleTeam.map((member, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center bg-blue-100 text-blue-700 py-1 px-3 rounded-full text-sm"
+                    >
+                      <span>{member.nhanVien?.tenNhanVien || "Unknown"}</span>
+                    </div>
+                  ))}
                 </div>
-                {/* Tên nhân viên */}
-                <p className="text-xs font-medium text-gray-800">
-                  {member.nhanVien?.tenNhanVien || "Unknown"}
-                </p>
-                {/* Email (hiển thị khi hover card) */}
-                <p className="text-xs text-gray-500 mt-0.5 opacity-0 hover:opacity-100 transition duration-200">
-                  {member.nhanVien?.email || "No email available"}
-                </p>
               </div>
-            ))}
+            </div>
           </div>
           <div className="flex items-center">
             <span className="text-red-600 mr-3 text-sm">{date}</span>
@@ -319,109 +339,149 @@ const DetailTask = ({
         <div className="mb-6 px-6">
           <div className="flex justify-between items-center">
             <div className="flex items-center">
-              <span className="text-gray-700 font-medium">Thành Viên:</span>
-              <div className="flex -space-x-2 ml-3">
-                {userTeam.map((m, index) => {
-                  return (
-                    <div
-                      className="rounded-full h-8 w-8 bg-purple-500 flex items-center justify-center text-xs text-white"
-                      key={index}
-                    >
-                      {m.nhanVien?.tenNhanVien.slice(0, 2)}
-                    </div>
-                  );
-                })}
-                
+              <span className="text-gray-700 font-medium text-sm">
+                Thành Viên
+              </span>
+              <div className="flex space-x-2 ml-3">
+                {userTeam.map((m, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center bg-blue-100 text-blue-800 rounded-full px-3 py-1 text-sm font-medium"
+                  >
+                    <span className="mr-2">
+                      {m.nhanVien?.tenNhanVien || "Tên chưa có"}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         </div>
 
-        <div className="mb-4 px-6 bg-gray-100">
+        <div className="mb-4 px-6 bg-gray-300">
           <div
             className="rounded border-t-2"
-            style={{ maxHeight: "200px", overflowY: "auto" }} // Thanh trượt
+            style={{ maxHeight: "250px", overflowY: "auto" }}
           >
-            {/* <div className="border">
-              <button
-                onClick={() => {
-                  setShowComment(true);
-                }}
-                className="px-2 py font-bold border-r-2"
-              >
-                comments
-              </button>
-              <button
-                onClick={() => {
-                  setShowComment(false);
-                }}
-                className="px-2 py font-bold"
-              >
-                histories
-              </button>
-            </div> */}
-            {true ? (
-              <div className="py-2">
-                {messages.map((comment, index) => (
-                  <div
-                    key={index}
-                    className="mb-2 bg-gray-50 p-2 border rounded-md"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <div className="rounded-full h-8 w-8 bg-purple-500 flex items-center justify-center text-xs text-white">
-                          {comment.user.slice(0, 2)}
-                        </div>
-                        <span className="ml-3 text-gray-700">
-                          {comment.user === localStorage.getItem("name")
-                            ? "Bạn"
-                            : comment.user}
-                        </span>
+            <div className="py-2">
+              {exchanges.map((comment, index) => (
+                <div
+                  key={index}
+                  className={`mb-2 p-2 border rounded-md ${
+                    comment.maNhanVien ===
+                    Number(localStorage.getItem("userId"))
+                      ? "bg-blue-100 text-white ml-auto"
+                      : "bg-gray-50 text-black"
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <div className="rounded-full h-8 w-8 bg-purple-500 flex items-center justify-center text-xs text-white">
+                        {comment.tenNhanVien
+                          ? comment.tenNhanVien
+                              .split(" ")
+                              .map((name) => name[0])
+                              .join("")
+                          : "N/A"}
                       </div>
-                      <span className="text-sm text-gray-500">
-                        {comment.date}
+                      <span className="ml-3 text-black text-sm">
+                        {comment.tenNhanVien === localStorage.getItem("name") &&
+                        comment.maNhanVien ===
+                          Number(localStorage.getItem("userId"))
+                          ? "Bạn"
+                          : comment.tenNhanVien}
                       </span>
                     </div>
-                    <p className="ml-11 text-gray-600">{comment.message}</p>
+                    <span className="text-sm text-gray-500">
+                      {format(
+                        new Date(comment.thoiGianGui),
+                        "dd/MM/yyyy HH:mm:ss"
+                      )}
+                    </span>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div>histories</div>
-            )}
+                  <p className="ml-11 text-gray-600 text-sm">
+                    {comment.noiDungTraoDoi}
+                  </p>
+                  {/* {comment.chiTietTraoDoiThongTins &&
+                    comment.chiTietTraoDoiThongTins.length > 0 && (
+                      <div className="mt-2 space-y-2">
+                        {comment.chiTietTraoDoiThongTins.map(
+                          (fileDetail, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center space-x-2"
+                            >
+                              {fileDetail.Files &&
+                              fileDetail.Files.LoaiFile.startsWith("image/") ? (
+                                <div className="relative group">
+                                  <img
+                                    src={fileDetail.Files.DuongDan}
+                                    alt={fileDetail.Files.TenFile}
+                                    className="max-w-xs rounded-md cursor-pointer"
+                                  />
+                                  <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-center p-1 rounded-b-md opacity-0 group-hover:opacity-100 transition-opacity">
+                                    Xem hình ảnh
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex items-center bg-gray-100 p-2 rounded-md shadow-sm w-max">
+                                  <a
+                                    href={fileDetail.Files.DuongDan}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 flex items-center space-x-2"
+                                  >
+                                    <span className="material-icons text-sm">
+                                      file_download
+                                    </span>
+                                    <span className="text-sm">
+                                      {fileDetail.Files.TenFile}
+                                    </span>
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        )}
+                      </div>
+                    )} */}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-
-        {/* Files Section */}
-
-        {/* Phần Emoji Picker và Comment Input không thay đổi */}
-        <div className="mb-4 px-6 absolute bottom-0 w-full">
+        <div className="mb-4 px-6 absolute bottom-0 w-full ">
           <div>
             {/* Hiển thị các tệp đã chọn */}
             {selectedFiles.length > 0 && (
-              <div className="mb-4 flex flex-wrap">
+              <div className="mb-4 flex flex-wrap max-h-28 overflow-auto">
                 {selectedFiles.map((file, index) => (
                   <div
                     key={index}
-                    className="flex items-center space-x-2 mb-2 mr-2 border rounded p-2"
+                    className="flex items-center space-x-2 mb-2 mr-2 border rounded p-2 bg-gray-100 hover:bg-gray-200"
+                    style={{ maxWidth: "calc(33% - 0.5rem)" }}
                   >
                     {/* Hiển thị file icon hoặc hình ảnh */}
                     {isImage(file) ? (
                       <img
                         src={URL.createObjectURL(file)}
                         alt={file.name}
-                        className="w-12 h-12 object-cover rounded"
+                        className="w-10 h-10 object-cover rounded"
                       />
                     ) : (
-                      <div className="text-lg">{getFileIcon(file.name)}</div>
+                      <div className="text-lg text-gray-600">
+                        {getFileIcon(file.name)}
+                      </div>
                     )}
-                    <span>{file.name}</span>
-                    <div className="text-gray-500 text-sm">
-                      {formatFileSize(file.size)}
+                    <div className="flex flex-col justify-center">
+                      <span className="text-sm text-gray-800">{file.name}</span>
+                      <div className="text-xs text-blue-400">
+                        {formatFileSize(file.size)}
+                      </div>
                     </div>
                     <button
-                      className="text-red-500"
-                      onClick={() => removeFile(index)} // Xóa tệp khi nhấn "X"
+                      className="text-red-500 text-xs px-2 py-1 rounded-full"
+                      onClick={() => removeFile(index)}
                     >
                       ✖️
                     </button>
@@ -429,8 +489,6 @@ const DetailTask = ({
                 ))}
               </div>
             )}
-
-            {/* Thay đổi nút chọn file thành icon */}
           </div>
           <div className="flex items-center">
             <input

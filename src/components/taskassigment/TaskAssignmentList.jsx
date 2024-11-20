@@ -121,9 +121,9 @@ const TaskAssignmentList = ({ congviec, filterTask }) => {
         // connection.on("deletePhanCong", async () => {
         //   await dispatch(fetchByIdTask(maCongViec));
         // });
-        // connection.on("loadDuAn", async () => {
-        //   await dispatch(fetchByIdTask(maCongViec));
-        // });
+        connection.on("loadDuAn", async () => {
+          await dispatch(fetchByIdTask(maCongViec));
+        });
         // connection.on("loadLichSuCongViec", async () => {
         //   await dispatch(fetchByIdTask(maCongViec));
         // });
@@ -189,10 +189,10 @@ const TaskAssignmentList = ({ congviec, filterTask }) => {
         connection.off("loadHanhDong");
         // connection.off("deletePhanCong");
         // connection.off("loadLichSuCongViec");
-        // connection.off("loadDuAn");
+        connection.off("loadDuAn");
       }
     };
-  }, [dispatch, maCongViec, maquyen]);
+  }, [dispatch, maCongViec,maPhanCong, maquyen]);
   if (loading) {
     return (
       <div

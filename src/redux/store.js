@@ -19,6 +19,7 @@ import fileassignmentReducer from "./fileassignment/fileassignmentSlice"
 import reminderReducer from "./reminder/reminderSlice"
 import taskTransferReducer from "./tasktransfer/tasktranferSlice"
 import schedulingReducer from  "./scheduling/schedulingSlice"
+import exchangeReducer from "./exchange/exchangeSlice"
 const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
@@ -40,7 +41,8 @@ const store = configureStore({
     fileassignment:fileassignmentReducer,
     reminders:reminderReducer,
     tasktransfer:taskTransferReducer,
-    scheduling:schedulingReducer
+    scheduling:schedulingReducer,
+    exchanges:exchangeReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
