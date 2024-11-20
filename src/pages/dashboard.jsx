@@ -1,5 +1,9 @@
-import React, { useState } from 'react';
-
+import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
+import { fetchStatisticsTask } from '../redux/statistics/statisticsSlice';
+import { jsPDF } from 'jspdf'; 
+import 'jspdf-autotable';
 const barData = [
   { name: 'Lam viec', value: 4, color: '#4CAF50' },
   { name: 'Nghi', value: 0, color: '#F44336' },
@@ -162,22 +166,86 @@ const LineChartComponent = () => (
 function App() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const dispatch=useDispatch()
+  const statistics=useSelector((state)=>state.statistics.list)
+  useEffect(()=>{
+    const loadData=async()=>{
+      await dispatch(fetchStatisticsTask())
+    }
+    loadData()
+  },[dispatch])
+  const filteredTasks = statistics.filter((task) => {
+    const taskStartDate = new Date(task.thoiGianBatDau);
+    const taskEndDate = new Date(task.thoiGianKetThuc);
+    const filterStartDate = startDate ? new Date(startDate) : null;
+    const filterEndDate = endDate ? new Date(endDate) : null;
+
+    const isStartDateValid = filterStartDate ? taskStartDate >= filterStartDate : true;
+    const isEndDateValid = filterEndDate ? taskEndDate <= filterEndDate : true;
+
+    return isStartDateValid && isEndDateValid;
+  });
+  const completedTasks = filteredTasks.filter(
+    (task) => task.mucDoHoanThanh === 100 && task.trangThaiCongViec === true
+  ).length;
+
+  const incompleteTasks = filteredTasks.filter(
+    (task) => new Date(task.thoiGianKetThuc) > new Date() && task.trangThaiCongViec === false
+  ).length;
+
+  const overdueTasks = filteredTasks.filter(
+    (task) => new Date(task.thoiGianKetThuc) < new Date() && task.trangThaiCongViec === false
+  ).length;
+
+  const totalTasks = filteredTasks.length;
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    
+    // Tiêu đề
+    doc.setFontSize(18);
+    doc.text('Task Report', 20, 20);
+
+    // Thêm thông tin thống kê vào PDF
+    doc.setFontSize(12);
+    doc.text(`Completed tasks: ${completedTasks}`, 20, 30);
+    doc.text(`Incomplete tasks: ${incompleteTasks}`, 20, 40);
+    doc.text(`Overdue tasks: ${overdueTasks}`, 20, 50);
+    doc.text(`Total tasks: ${totalTasks}`, 20, 60);
+
+    // Thêm thông tin chi tiết về các công việc
+    const taskDetails = statistics.map((task) => {
+      return [
+        task.maCongViec,
+        task.tenCongViec,
+        task.thoiGianBatDau,
+        task.thoiGianKetThuc,
+        task.mucDoHoanThanh,
+        task.trangThaiCongViec ? 'Completed' : 'In Progress'
+      ];
+    });
+
+    let yPosition = 70;
+    doc.autoTable({
+      startY: yPosition,
+      head: [
+        ['Mã Công Việc', 'Tên Công Việc', 'Ngày Bắt Đầu', 'Ngày Kết Thúc', 'Mức Độ Hoàn Thành', 'Trạng Thái']
+      ],
+      body: taskDetails,
+      theme: 'grid'
+    });
+    doc.save('task_report.pdf');
+  };
 
   return (
     <div style={styles.app}>
       {/* Nút download */}
       <div style={styles.downloadContainer}>
-        <button
-          onClick={() => window.open('3121410169_LeNgocGiau_Seminar_BTBS(1).pdf')}
-          style={styles.downloadButton}
-        >
+      <button onClick={exportToPDF} style={styles.downloadButton}>
           <div style={styles.downloadContent}>
             <div style={styles.fileInfoWrapper}>
               <span style={styles.pdfIcon}>PDF</span>
-              <span>3121410169_LeNgocGiau_Seminar_BTBS(1).pdf</span>
-              <span style={styles.fileSize}>730 KB</span>
+              <span>Xuất File Báo Cáo</span>
             </div>
-            <div style={styles.timeInfo}>49 phút trước</div>
           </div>
         </button>
       </div>
@@ -197,10 +265,10 @@ function App() {
         </div>
       </div>
       <div style={styles.statContainer}>
-        <StatBox title="Completed tasks" value={0} filters="1 Filter" />
-        <StatBox title="Incomplete tasks" value={4} filters="1 Filter" />
-        <StatBox title="Overdue tasks" value={2} filters="1 Filter" />
-        <StatBox title="Total tasks" value={4} filters="No Filters" />
+        <StatBox title="Hoàn Thành" value={completedTasks} filters="1 Filter" />
+        <StatBox title="Chưa Hoàn Thành" value={incompleteTasks} filters="1 Filter" />
+        <StatBox title="Trễ Hạn" value={overdueTasks} filters="1 Filter" />
+        <StatBox title="Tổng" value={totalTasks} filters="No Filters" />
       </div>
       <div style={styles.chartContainer}>
         <BarChartComponent />
@@ -211,7 +279,7 @@ function App() {
     </div>
   );
 }
-
+//
 const styles = {
   app: {
     padding: '30px',

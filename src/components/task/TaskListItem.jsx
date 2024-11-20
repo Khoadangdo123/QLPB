@@ -42,7 +42,7 @@ const stages = [
 const TaskListItem = ({ congviec, duAn }) => {
   const [open, setOpen] = useState(false);
   const [openUpdate, setOpenUpdate] = useState(false);
-  const [openAssignment,setopenAssignment]=useState(false)
+  const [openAssignment, setopenAssignment] = useState(false);
   const [openTransfer, setOpenTransfer] = useState(false);
   const [openTaskHistory, setOpenTaskHistory] = useState(false);
   const [taskRoot, setTaskRoot] = useState(false);
@@ -57,7 +57,7 @@ const TaskListItem = ({ congviec, duAn }) => {
   const [statusTask, setStatusTask] = useState(congviec.trangThaiCongViec);
   const [error, setError] = useState(null);
   const dispatch = useDispatch();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const maCongViec = congviec.maCongViec;
   const trangThaiCongViec = congviec.trangThaiCongViec;
   const phancong = useSelector((state) =>
@@ -356,22 +356,22 @@ const TaskListItem = ({ congviec, duAn }) => {
             </button>
           ) : (
             <>
-            <Button
-              onClick={() =>
-                navigate("/taskassignment/fileView/" + maCongViec)
-              }
-              icon={<CiViewList className="text-base" />}
-              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs h-7"
-            ></Button>
               {permissionAction.includes("Thêm") && (
-                <Button
-                  onClick={() => {
-                    setTaskRoot(congviec.maCongViec);
-                    setOpen(true);
-                  }}
-                  icon={<IoMdAdd className="text-base" />}
-                  className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs h-7" // Giảm padding và xác định chiều cao
-                />
+                <>
+                  <Button
+                    onClick={() => navigate("/fileView/" + maCongViec)}
+                    icon={<CiViewList className="text-base" />}
+                    className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs h-7"
+                  ></Button>
+                  <Button
+                    onClick={() => {
+                      setTaskRoot(congviec.maCongViec);
+                      setOpen(true);
+                    }}
+                    icon={<IoMdAdd className="text-base" />}
+                    className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs h-7" // Giảm padding và xác định chiều cao
+                  />
+                </>
               )}
               {permissionAction.includes("Sửa") && (
                 <Button
@@ -421,7 +421,6 @@ const TaskListItem = ({ congviec, duAn }) => {
               >
                 <IoMdAdd className="inline mr-2" /> Thêm
               </button>
-              
             )}
             {permissionAction.includes("Sửa") && (
               <button
@@ -496,13 +495,13 @@ const TaskListItem = ({ congviec, duAn }) => {
         maCongViec={maCongViec}
       />
       <AddAssignmentTask
-       openAssignment={openAssignment}
-       setopenAssignment={setopenAssignment}
-       maCongViec={maCongViec}
-       tenCongViec={congviec.tenCongViec}
-       nhanViens={phancong?.phanCongs}
-       thoiGianKetThuc={congviec.thoiGianKetThuc}
-       />
+        openAssignment={openAssignment}
+        setopenAssignment={setopenAssignment}
+        maCongViec={maCongViec}
+        tenCongViec={congviec.tenCongViec}
+        nhanViens={phancong?.phanCongs}
+        thoiGianKetThuc={congviec.thoiGianKetThuc}
+      />
       {expanded && (
         <DetailTask
           expanded={expanded}

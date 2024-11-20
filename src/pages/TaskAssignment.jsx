@@ -35,6 +35,9 @@ const TaskAssignment = () => {
         connection.on("loadPhanCong", async () => {
           await dispatch(fetchEmployeeAssignment(maNhanVien))
         });
+        connection.on("deletePhanCong", async () => {
+          await dispatch(fetchEmployeeAssignment(maNhanVien))
+        });
         connection.on("updateCongViec", async () => {
           await dispatch(fetchEmployeeAssignment(maNhanVien));
         });
@@ -54,6 +57,7 @@ const TaskAssignment = () => {
       if (connection) {
         console.log("off")
         connection.off("loadCongViec");
+        connection.off("deletePhanCong");
         connection.off("loadPhanCong");
         connection.off("updateCongViec");
       }

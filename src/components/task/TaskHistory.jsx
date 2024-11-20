@@ -23,9 +23,9 @@ const TaskHistory = ({ openTaskHistory, setOpenTaskHistory, maCongViec }) => {
     };
     loadData();
   }, [dispatch, maCongViec]);
- 
+
   useEffect(() => {
-    const connection=getConnection();
+    const connection = getConnection();
     const connectSignalR = async () => {
       try {
         if (connection && connection.state === "Disconnected") {
@@ -41,70 +41,75 @@ const TaskHistory = ({ openTaskHistory, setOpenTaskHistory, maCongViec }) => {
         console.error("Connection failed: ", error);
       }
     };
-    connectSignalR(); 
+    connectSignalR();
     return () => {
       if (connection) {
         connection.off("loadLichSuCongViec");
       }
     };
-  }, [dispatch,maCongViec]);
+  }, [dispatch, maCongViec]);
   const lichsu = lichsucongviec.filter(
     (item) => item.maCongViec === maCongViec
   );
+  const getItemDotColor = (content) => {
+    if (content.includes("phân công")) {
+      return "bg-blue-500";
+    } else if (content.includes("hoàn thành nhiệm vụ")) {
+      return "bg-green-500";
+    } else if (content.includes("chuyển giao")) {
+      return "bg-red-500";
+    } else if (content.includes("cập nhật")) {
+      return "bg-yellow-500";
+    }
+    return "bg-gray-300";
+  };
   const formatDateTime = (dateString) => {
-    const date = new Date(dateString);
-    return date.toLocaleString("vi-VN", {
+    const options = {
       year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
+      month: "long",
+      day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    });
-  };
-  const getItemClassName = (content) => {
-    if (content.includes("hoàn thành")) {
-      return "bg-green-100 border-green-400";
-    } else if (content.includes("phân công")) {
-      return "bg-gray-100 border-gray-400";
-    }
-    return "";
+    };
+    return new Date(dateString).toLocaleDateString("vi-VN", options);
   };
   return (
     <>
-       <ModalWrapper open={openTaskHistory} setOpen={setOpenTaskHistory}>
-        <div className="bg-gray-50 py-6">
-          <h2 className="text-lg font-semibold mb-4">Lịch Sử Công Việc</h2>
+      <ModalWrapper open={openTaskHistory} setOpen={setOpenTaskHistory}>
+        <div className="bg-gray-50 py-6 px-6 rounded-md shadow-lg">
+          <h2 className="text-xl font-bold text-gray-800 mb-4">
+            Lịch Sử Công Việc
+          </h2>
           {lichsu.length === 0 ? (
-            <p>Không có lịch sử nào cho công việc này.</p>
+            <p className="text-gray-500">
+              Không có lịch sử nào cho công việc này.
+            </p>
           ) : (
-            <div className="relative max-h-60 overflow-y-auto">
-              <ul className="space-y-6">
+            <div className="relative max-h-80 overflow-y-auto">
+              <div className="border-l-2 border-gray-300 pl-4 space-y-6">
                 {lichsu.map((item) => (
-                  <li key={item.maLichSuCongViec} className="relative flex items-center">
-                    <div className="absolute left-2 top-0 bottom-0 border-l border-gray-300"></div>
-                    <div className="pl-4">
-                      <div className="flex items-center">
-                        <span className={`w-3 h-3 rounded-full ${getItemClassName(item.noiDung)}`}></span>
-                        <span className="ml-2 text-sm">{formatDateTime(item.ngayCapNhat)}</span>
-                      </div>
-                      <p className={`mt-1 ${getItemClassName(item.noiDung)}`}>
-                        {item.noiDung}
-                      </p>
-                    </div>
-                  </li>
+                  <div key={item.maLichSuCongViec} className="relative pl-8">
+                  <div
+                    className={`absolute left-0 top-1 w-6 h-6 rounded-full border-4 border-white ${getItemDotColor(
+                      item.noiDung
+                    )}`}
+                  ></div>
+                  <div className="ml-8">
+                    <p className="text-sm text-gray-500">{formatDateTime(item.ngayCapNhat)}</p>
+                    <p className="text-base text-gray-800 font-medium mt-1">{item.noiDung}</p>
+                  </div>
+                </div>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
-          <div className="sm:flex sm:flex-row-reverse gap-4 mt-4">
-            <Button
-              type="button"
-              className="bg-blue-600 px-5 text-sm font-semibold text-gray-900 sm:w-auto"
+          <div className="flex justify-end gap-4 mt-6">
+            <button
+              className="bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded-md"
               onClick={() => setOpenTaskHistory(false)}
-              label="Hủy"
-            />
+            >
+              Đóng
+            </button>
           </div>
         </div>
       </ModalWrapper>

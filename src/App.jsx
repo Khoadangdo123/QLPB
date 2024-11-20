@@ -137,6 +137,7 @@ function App() {
           <Route path='/home' element={<Home/>}/>
           <Route path="/gant" element={<GanttApp/>}/>
           <Route path="/taskassignment/fileView/:id" element={<FileView/>}/>
+          <Route path="/fileView/:id" element={<FileView/>}/>
           <Route path="*" element={<Navigate to="/home" />} />
         </Route>
         <Route path='/log-in' element={<Login />} />

@@ -21,6 +21,7 @@ import taskTransferReducer from "./tasktransfer/tasktranferSlice"
 import schedulingReducer from  "./scheduling/schedulingSlice"
 import exchangeReducer from "./exchange/exchangeSlice"
 import detailexchangeReducer from "./detailexchange/detailexchangeSlice"
+import statisticReducer from "./statistics/statisticsSlice"
 const store = configureStore({
   reducer: {
     [apiSlice.reducerPath]: apiSlice.reducer,
@@ -44,7 +45,8 @@ const store = configureStore({
     tasktransfer:taskTransferReducer,
     scheduling:schedulingReducer,
     exchanges:exchangeReducer,
-    detailexchanges:detailexchangeReducer
+    detailexchanges:detailexchangeReducer,
+    statistics:statisticReducer
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -111,6 +111,8 @@ const DetailTask = ({
       }
     };
   }, [maCongViec]);
+  console.log(roleTeam)
+  console.log(userTeam)
   const handleSendComment = async () => {
     if (newComment.trim() === "" && selectedFiles.length === 0) return;
     try {
@@ -260,16 +262,16 @@ const DetailTask = ({
       case "jpeg":
       case "png":
       case "gif":
-        return <AiFillFileImage className="text-purple-500 text-4xl" />; // Icon cho file ảnh
+        return <AiFillFileImage className="text-purple-500 text-4xl" />;
       case "mp4":
       case "avi":
       case "mov":
       case "wmv":
-        return <FaVideo className="text-blue-500 text-4xl" />; // Icon cho video
+        return <FaVideo className="text-blue-500 text-4xl" />;
       case "zip":
-        return <FaFileZipper className="text-yellow-500 text-4xl" />; // Icon cho file ZIP
+        return <FaFileZipper className="text-yellow-500 text-4xl" />;
       case "rar":
-        return <FaFileArchive className="text-orange-500 text-4xl" />; // Icon cho file RAR
+        return <FaFileArchive className="text-orange-500 text-4xl" />;
       case "mpp":
         return <FaProjectDiagram className="text-teal-500 text-4xl" />;
       default:
@@ -331,7 +333,9 @@ const DetailTask = ({
                   {roleTeam.map((member, index) => (
                     <div
                       key={index}
-                      className="flex items-center bg-blue-100 text-blue-700 py-1 px-3 rounded-full text-sm"
+                      className={`flex items-center py-1 px-3 rounded-full text-sm ${
+                        member.trangThaiCongViec ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                      }`}
                     >
                       <span>{member.nhanVien?.tenNhanVien || "Unknown"}</span>
                     </div>
@@ -370,7 +374,11 @@ const DetailTask = ({
                 {userTeam.map((m, index) => (
                   <div
                     key={index}
-                    className="flex items-center bg-blue-100 text-blue-800 rounded-full px-3 py-1 text-sm font-medium"
+                    className={`flex items-center rounded-full px-3 py-1 text-sm font-medium ${
+                      m.trangThaiCongViec
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
                   >
                     <span className="mr-2">
                       {m.nhanVien?.tenNhanVien || "Tên chưa có"}

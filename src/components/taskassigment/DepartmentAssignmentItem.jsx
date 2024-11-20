@@ -21,6 +21,7 @@ import API_ENDPOINTS from "../../constant/linkapi";
 import TaskHistory from "../task/TaskHistory";
 import AddTaskTransfer from "../tasktransfer/AddTaskTransfer";
 import getConnection from "../../hub/signalRConnection";
+import { CiViewList } from "react-icons/ci";
 const DepartmentAssignmentItem = ({ congViecPhongBan, filterTask }) => {
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -29,6 +30,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan, filterTask }) => {
   const [openTransfer, setOpenTransfer] = useState(false);
   const [openTaskHistory, setOpenTaskHistory] = useState(false);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const maCongViec = congViecPhongBan.maCongViec;
   const maquyen = Number(localStorage.getItem("permissionId"));
   const vaiTro = congViecPhongBan.vaiTro;
@@ -100,7 +102,7 @@ const DepartmentAssignmentItem = ({ congViecPhongBan, filterTask }) => {
         // connection.off("updateCongViec");
       }
     };
-  }, [dispatch, maCongViec,congviec]);
+  }, [dispatch, maCongViec, congviec]);
   if (loading) {
     return (
       <div
@@ -147,16 +149,16 @@ const DepartmentAssignmentItem = ({ congViecPhongBan, filterTask }) => {
       return "bg-green-500";
     }
   };
-  const phanCongs =congviec?.phanCongs?.filter((task) => task.trangThai === true) || [];
-  console.log(phanCongs)
+  const phanCongs =
+    congviec?.phanCongs?.filter((task) => task.trangThai === true) || [];
+  console.log(phanCongs);
   const chiuTrachNhiem = phanCongs?.filter(
     (m) => m.vaiTro === "Người Chịu Trách Nhiệm"
   );
-  const thucHien =phanCongs?.filter(
-    (m) => m.vaiTro === "Người Thực Hiện"
-  );
-  const congViecHoanThanh =phanCongs?.filter((task) => task.trangThaiCongViec === true).length ?? 0;
-  const tongCongViec =phanCongs?.length || 1;
+  const thucHien = phanCongs?.filter((m) => m.vaiTro === "Người Thực Hiện");
+  const congViecHoanThanh =
+    phanCongs?.filter((task) => task.trangThaiCongViec === true).length ?? 0;
+  const tongCongViec = phanCongs?.length || 1;
   const completionPercent = (congViecHoanThanh / tongCongViec) * 100;
   return (
     <div className="w-full flex items-center  px-4">
@@ -275,6 +277,13 @@ const DepartmentAssignmentItem = ({ congViecPhongBan, filterTask }) => {
           )}
         </div>
         <div className="flex-1 px-4 text-center">
+          {permissionAction.includes("Sửa") && (
+            <Button
+              onClick={() => navigate("/fileView/" + maCongViec)}
+              icon={<CiViewList className="text-base" />}
+              className="flex flex-row-reverse items-center bg-blue-600 text-white rounded-md py-0.5 px-1 text-xs h-7"
+            ></Button>
+          )}
           {permissionAction.includes("Sửa") && (
             <Button
               onClick={() => {
